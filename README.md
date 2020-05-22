@@ -6,3 +6,5 @@ Pytorch implementation of DeepMind's GraphNets, with more examples
 ### Non-Bayesian Examples
 
 ### Bayesian Graph Neural Nets
+
+#### Regulatory Network Predictions from uncertain scRNA-Seq Data
