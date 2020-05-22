@@ -24,5 +24,10 @@ Given a steady state prediction, use some kinetics prior to simulate kinetics of
 
 ## Acknowledgements
 
-* torch-scatter, PyTorch Geometric
+* [rusty1s/pytorch_scatter](https://github.com/rusty1s/pytorch_scatter)
+* PyTorch Geometric
 * pgn
+
+## References
+
+
