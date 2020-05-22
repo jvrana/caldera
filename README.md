@@ -22,3 +22,7 @@ Given a steady state prediction, use some kinetics prior to simulate kinetics of
 
 **Goal**: Given example of synthetic regulatory networks (as graphs) and scRNA-seq data
 
+## Acknowledgements
+
+* torch-scatter, PyTorch Geometric
+* pgn
