@@ -1,4 +1,4 @@
-# pyro-graphnets
+# Pyro-GraphNets
 
 Pytorch/Pyro implementation of 
 
