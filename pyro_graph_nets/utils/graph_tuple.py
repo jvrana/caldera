@@ -4,7 +4,7 @@ from typing import Callable, List, Tuple
 import torch
 import numpy as np
 import networkx as nx
-
+from functools import partial
 
 GraphTuple = namedtuple('GraphTuple', [
     'node_attr',    # node level attributes
@@ -123,3 +123,17 @@ def apply_to_tuple(x, func: Callable[[List[Tuple]], Tuple]):
 def print_graph_tuple_shape(graph_tuple):
     for field, x in zip(graph_tuple._fields, graph_tuple):
         print(field, '  ', x.shape)
+
+
+def cat_gt(*gts: Tuple[GraphTuple, ...]) -> GraphTuple:
+    """Concatenate graph tuples along dimension=1. Edges, node idx and edge idx
+    are simply copied over."""
+    cat = partial(torch.cat, dim=1)
+    return GraphTuple(
+        cat([gt.node_attr for gt in gts]),
+        cat([gt.edge_attr for gt in gts]),
+        cat([gt.global_attr for gt in gts]),
+        gts[0].edges,
+        gts[0].node_indices,
+        gts[0].edge_indices
+    )

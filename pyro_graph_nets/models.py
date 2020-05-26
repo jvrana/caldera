@@ -1,5 +1,5 @@
 from functools import partial
-from pyro_graph_nets.utils.graph_tuple import replace_key, GraphTuple
+from pyro_graph_nets.utils.graph_tuple import replace_key, GraphTuple, cat_gt
 import torch
 from pyro_graph_nets.blocks import NodeBlock, EdgeBlock, GlobalBlock
 from torch import nn
@@ -103,19 +103,6 @@ class GraphNetwork(GraphAbstractModel):
             global_attr = torch.zeros_like(u)
 
         return node_attr, edge_attr, global_attr
-
-
-
-def cat_gt(*gts):
-    cat = partial(torch.cat, dim=1)
-    return GraphTuple(
-        cat([gt.node_attr for gt in gts]),
-        cat([gt.edge_attr for gt in gts]),
-        cat([gt.global_attr for gt in gts]),
-        gts[0].edges,
-        gts[0].node_indices,
-        gts[0].edge_indices
-    )
 
 
 class OutputTransform(torch.nn.Module):

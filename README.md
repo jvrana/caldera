@@ -28,13 +28,13 @@ make lock
 
 ## Tour
 
-**Flex API**
+##### FlexAPI
 
 The `Flex` API allows automatic setting of input dimensions.
 A simple example demonstrates this.
 
 ```python
-from pyro_graph_nets.blocks import Flex
+from pyro_graph_nets.flex import Flex
 from torch import nn
 from torch import tensor
 
@@ -58,12 +58,35 @@ FlexBlock(
 """
 ```
 
+
+
 ```python
 from pyro_graph_nets.models import GraphNetwork
 from pyro_graph_nets.blocks import FlexBlock, EdgeBlock, MLP
 model = GraphNetwork(
     FlexBlock(EdgeBlock, MLP(FlexBlock.dim(), 16, 20))
 )
+```
+
+##### GraphDataLoader
+
+**Random graph generation**
+
+```python
+# TODO: examples of generating random graphs for demo and testing purposes.
+```
+
+`GraphDataLoader` and `GraphDataset` provides graph data for 
+
+```python
+from pyro_graph_nets.utils.data import GraphDataLoader, GraphDataset
+from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
+
+dataset = GraphDataset(graphs)
+dataloader = GraphDataLoader(dataset, batch_size=10, shuffle=True)
+for batch_ndx, sample for enumerate(dataloader):
+    input_gt = to_graph_tuple(sample, feature_key='features')
+    target_gt = to_graph_tuple(sample, feature_key='target')
 ```
 
 ### Graph Neural Network implementations

@@ -4,7 +4,7 @@ from pyro_graph_nets.models import GraphEncoder, GraphNetwork
 import torch
 import numpy as np
 from pyro_graph_nets.utils.data import random_input_output_graphs
-from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
+from pyro_graph_nets.utils.graph_tuple import to_graph_tuple, cat_gt
 from pyro_graph_nets.flex import Flex, FlexBlock, FlexDim
 
 
@@ -96,3 +96,53 @@ class TestFlexibleModel(MetaTest):
         print(network)
         network(input_gt)
         print(network)
+
+
+class TestFlexEncodeProcessDecode(MetaTest):
+
+    def test_main(self):
+        FlexMLP = Flex(MLP)
+
+        encoder = GraphEncoder(
+            EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
+            NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
+            GlobalBlock(FlexMLP(Flex.d(), 16, 16), independent=True)
+        )
+
+        # note that core should have the same output dimensions as the encoder
+        core = GraphNetwork(
+            EdgeBlock(FlexMLP(Flex.d(), 16, 16),
+                      independent=False),
+            NodeBlock(FlexMLP(Flex.d(), 16, 16),
+                      independent=False,
+                      edge_aggregator=Aggregator('mean')),
+            GlobalBlock(FlexMLP(Flex.d(), 16, 16),
+                        independent=False,
+                        edge_aggregator=Aggregator('mean'),
+                        node_aggregator=Aggregator('mean'))
+        )
+
+        decoder = GraphEncoder(
+            EdgeBlock(FlexMLP(Flex.d(), 16, 1), independent=True),
+            NodeBlock(FlexMLP(Flex.d(), 16, 1), independent=True),
+            GlobalBlock(FlexMLP(Flex.d(), 16, 1), independent=True)
+        )
+
+        output_transform = GraphEncoder(
+            EdgeBlock(Flex(torch.nn.Linear)(Flex.d(), 1), independent=True),
+            NodeBlock(Flex(torch.nn.Linear)(Flex.d(), 1), independent=True),
+            GlobalBlock(Flex(torch.nn.Linear)(Flex.d(), 1), independent=True),
+        )
+
+        input_gt, target_gt = self.input_target()
+
+        latent = encoder(input_gt)
+        latent0 = latent
+
+
+        for step in range(10):
+            core_input = cat_gt(latent0, latent)
+            latent = core(core_input)
+            decoded = output_transform(decoder(latent))
+
+        # print(core())
