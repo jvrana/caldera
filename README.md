@@ -24,7 +24,18 @@ Lock the environment:
 make lock
 ```
 
+### installing `torch_scatter`
 
+## Tour
+
+[Battaglia et. al. 2018](https://arxiv.org/pdf/1806.01261.pdf)
+
+* Full GN
+* Message Passing
+* Non-local Neural Network
+* Deep set
+* Relation networks
+* Independent recurrent neural network
 
 ## Example
 

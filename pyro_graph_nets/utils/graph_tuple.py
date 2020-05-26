@@ -51,8 +51,12 @@ def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', glob
             edge_attributes.append(edata[feature_key])
             edge_indices.append(index)
 
-    node_attr = torch.tensor(np.vstack(node_attributes), dtype=torch.float)
-    edge_attr = torch.tensor(np.vstack(edge_attributes), dtype=torch.float)
+    def vstack(arr):
+        if not arr:
+            return []
+        return np.vstack(arr)
+    node_attr = torch.tensor(vstack(node_attributes), dtype=torch.float)
+    edge_attr = torch.tensor(vstack(edge_attributes), dtype=torch.float)
     edges = torch.tensor(np.vstack([senders, receivers]).T, dtype=torch.long)
     global_attr = torch.tensor(global_attributes, dtype=torch.float).detach()
     node_indices = torch.tensor(node_indices, dtype=torch.long).detach()

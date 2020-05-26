@@ -104,36 +104,53 @@ class EdgeBlock(Block):
 # TODO: add global features
 class NodeBlock(Block):
 
-    def __init__(self, input_size: int, layers: List[int], independent: bool):
+    def __init__(self, input_size: int, layers: List[int], independent: bool, edge_aggregator: Aggregator = None):
+        """
+
+        :param input_size:
+        :param layers:
+        :param edge_aggregator:
+        :param independent:
+        """
         super().__init__({
-            'aggregator': Aggregator('mean'),
+            'edge_aggregator': edge_aggregator,
             'mlp': MLP(input_size, *layers)
         }, independent=independent)
 
     def forward(self, v, edge_index, edge_attr, u, node_idx, edge_idx):
         if not self._independent:
             row, col = edge_index
-            aggregated = self.block_dict['aggregator'](edge_attr, col, dim=0,
-                                                   dim_size=v.size(0))
-            out = torch.cat([aggregated, v], dim=1)
+            aggregator_fn = self.block_dict['edge_aggregator']
+            if aggregator_fn:
+                aggregated = self.block_dict['edge_aggregator'](edge_attr, col, dim=0,
+                                                       dim_size=v.size(0))
+                out = torch.cat([aggregated, v], dim=1)
+            else:
+                out = torch.cat([v], dim=1)
         else:
             out = v
         return self.block_dict['mlp'](out)
 
 
 class GlobalBlock(Block):
-    def __init__(self, input_size: int, layers: List[int], independent: bool):
+    def __init__(self, input_size: int, layers: List[int], independent: bool,
+                 node_aggregator: Aggregator = None, edge_aggregator: Aggregator = None):
         super().__init__({
-            'node_aggregator': Aggregator('mean'),
-            'edge_aggregator': Aggregator('mean'),
+            'node_aggregator': node_aggregator,
+            'edge_aggregator': edge_aggregator,
             'mlp': MLP(input_size, *layers)
         }, independent=independent)
 
     def forward(self, node_attr, edge_index, edge_attr, u, node_idx, edge_idx):
         if not self._independent:
-            node_agg = self.block_dict['node_aggregator'](node_attr, node_idx, dim=0)
-            edge_agg = self.block_dict['edge_aggregator'](edge_attr, edge_idx, dim=0)
-            out = torch.cat([u, node_agg, edge_agg], dim=1)
+            node_agg = self.block_dict['node_aggregator']
+            edge_agg = self.block_dict['edge_aggregator']
+            to_cat = [u]
+            if node_agg is not None:
+                to_cat.append(node_agg(node_attr, node_idx, dim=0))
+            if edge_agg is not None:
+                to_cat.append(edge_agg(edge_attr, edge_idx, dim=0))
+            out = torch.cat(to_cat, dim=1)
         else:
             out = u
         return self.block_dict['mlp'](out)

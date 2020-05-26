@@ -1,6 +1,6 @@
 import pytest
 from pyro_graph_nets.models import GraphEncoder, GraphNetwork
-from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock
+from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock, Aggregator
 from pyro_graph_nets.utils.data import random_input_output_graphs, random_graph_generator, add_features
 from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
 from pyro_graph_nets.utils.data import GraphDataset, GraphDataLoader
@@ -9,7 +9,7 @@ import networkx as nx
 from pyro_graph_nets.utils.graph_tuple import GraphTuple
 
 from typing import Tuple
-
+import time
 
 def graph_generator(
         n_nodes: Tuple[int, int],
@@ -93,7 +93,7 @@ class TestGraphDataLoader(object):
 
     def generator(self):
         return graph_generator(
-            (1, 20), (10, 1), (5, 2), (1, 3)
+            (2, 20), (10, 1), (5, 2), (1, 3)
         )
 
     def test_dataset(self):
@@ -127,14 +127,15 @@ class TestGraphDataLoader(object):
 
 class MetaTest(object):
 
-    def generator(self):
+    def generator(self, n_nodes=(2, 20)):
         return graph_generator(
-            (1, 20), (10, 1), (5, 2), (1, 3)
+            n_nodes, (10, 1), (5, 2), (1, 3)
         )
 
-    def input_target(self):
-        gen = self.generator()
+    def input_target(self, n_nodes=(2, 20)):
+        gen = self.generator(n_nodes)
         graphs = [next(gen) for _ in range(100)]
+        assert graphs
         input_gt = to_graph_tuple(graphs)
         target_gt = to_graph_tuple(graphs, feature_key='target')
         return input_gt, target_gt
@@ -149,8 +150,8 @@ class TestEncoder(MetaTest):
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_edge_block(self):
 
@@ -160,8 +161,8 @@ class TestEncoder(MetaTest):
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_global_block(self):
 
@@ -171,8 +172,18 @@ class TestEncoder(MetaTest):
             GlobalBlock(1, [16, 2], independent=True)
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
+
+    def test_empty_graph_global_block(self):
+        model = GraphEncoder(
+            None,
+            None,
+            GlobalBlock(1, [16, 2], independent=True)
+        )
+        input_gt, target_gt = self.input_target((1, 2))
+        out = model(input_gt)
+        assert out
 
     def test_all(self):
 
@@ -196,7 +207,7 @@ class TestNetwork(MetaTest):
 
         model = GraphNetwork(
             None,
-            NodeBlock(10 + 5, [16, 5], independent=False),
+            NodeBlock(10 + 5, [16, 5], independent=False, edge_aggregator=Aggregator('mean')),
             None
         )
         input_gt, target_gt = self.input_target()
@@ -219,7 +230,10 @@ class TestNetwork(MetaTest):
         model = GraphNetwork(
             None,
             None,
-            GlobalBlock(10 + 5 + 1, [16, 2], independent=False)
+            GlobalBlock(10 + 5 + 1, [16, 2],
+                        independent=False,
+                        node_aggregator=Aggregator('mean'),
+                        edge_aggregator=Aggregator('mean'))
         )
         input_gt, target_gt = self.input_target()
 
@@ -228,9 +242,14 @@ class TestNetwork(MetaTest):
     def test_all(self):
 
         model = GraphNetwork(
-            EdgeBlock(25, [16, 15], independent=False),
-            NodeBlock(25, [16, 5], independent=False),
-            GlobalBlock(21, [16, 2], independent=False)
+            EdgeBlock(25, [16, 15],
+                      independent=False),
+            NodeBlock(25, [16, 5],
+                      independent=False,
+                      edge_aggregator=Aggregator('mean')),
+            GlobalBlock(21, [16, 2], independent=False,
+                        node_aggregator=Aggregator('mean'),
+                        edge_aggregator=Aggregator('mean'))
         )
         input_gt, target_gt = self.input_target()
 
