@@ -2,7 +2,7 @@ import torch
 import torch_scatter
 from torch import nn
 from pyro_graph_nets.utils import pairwise
-from typing import List, Dict
+from typing import List, Dict, Tuple, Type
 
 # TODO: rename arguments to v, e, u
 # TODO: incoporate aggregation of global attributes
@@ -81,13 +81,17 @@ class Block(nn.Module):
         self._independent = independent
         self.block_dict = nn.ModuleDict({name: mod for name, mod in module_dict.items() if mod is not None})
 
+    @property
+    def out_dim(self):
+       pass
+
 
 class EdgeBlock(Block):
 
-    def __init__(self, input_size: int, layers: List[int], independent: bool):
+    def __init__(self, input_size: int, layers: List[int], independent: bool, mlp_module: Type[nn.Module] = MLP):
         super().__init__(
             {
-                'mlp': MLP(input_size, *layers)
+                'mlp': mlp_module(input_size, *layers)
             },
             independent=independent
         )
@@ -101,10 +105,12 @@ class EdgeBlock(Block):
         return results
 
 
-# TODO: add global features
+
+# TODO: concatenate global features for Edge and Node block
+
 class NodeBlock(Block):
 
-    def __init__(self, input_size: int, layers: List[int], independent: bool, edge_aggregator: Aggregator = None):
+    def __init__(self, input_size: int, layers: List[int], independent: bool, edge_aggregator: Aggregator = None, mlp_module: Type[nn.Module] = MLP):
         """
 
         :param input_size:
@@ -114,7 +120,7 @@ class NodeBlock(Block):
         """
         super().__init__({
             'edge_aggregator': edge_aggregator,
-            'mlp': MLP(input_size, *layers)
+            'mlp': mlp_module(input_size, *layers)
         }, independent=independent)
 
     def forward(self, v, edge_index, edge_attr, u, node_idx, edge_idx):
@@ -134,11 +140,11 @@ class NodeBlock(Block):
 
 class GlobalBlock(Block):
     def __init__(self, input_size: int, layers: List[int], independent: bool,
-                 node_aggregator: Aggregator = None, edge_aggregator: Aggregator = None):
+                 node_aggregator: Aggregator = None, edge_aggregator: Aggregator = None, mlp_module: Type[nn.Module] = MLP):
         super().__init__({
             'node_aggregator': node_aggregator,
             'edge_aggregator': edge_aggregator,
-            'mlp': MLP(input_size, *layers)
+            'mlp': mlp_module(input_size, *layers)
         }, independent=independent)
 
     def forward(self, node_attr, edge_index, edge_attr, u, node_idx, edge_idx):

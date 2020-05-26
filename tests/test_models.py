@@ -211,8 +211,8 @@ class TestNetwork(MetaTest):
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_edge_block(self):
 
@@ -222,8 +222,8 @@ class TestNetwork(MetaTest):
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_global_block(self):
 
@@ -236,8 +236,8 @@ class TestNetwork(MetaTest):
                         edge_aggregator=Aggregator('mean'))
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_all(self):
 
