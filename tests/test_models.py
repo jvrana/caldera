@@ -1,15 +1,15 @@
 import pytest
 from pyro_graph_nets.models import GraphEncoder, GraphNetwork
-from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock
+from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock, Aggregator, MLP
 from pyro_graph_nets.utils.data import random_input_output_graphs, random_graph_generator, add_features
 from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
 from pyro_graph_nets.utils.data import GraphDataset, GraphDataLoader
 import numpy as np
 import networkx as nx
 from pyro_graph_nets.utils.graph_tuple import GraphTuple
-
+from flaky import flaky
 from typing import Tuple
-
+import time
 
 def graph_generator(
         n_nodes: Tuple[int, int],
@@ -93,7 +93,7 @@ class TestGraphDataLoader(object):
 
     def generator(self):
         return graph_generator(
-            (1, 20), (10, 1), (5, 2), (1, 3)
+            (2, 20), (10, 1), (5, 2), (1, 3)
         )
 
     def test_dataset(self):
@@ -127,14 +127,15 @@ class TestGraphDataLoader(object):
 
 class MetaTest(object):
 
-    def generator(self):
+    def generator(self, n_nodes=(2, 20)):
         return graph_generator(
-            (1, 20), (10, 1), (5, 2), (1, 3)
+            n_nodes, (10, 1), (5, 2), (1, 3)
         )
 
-    def input_target(self):
-        gen = self.generator()
+    def input_target(self, n_nodes=(2, 20)):
+        gen = self.generator(n_nodes)
         graphs = [next(gen) for _ in range(100)]
+        assert graphs
         input_gt = to_graph_tuple(graphs)
         target_gt = to_graph_tuple(graphs, feature_key='target')
         return input_gt, target_gt
@@ -145,41 +146,51 @@ class TestEncoder(MetaTest):
 
         model = GraphEncoder(
             None,
-            NodeBlock(10, [16, 5], independent=True),
+            NodeBlock(MLP(10, 16, 5), independent=True),
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_edge_block(self):
 
         model = GraphEncoder(
-            EdgeBlock(5, [16, 5], independent=True),
+            EdgeBlock(MLP(5, 16, 5), independent=True),
             None,
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_global_block(self):
 
         model = GraphEncoder(
             None,
             None,
-            GlobalBlock(1, [16, 2], independent=True)
+            GlobalBlock(MLP(1, 16, 2), independent=True)
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
+
+    def test_empty_graph_global_block(self):
+        model = GraphEncoder(
+            None,
+            None,
+            GlobalBlock(MLP(1, 16, 2), independent=True)
+        )
+        input_gt, target_gt = self.input_target((1, 2))
+        out = model(input_gt)
+        assert out
 
     def test_all(self):
 
         model = GraphEncoder(
-            EdgeBlock(5, [16, 15], independent=True),
-            NodeBlock(10, [16, 5], independent=True),
-            GlobalBlock(1, [16, 2], independent=True)
+            EdgeBlock(MLP(5, 16, 15), independent=True),
+            NodeBlock(MLP(10, 16, 5), independent=True),
+            GlobalBlock(MLP(1, 16, 2), independent=True)
         )
         input_gt, target_gt = self.input_target()
 
@@ -196,42 +207,78 @@ class TestNetwork(MetaTest):
 
         model = GraphNetwork(
             None,
-            NodeBlock(10 + 5, [16, 5], independent=False),
+            NodeBlock(MLP(10 + 5, 16, 5), independent=False, edge_aggregator=Aggregator('mean')),
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_edge_block(self):
 
         model = GraphNetwork(
-            EdgeBlock(10 + 10 + 5, [16, 5], independent=False),
+            EdgeBlock(MLP(10 + 10 + 5, 16, 5), independent=False),
             None,
             None
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_global_block(self):
 
         model = GraphNetwork(
             None,
             None,
-            GlobalBlock(10 + 5 + 1, [16, 2], independent=False)
+            GlobalBlock(MLP(10 + 5 + 1, 16, 2),
+                        independent=False,
+                        node_aggregator=Aggregator('mean'),
+                        edge_aggregator=Aggregator('mean'))
         )
         input_gt, target_gt = self.input_target()
-
         out = model(input_gt)
+        assert out
 
     def test_all(self):
 
         model = GraphNetwork(
-            EdgeBlock(25, [16, 15], independent=False),
-            NodeBlock(25, [16, 5], independent=False),
-            GlobalBlock(21, [16, 2], independent=False)
+            EdgeBlock(MLP(25, 16, 15),
+                      independent=False),
+            NodeBlock(MLP(25, 16, 5),
+                      independent=False,
+                      edge_aggregator=Aggregator('mean')),
+            GlobalBlock(MLP(21, 16, 2), independent=False,
+                        node_aggregator=Aggregator('mean'),
+                        edge_aggregator=Aggregator('mean'))
         )
+        input_gt, target_gt = self.input_target()
+
+        out = model(input_gt)
+        assert out.edge_attr.shape[1] == 15
+        assert out.node_attr.shape[1] == 5
+        assert out.global_attr.shape[1] == 2
+
+
+
+    @pytest.mark.parametrize('agg',
+                             ['mean', 'max', 'min', 'add'],
+                             ids=['mean', 'max', 'min', 'add'])
+    @pytest.mark.parametrize("which_agg", [0, 1, 2], ids=['node_block_edge', 'global_block_node', 'global_block_edge'])
+    @flaky(max_runs=5, min_passes=5)
+    def test_all_aggregators(self,
+                             agg, which_agg):
+        aggs = ['mean', 'mean', 'mean']
+        aggs[which_agg] = agg
+        model = GraphNetwork(
+            EdgeBlock(MLP(25, 16, 15),
+                      independent=False),
+            NodeBlock(MLP(25, 16, 5),
+                      independent=False,
+                      edge_aggregator=Aggregator(aggs[0])),
+            GlobalBlock(MLP(21, 16, 2), independent=False,
+                        node_aggregator=Aggregator(aggs[1]),
+                        edge_aggregator=Aggregator(aggs[2])
+        ))
         input_gt, target_gt = self.input_target()
 
         out = model(input_gt)

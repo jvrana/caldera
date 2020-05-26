@@ -4,7 +4,7 @@ from typing import Callable, List, Tuple
 import torch
 import numpy as np
 import networkx as nx
-
+from functools import partial
 
 GraphTuple = namedtuple('GraphTuple', [
     'node_attr',    # node level attributes
@@ -51,8 +51,12 @@ def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', glob
             edge_attributes.append(edata[feature_key])
             edge_indices.append(index)
 
-    node_attr = torch.tensor(np.vstack(node_attributes), dtype=torch.float)
-    edge_attr = torch.tensor(np.vstack(edge_attributes), dtype=torch.float)
+    def vstack(arr):
+        if not arr:
+            return []
+        return np.vstack(arr)
+    node_attr = torch.tensor(vstack(node_attributes), dtype=torch.float)
+    edge_attr = torch.tensor(vstack(edge_attributes), dtype=torch.float)
     edges = torch.tensor(np.vstack([senders, receivers]).T, dtype=torch.long)
     global_attr = torch.tensor(global_attributes, dtype=torch.float).detach()
     node_indices = torch.tensor(node_indices, dtype=torch.long).detach()
@@ -119,3 +123,17 @@ def apply_to_tuple(x, func: Callable[[List[Tuple]], Tuple]):
 def print_graph_tuple_shape(graph_tuple):
     for field, x in zip(graph_tuple._fields, graph_tuple):
         print(field, '  ', x.shape)
+
+
+def cat_gt(*gts: Tuple[GraphTuple, ...]) -> GraphTuple:
+    """Concatenate graph tuples along dimension=1. Edges, node idx and edge idx
+    are simply copied over."""
+    cat = partial(torch.cat, dim=1)
+    return GraphTuple(
+        cat([gt.node_attr for gt in gts]),
+        cat([gt.edge_attr for gt in gts]),
+        cat([gt.global_attr for gt in gts]),
+        gts[0].edges,
+        gts[0].node_indices,
+        gts[0].edge_indices
+    )

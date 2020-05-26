@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 from pyro_graph_nets.models import EncoderProcessDecoder
 from pyro_graph_nets.models import gt_wrap_replace
-from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock
+from pyro_graph_nets.blocks import MLP, EdgeBlock, NodeBlock, GlobalBlock, Aggregator
 from pyro_graph_nets.models import GraphNetwork, GraphEncoder, cat_gt
 import pytest
 
@@ -37,12 +37,11 @@ def input_target():
 @pytest.fixture(scope='function')
 def encoder():
     encoder_model = GraphEncoder(
-        EdgeBlock(1, [1], independent=True),
-        NodeBlock(5, [16, 5], independent=True),
+        EdgeBlock(MLP(1, 1), independent=True),
+        NodeBlock(MLP(5, 16, 5), independent=True),
         None
     )
-    encoder = gt_wrap_replace(encoder_model)
-    return encoder
+    return encoder_model
 
 
 def test_encoder(encoder, input_target):
@@ -70,32 +69,27 @@ def test_core(input_target, steps):
     print(core_e)
     print(core_v)
 
-    encoder_model = GraphEncoder(
-        EdgeBlock(enc_e[0], list(enc_e)[1:], independent=True),
-        NodeBlock(enc_v[0], list(enc_v)[1:], independent=True),
+    encoder = GraphEncoder(
+        EdgeBlock(MLP(*enc_e), independent=True),
+        NodeBlock(MLP(*enc_v), independent=True),
         None
     )
 
-    core_model = GraphNetwork(
-        EdgeBlock(core_e[0], list(core_e)[1:], independent=False),
-        NodeBlock(core_v[0], list(core_v)[1:], independent=False),
+    core = GraphNetwork(
+        EdgeBlock(MLP(*core_e), independent=False),
+        NodeBlock(MLP(*core_v), independent=False, edge_aggregator=Aggregator('mean')),
         None
     )
 
-    decoder_model = GraphEncoder(
-        EdgeBlock(enc_e[0], list(enc_e)[1:], independent=True),
-        NodeBlock(enc_v[0], list(enc_v)[1:], independent=True),
+    decoder = GraphEncoder(
+        EdgeBlock(MLP(*enc_e), independent=True),
+        NodeBlock(MLP(*enc_v), independent=True),
         None
     )
 
     #######
     # Wrap
     #######
-
-    encoder = gt_wrap_replace(encoder_model)
-    core = gt_wrap_replace(core_model)
-    decoder = gt_wrap_replace(decoder_model)
-
     #######
     # Train
     #######
