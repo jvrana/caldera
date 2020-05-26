@@ -1,22 +1,28 @@
-
-from torch.utils.data import DataLoader, Dataset
-from pyro_graph_nets.utils.graph_tuple import to_graph_tuple, GraphTuple
-import networkx as nx
-from typing import Union
+from typing import Any
+from typing import Callable
+from typing import Generator
 from typing import List
-from typing import Generator, Callable, Any, Tuple
+from typing import Tuple
+from typing import Union
+
+import networkx as nx
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+
+from pyro_graph_nets.utils.graph_tuple import GraphTuple
+from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
 
 
 GraphType = Union[nx.DiGraph, nx.Graph]
 
 
 def random_graph_generator(
-        n_nodes: Union[int, Callable[[], int]],
-        theta: int,
-        n_feat_gen: Callable[[], Any],
-        e_feat_gen: Callable[[], Any],
-        g_feat_gen: Callable[[], Any],
-        attribute_name: str = 'features'
+    n_nodes: Union[int, Callable[[], int]],
+    theta: int,
+    n_feat_gen: Callable[[], Any],
+    e_feat_gen: Callable[[], Any],
+    g_feat_gen: Callable[[], Any],
+    attribute_name: str = "features",
 ) -> Generator[GraphType, None, None]:
     def _resolve(x):
         if callable(x):
@@ -29,21 +35,21 @@ def random_graph_generator(
         g = nx.geographical_threshold_graph(n_nodes, _theta)
         dg = nx.DiGraph()
         dg.add_edges_from(g.edges)
-        add_features(dg,
-                     n_feat_gen,
-                     e_feat_gen,
-                     g_feat_gen,
-                     attribute_name=attribute_name)
+        add_features(
+            dg, n_feat_gen, e_feat_gen, g_feat_gen, attribute_name=attribute_name
+        )
         yield dg
 
 
-def add_features(g: GraphType,
-                 n_feat_gen: Callable[[], Any],
-                 e_feat_gen: Callable[[], Any],
-                 g_feat_gen: Callable[[], Any],
-                 attribute_name: str = 'features'):
-    """
-    Add features to a graph
+def add_features(
+    g: GraphType,
+    n_feat_gen: Callable[[], Any],
+    e_feat_gen: Callable[[], Any],
+    g_feat_gen: Callable[[], Any],
+    attribute_name: str = "features",
+):
+    """Add features to a graph.
+
     :param g:
     :param n_feat_gen:
     :param e_feat_gen:
@@ -56,7 +62,7 @@ def add_features(g: GraphType,
     for _, _, edata in g.edges(data=True):
         edata[attribute_name] = e_feat_gen()
 
-    if not hasattr(g, 'data'):
+    if not hasattr(g, "data"):
         g.data = {}
     g.data.update({attribute_name: g_feat_gen()})
 
@@ -64,22 +70,21 @@ def add_features(g: GraphType,
 
 
 def random_input_output_graphs(
-        n_nodes: Union[Callable[[], int], int],
-        theta: int,
-        n_feat_gen0: Callable[[], Any],
-        e_feat_gen0: Callable[[], Any],
-        g_feat_gen0: Callable[[], Any],
-        n_feat_gen1: Callable[[], Any],
-        e_feat_gen1: Callable[[], Any],
-        g_feat_gen1: Callable[[], Any],
-        input_attr_name: str = 'features',
-        target_attr_name: str = 'features',
-        do_copy: bool = True) \
-        -> Generator[Tuple[GraphType, GraphType], None, None]:
-    """
-    Create a generator of randomized input and target graphs. Randomly attach node, edge,
-    or global features using the provided generators. Global attributes can be found
-    on using `graph.data['features']`.
+    n_nodes: Union[Callable[[], int], int],
+    theta: int,
+    n_feat_gen0: Callable[[], Any],
+    e_feat_gen0: Callable[[], Any],
+    g_feat_gen0: Callable[[], Any],
+    n_feat_gen1: Callable[[], Any],
+    e_feat_gen1: Callable[[], Any],
+    g_feat_gen1: Callable[[], Any],
+    input_attr_name: str = "features",
+    target_attr_name: str = "features",
+    do_copy: bool = True,
+) -> Generator[Tuple[GraphType, GraphType], None, None]:
+    """Create a generator of randomized input and target graphs. Randomly
+    attach node, edge, or global features using the provided generators. Global
+    attributes can be found on using `graph.data['features']`.
 
     :param n_nodes: number of nodes or a generator to return the number of nodes
     :param theta: threshold branching factor (lower means more connected, 1000 is trees)
@@ -95,7 +100,9 @@ def random_input_output_graphs(
     """
 
     if do_copy is False and input_attr_name == target_attr_name:
-        raise ValueError("Input and target attribute names cannot be equal when do_copy=False.")
+        raise ValueError(
+            "Input and target attribute names cannot be equal when do_copy=False."
+        )
 
     def make_target(g: GraphType) -> GraphType:
         if do_copy:
@@ -109,16 +116,18 @@ def random_input_output_graphs(
             n_feat_gen1,
             e_feat_gen1,
             g_feat_gen1,
-            attribute_name=target_attr_name
+            attribute_name=target_attr_name,
         )
         return g_copy
 
-    gen = random_graph_generator(n_nodes,
-                                 theta,
-                                 n_feat_gen0,
-                                 e_feat_gen0,
-                                 g_feat_gen0,
-                                 attribute_name=input_attr_name)
+    gen = random_graph_generator(
+        n_nodes,
+        theta,
+        n_feat_gen0,
+        e_feat_gen0,
+        g_feat_gen0,
+        attribute_name=input_attr_name,
+    )
     for input_g in gen:
         target_g = make_target(input_g)
         if do_copy:
@@ -128,11 +137,10 @@ def random_input_output_graphs(
 
 
 class GraphDataset(Dataset):
-    """Dataset to hold graphs"""
+    """Dataset to hold graphs."""
 
     def __init__(self, graphs: List[GraphType]):
-        """
-        Construct a graph dataset
+        """Construct a graph dataset.
 
         :param graphs: list of networkx graphs
         """
@@ -146,26 +154,26 @@ class GraphDataset(Dataset):
 
 
 class GraphDataLoader(DataLoader):
-
-    def __init__(self, *args,
-                 **kwargs):
-        _kwargs = {'collate_fn': self.collate_graphs}
+    def __init__(self, *args, **kwargs):
+        _kwargs = {"collate_fn": self.collate_graphs}
         _kwargs.update(kwargs)
         super().__init__(*args, **_kwargs)
 
     @staticmethod
-    def collate_graphs(graphs: List[GraphType], ) -> GraphTuple:
+    def collate_graphs(graphs: List[GraphType],) -> GraphTuple:
         return list(graphs)
+
 
 # TODO: this produces batches of variable sizes, which may become an issue on smaller GPUs
 class GraphTupleDataLoader(DataLoader):
-
-    def __init__(self, *args,
-                 feature_key: str = 'features',
-                 global_attr_key: str = 'data',
-                 **kwargs):
-        """
-        DataLoader for graphs. Automatic batching results in batching of
+    def __init__(
+        self,
+        *args,
+        feature_key: str = "features",
+        global_attr_key: str = "data",
+        **kwargs
+    ):
+        """DataLoader for graphs. Automatic batching results in batching of
         graphs into single GraphTuple instances.
 
         Example usage:
@@ -180,10 +188,11 @@ class GraphTupleDataLoader(DataLoader):
         """
         self._feature_key = feature_key
         self._global_attr_key = global_attr_key
-        _kwargs = {'collate_fn': self.collate_graphs_to_graph_tuple}
+        _kwargs = {"collate_fn": self.collate_graphs_to_graph_tuple}
         _kwargs.update(kwargs)
         super().__init__(*args, **_kwargs)
 
-    def collate_graphs_to_graph_tuple(self, graphs: List[GraphType], ) -> GraphTuple:
-        return to_graph_tuple(graphs, feature_key=self._feature_key,
-                              global_attr_key=self._global_attr_key)
+    def collate_graphs_to_graph_tuple(self, graphs: List[GraphType],) -> GraphTuple:
+        return to_graph_tuple(
+            graphs, feature_key=self._feature_key, global_attr_key=self._global_attr_key
+        )

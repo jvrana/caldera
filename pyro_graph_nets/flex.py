@@ -1,13 +1,15 @@
-from typing import Tuple, Any, Dict, Type
-import torch
 from functools import wraps
+from typing import Any
+from typing import Dict
+from typing import Tuple
+from typing import Type
+
+import torch
 
 
-class FlexDim(object):
-
+class FlexDim:
     def __init__(self, pos: int = 0, dim: int = 1):
-        """
-        Flexible dimension to be used in conjunction with `FlexBlock`
+        """Flexible dimension to be used in conjunction with `FlexBlock`
 
         :param pos: position of the input arguments that contains the input data
         :param dim: dimension to use for the input shape
@@ -20,7 +22,6 @@ class FlexDim(object):
 
 
 class FlexBlock(torch.nn.Module):
-
     def __init__(self, module_fn, *args, **kwargs):
         super().__init__()
         self.module = module_fn
@@ -51,12 +52,11 @@ class FlexBlock(torch.nn.Module):
         return self.resolved_module(*args, **kwargs)
 
 
-class Flex(object):
+class Flex:
     d = FlexDim
 
     def __init__(self, module_type: Type[torch.nn.Module]):
-        """
-        Initialize a module as a FlexBlock with flexible dimensions.
+        """Initialize a module as a FlexBlock with flexible dimensions.
 
         Usage:
 
@@ -71,8 +71,7 @@ class Flex(object):
         self.__call__ = wraps(module_type.__init__)(self.__class__.__call__)
 
     def __call__(self, *args, **kwargs) -> torch.nn.Module:
-        """
-        Initialize the flexible module.
+        """Initialize the flexible module.
 
         :param args: the initialization arguments
         :param kwargs: the initialization keyword arguments

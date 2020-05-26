@@ -1,17 +1,32 @@
-from typing import Tuple, Any, Dict
-from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock, MLP, Aggregator
-from pyro_graph_nets.models import GraphEncoder, GraphNetwork
-import torch
+from typing import Any
+from typing import Dict
+from typing import Tuple
+
 import numpy as np
-from pyro_graph_nets.utils.data import random_input_output_graphs, GraphDataLoader, GraphDataset
-from pyro_graph_nets.utils.graph_tuple import to_graph_tuple, cat_gt, print_graph_tuple_shape, validate_gt
-from pyro_graph_nets.flex import Flex, FlexBlock, FlexDim
-from flaky import flaky
 import pytest
+import torch
+from flaky import flaky
+
+from pyro_graph_nets.blocks import Aggregator
+from pyro_graph_nets.blocks import EdgeBlock
+from pyro_graph_nets.blocks import GlobalBlock
+from pyro_graph_nets.blocks import MLP
+from pyro_graph_nets.blocks import NodeBlock
+from pyro_graph_nets.flex import Flex
+from pyro_graph_nets.flex import FlexBlock
+from pyro_graph_nets.flex import FlexDim
+from pyro_graph_nets.models import GraphEncoder
+from pyro_graph_nets.models import GraphNetwork
+from pyro_graph_nets.utils.data import GraphDataLoader
+from pyro_graph_nets.utils.data import GraphDataset
+from pyro_graph_nets.utils.data import random_input_output_graphs
+from pyro_graph_nets.utils.graph_tuple import cat_gt
+from pyro_graph_nets.utils.graph_tuple import print_graph_tuple_shape
+from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
+from pyro_graph_nets.utils.graph_tuple import validate_gt
 
 
-class TestFlexBlock(object):
-
+class TestFlexBlock:
     def test_flex_block(self):
         flex_linear = Flex(torch.nn.Linear)
         model = flex_linear(Flex.d(), 11)
@@ -20,11 +35,12 @@ class TestFlexBlock(object):
         model(x)
         print(model)
 
+
 def graph_generator(
-        n_nodes: Tuple[int, int],
-        n_features: Tuple[int, int],
-        e_features: Tuple[int, int],
-        g_features: Tuple[int, int]
+    n_nodes: Tuple[int, int],
+    n_features: Tuple[int, int],
+    e_features: Tuple[int, int],
+    g_features: Tuple[int, int],
 ):
     gen = random_input_output_graphs(
         lambda: np.random.randint(*n_nodes),
@@ -35,14 +51,15 @@ def graph_generator(
         lambda: np.random.uniform(1, 10, n_features[1]),
         lambda: np.random.uniform(1, 10, e_features[1]),
         lambda: np.random.uniform(1, 10, g_features[1]),
-        input_attr_name='features',
-        target_attr_name='target',
-        do_copy=False
+        input_attr_name="features",
+        target_attr_name="target",
+        do_copy=False,
     )
     return gen
 
-@pytest.mark.parametrize('n_graphs', [1, 10, 100, 500])
-@pytest.mark.parametrize('key', ['features', 'target'])
+
+@pytest.mark.parametrize("n_graphs", [1, 10, 100, 500])
+@pytest.mark.parametrize("key", ["features", "target"])
 def test_generator(n_graphs, key):
     """GraphTuples should always be valid."""
     gen = graph_generator((30, 50), (10, 1), (9, 1), (8, 1))
@@ -65,63 +82,47 @@ def test_validate_data_loader():
     loader = GraphDataLoader(dataset, shuffle=True, batch_size=100)
     for g in loader:
         input_gt = to_graph_tuple(g)
-        target_gt = to_graph_tuple(g, feature_key='target')
+        target_gt = to_graph_tuple(g, feature_key="target")
         validate_gt(input_gt)
         validate_gt(target_gt)
 
 
-class MetaTest(object):
-
+class MetaTest:
     def generator(self, n_nodes=(2, 20)):
-        return graph_generator(
-            n_nodes, (10, 1), (5, 2), (1, 3)
-        )
+        return graph_generator(n_nodes, (10, 1), (5, 2), (1, 3))
 
     def input_target(self, n_nodes=(2, 20)):
         gen = self.generator(n_nodes)
         graphs = [next(gen) for _ in range(100)]
         assert graphs
         input_gt = to_graph_tuple(graphs)
-        target_gt = to_graph_tuple(graphs, feature_key='target')
+        target_gt = to_graph_tuple(graphs, feature_key="target")
         return input_gt, target_gt
 
 
 class TestFlexibleModel(MetaTest):
-
-
     def test_flex_encoder(self):
         input_gt, target_gt = self.input_target()
         encoder = GraphEncoder(
             EdgeBlock(FlexBlock(MLP, FlexDim(), 16, 16), independent=True),
             NodeBlock(FlexBlock(MLP, FlexDim(), 16, 16), independent=True),
-            None
+            None,
         )
         print(encoder)
 
         encoder(input_gt)
 
-
     def test_flex_network_0(self):
         input_gt, target_gt = self.input_target()
         FlexMLP = Flex(MLP)
         network = GraphNetwork(
             EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=False),
-            NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=False, edge_aggregator=Aggregator('mean')),
-            None
-        )
-        print(network)
-        network(input_gt)
-        print(network)
-
-
-    def test_flex_network_0(self):
-        input_gt, target_gt = self.input_target()
-        FlexMLP = Flex(MLP)
-        network = GraphNetwork(
-            EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=False),
-            NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=False, edge_aggregator=Aggregator('mean')),
-            GlobalBlock(FlexMLP(Flex.d(), 16, 2), independent=False, edge_aggregator=Aggregator('add'),
-                        node_aggregator=Aggregator('mean'))
+            NodeBlock(
+                FlexMLP(Flex.d(), 16, 16),
+                independent=False,
+                edge_aggregator=Aggregator("mean"),
+            ),
+            None,
         )
         print(network)
         network(input_gt)
@@ -129,33 +130,35 @@ class TestFlexibleModel(MetaTest):
 
 
 class EncodeProcessDecode(torch.nn.Module):
-
     def __init__(self):
         super().__init__()
         FlexMLP = Flex(MLP)
         self.encoder = GraphEncoder(
             EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
             NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
-            GlobalBlock(FlexMLP(Flex.d(), 16, 16), independent=True)
+            GlobalBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
         )
 
         # note that core should have the same output dimensions as the encoder
         self.core = GraphNetwork(
-            EdgeBlock(FlexMLP(Flex.d(), 16, 16),
-                      independent=False),
-            NodeBlock(FlexMLP(Flex.d(), 16, 16),
-                      independent=False,
-                      edge_aggregator=Aggregator('mean')),
-            GlobalBlock(FlexMLP(Flex.d(), 16, 16),
-                        independent=False,
-                        edge_aggregator=Aggregator('mean'),
-                        node_aggregator=Aggregator('mean'))
+            EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=False),
+            NodeBlock(
+                FlexMLP(Flex.d(), 16, 16),
+                independent=False,
+                edge_aggregator=Aggregator("mean"),
+            ),
+            GlobalBlock(
+                FlexMLP(Flex.d(), 16, 16),
+                independent=False,
+                edge_aggregator=Aggregator("mean"),
+                node_aggregator=Aggregator("mean"),
+            ),
         )
 
         self.decoder = GraphEncoder(
             EdgeBlock(FlexMLP(Flex.d(), 16, 2), independent=True),
             NodeBlock(FlexMLP(Flex.d(), 16, 1), independent=True),
-            GlobalBlock(FlexMLP(Flex.d(), 16, 3), independent=True)
+            GlobalBlock(FlexMLP(Flex.d(), 16, 3), independent=True),
         )
 
         self.output_transform = GraphEncoder(
@@ -178,7 +181,6 @@ class EncodeProcessDecode(torch.nn.Module):
 
 
 class TestFlexEncodeProcessDecode(MetaTest):
-
     @flaky(max_runs=10, min_passes=10)
     def test_forward(self):
         input_gt, target_gt = self.input_target()
@@ -186,9 +188,7 @@ class TestFlexEncodeProcessDecode(MetaTest):
         model(input_gt, 10)
 
     def test_forward_with_data_loader(self):
-        generator = graph_generator(
-            (2, 25), (10, 1), (5, 2), (1, 3)
-        )
+        generator = graph_generator((2, 25), (10, 1), (5, 2), (1, 3))
 
         graphs = [next(generator) for _ in range(1000)]
 
@@ -196,12 +196,9 @@ class TestFlexEncodeProcessDecode(MetaTest):
         model = EncodeProcessDecode()
 
         # prime the model
-        input_gt = to_graph_tuple([dataset[0]], feature_key='features')
+        input_gt = to_graph_tuple([dataset[0]], feature_key="features")
 
-        try:
-            validate_gt(input_gt)
-        except:
-            print(input_gt)
+        validate_gt(input_gt)
         model(input_gt, 10)
 
     def test_loss(self):
@@ -212,7 +209,7 @@ class TestFlexEncodeProcessDecode(MetaTest):
         print_graph_tuple_shape(target_gt)
 
         criterion = torch.nn.MSELoss()
-        loss = 0.
+        loss = 0.0
         loss += criterion(outputs[-1].node_attr, target_gt.node_attr)
         loss += criterion(outputs[-1].edge_attr, target_gt.edge_attr)
         loss += criterion(outputs[-1].global_attr, target_gt.global_attr)
@@ -220,9 +217,7 @@ class TestFlexEncodeProcessDecode(MetaTest):
 
     # TODO: demonstrate cuda training
     def test_training(self):
-        generator = graph_generator(
-            (2, 25), (10, 1), (5, 2), (1, 3)
-        )
+        generator = graph_generator((2, 25), (10, 1), (5, 2), (1, 3))
 
         graphs = [next(generator) for _ in range(1000)]
 
@@ -231,27 +226,27 @@ class TestFlexEncodeProcessDecode(MetaTest):
         model = EncodeProcessDecode()
 
         # prime the model
-        input_gt = to_graph_tuple([dataset[0]], feature_key='features')
+        input_gt = to_graph_tuple([dataset[0]], feature_key="features")
         model(input_gt, 10)
 
         optimizer = torch.optim.Adam(lr=0.001, params=model.parameters())
         criterion = torch.nn.MSELoss()
 
         def loss_fn(outputs, target_gt):
-            loss = 0.
+            loss = 0.0
             loss += criterion(outputs[-1].node_attr, target_gt.node_attr)
             loss += criterion(outputs[-1].edge_attr, target_gt.edge_attr)
             loss += criterion(outputs[-1].global_attr, target_gt.global_attr)
             return loss
 
-        running_loss = 0.
+        running_loss = 0.0
         num_epochs = 10
         num_steps = 10
         for epoch in range(num_epochs):
             # min batch
             for batch_ndx, bg in enumerate(loader):
-                input_gt = to_graph_tuple(bg, feature_key='features')
-                target_gt = to_graph_tuple(bg, feature_key='target')
+                input_gt = to_graph_tuple(bg, feature_key="features")
+                target_gt = to_graph_tuple(bg, feature_key="target")
 
                 validate_gt(input_gt)
                 validate_gt(target_gt)

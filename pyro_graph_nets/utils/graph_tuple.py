@@ -1,28 +1,42 @@
 # GraphTuple
 from collections import namedtuple
-from typing import Callable, List, Tuple
-import torch
-import numpy as np
-import networkx as nx
 from functools import partial
+from typing import Callable
+from typing import List
+from typing import Tuple
 
-GraphTuple = namedtuple('GraphTuple', [
-    'node_attr',    # node level attributes
-    'edge_attr',    # edge level attributes
-    'global_attr',  # global level attributes
-    'edges',        # node-to-node connectivity
-    'node_indices', # tensor where each element indicates the index of the graph the node_attr belongs to
-    'edge_indices'  # tensor where each element indicates the index of the graph that the edge_attr and edges belong to.
-])
+import networkx as nx
+import numpy as np
+import torch
 
-def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', global_attr_key: str = 'data') -> GraphTuple:
-    """
-    Convert a list og networkx graphs into a GraphTuple. 
-    
-    :param graphs: list of graphs 
+GraphTuple = namedtuple(
+    "GraphTuple",
+    [
+        "node_attr",  # node level attributes
+        "edge_attr",  # edge level attributes
+        "global_attr",  # global level attributes
+        "edges",  # node-to-node connectivity
+        "node_indices",  # tensor where each element indicates the index of the graph the node_attr belongs to
+        "edge_indices",
+        (
+            # tensor where each element indicates the index of the graph that the edge_attr and edges belong to.
+        ),
+    ],
+)
+
+
+def to_graph_tuple(
+    graphs: List[nx.DiGraph],
+    feature_key: str = "features",
+    global_attr_key: str = "data",
+) -> GraphTuple:
+    """Convert a list og networkx graphs into a GraphTuple.
+
+    :param graphs: list of graphs
     :param feature_key: key to find the node, edge, and global features
     :param global_attr_key: attribute on the NetworkX graph to find the global data (default: 'data')
-    :return: GraphTuple, a namedtuple of ['node_attr', 'edge_attr', 'global_attr', 'edges', 'node_inices', 'edge_indices']
+    :return: GraphTuple, a namedtuple of ['node_attr', 'edge_attr', 'global_attr',
+        'edges', 'node_inices', 'edge_indices']
     """
     senders = []
     receivers = []
@@ -41,13 +55,13 @@ def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', glob
         nodes = list(graph.nodes(data=True))
         edges = list(graph.edges(data=True))
 
-        new_nodes = list(range(
-            len(node_attributes),
-            len(node_attributes) + graph.number_of_nodes()))
+        new_nodes = list(
+            range(len(node_attributes), len(node_attributes) + graph.number_of_nodes())
+        )
         ndict = dict(zip([n[0] for n in nodes], new_nodes))
 
         if not hasattr(graph, global_attr_key):
-            global_attributes.append([1.])
+            global_attributes.append([1.0])
         else:
             global_attributes.append(graph.data[feature_key])
         for node, ndata in nodes:
@@ -63,14 +77,16 @@ def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', glob
         if not arr:
             return []
         return np.vstack(arr)
+
     node_attr = torch.tensor(vstack(node_attributes), dtype=torch.float)
     edge_attr = torch.tensor(vstack(edge_attributes), dtype=torch.float)
     edges = torch.tensor(np.vstack([senders, receivers]).T, dtype=torch.long)
     global_attr = torch.tensor(vstack(global_attributes), dtype=torch.float).detach()
     node_indices = torch.tensor(node_indices, dtype=torch.long).detach()
     edge_indices = torch.tensor(edge_indices, dtype=torch.long).detach()
-    return GraphTuple(node_attr, edge_attr, global_attr, edges, node_indices,
-                      edge_indices)
+    return GraphTuple(
+        node_attr, edge_attr, global_attr, edges, node_indices, edge_indices
+    )
 
 
 def batch(a, batch_size):
@@ -86,15 +102,15 @@ def batch(a, batch_size):
 
 
 def collate_tuples(tuples: List[Tuple], func: Callable[[List[Tuple]], Tuple]):
-    """
-    Collate elements of many tuples using a function. All of the first elements
-    for all the tuples will be collated using the function, then all of the second
-    elements of all tuples, and so on.
+    """Collate elements of many tuples using a function. All of the first
+    elements for all the tuples will be collated using the function, then all
+    of the second elements of all tuples, and so on.
 
     :param tuples: list of tuples
     :param func: callable
     :return: tuple of same type
     """
+
     def f(x):
         if x is None:
             return None
@@ -103,16 +119,18 @@ def collate_tuples(tuples: List[Tuple], func: Callable[[List[Tuple]], Tuple]):
 
     t = type(tuples[0])
     if t is tuple:
+
         def t(*args):
             return tuple(args)
 
-    return t(
-        *[f(x) for x in zip(*tuples)]
-    )
+    return t(*[f(x) for x in zip(*tuples)])
 
 
 def replace_key(graph_tuple, data: dict):
-    """Replace the values of the graph tuple. DOES NOT REPLACE IN PLACE."""
+    """Replace the values of the graph tuple.
+
+    DOES NOT REPLACE IN PLACE.
+    """
     values = []
     for k, v in zip(graph_tuple._fields, graph_tuple):
         if k in data:
@@ -122,20 +140,20 @@ def replace_key(graph_tuple, data: dict):
 
 
 def apply_to_tuple(x, func: Callable[[List[Tuple]], Tuple]):
-    """Apply function to each element of the tuple"""
-    return type(x)(
-        *[func(x) for x in x]
-    )
+    """Apply function to each element of the tuple."""
+    return type(x)(*[func(x) for x in x])
 
 
 def print_graph_tuple_shape(graph_tuple):
     for field, x in zip(graph_tuple._fields, graph_tuple):
-        print(field, '  ', x.shape)
+        print(field, "  ", x.shape)
 
 
 def cat_gt(*gts: Tuple[GraphTuple, ...]) -> GraphTuple:
-    """Concatenate graph tuples along dimension=1. Edges, node idx and edge idx
-    are simply copied over."""
+    """Concatenate graph tuples along dimension=1.
+
+    Edges, node idx and edge idx are simply copied over.
+    """
     cat = partial(torch.cat, dim=1)
     return GraphTuple(
         cat([gt.node_attr for gt in gts]),
@@ -143,7 +161,7 @@ def cat_gt(*gts: Tuple[GraphTuple, ...]) -> GraphTuple:
         cat([gt.global_attr for gt in gts]),
         gts[0].edges,
         gts[0].node_indices,
-        gts[0].edge_indices
+        gts[0].edge_indices,
     )
 
 
@@ -151,25 +169,35 @@ def gt_to_device(x: Tuple, device):
     for v in x:
         x.to(device)
 
+
 class InvalidGraphTuple(Exception):
     pass
+
 
 def validate_gt(gt: GraphTuple):
     if not isinstance(gt, GraphTuple):
         raise InvalidGraphTuple("{} is not a {}".format(gt, GraphTuple))
 
-
     if not gt.edge_attr.shape[0] == gt.edges.shape[0]:
-        raise InvalidGraphTuple("Edge attribute shape {} does not match edges shape {}".format(gt.edge_attr.shape, gt.edges.shape))
+        raise InvalidGraphTuple(
+            "Edge attribute shape {} does not match edges shape {}".format(
+                gt.edge_attr.shape, gt.edges.shape
+            )
+        )
 
     if not gt.edge_attr.shape[0] == gt.edge_indices.shape[0]:
         raise InvalidGraphTuple(
-            "Edge attribute shape {} does not match edge idx shape {}".format(gt.edge_attr.shape, gt.edge_indices.shape))
+            "Edge attribute shape {} does not match edge idx shape {}".format(
+                gt.edge_attr.shape, gt.edge_indices.shape
+            )
+        )
 
     if not gt.node_attr.shape[0] == gt.node_indices.shape[0]:
         raise InvalidGraphTuple(
-            "Node attribute shape {} does not match node idx shape {}".format(gt.node_attr.shape,
-                                                                              gt.node_indices.shape))
+            "Node attribute shape {} does not match node idx shape {}".format(
+                gt.node_attr.shape, gt.node_indices.shape
+            )
+        )
 
     # edges cannot refer to non-existent nodes
     if not gt.edges.max() < gt.node_attr.shape[0]:
@@ -180,4 +208,6 @@ def validate_gt(gt: GraphTuple):
         )
 
     if not gt.edges.min() >= 0:
-        raise InvalidGraphTuple("Node index must be greater than 0, not {}".format(gt.edges.min()))
+        raise InvalidGraphTuple(
+            "Node index must be greater than 0, not {}".format(gt.edges.min())
+        )

@@ -1,12 +1,21 @@
-from pyro_graph_nets.utils import generate_networkx_graphs
-from pyro_graph_nets.utils.graph_tuple import to_graph_tuple, print_graph_tuple_shape
 from typing import Tuple
+
 import numpy as np
-from pyro_graph_nets.models import EncoderProcessDecoder
-from pyro_graph_nets.models import gt_wrap_replace
-from pyro_graph_nets.blocks import MLP, EdgeBlock, NodeBlock, GlobalBlock, Aggregator
-from pyro_graph_nets.models import GraphNetwork, GraphEncoder, cat_gt
 import pytest
+
+from pyro_graph_nets.blocks import Aggregator
+from pyro_graph_nets.blocks import EdgeBlock
+from pyro_graph_nets.blocks import GlobalBlock
+from pyro_graph_nets.blocks import MLP
+from pyro_graph_nets.blocks import NodeBlock
+from pyro_graph_nets.models import cat_gt
+from pyro_graph_nets.models import EncoderProcessDecoder
+from pyro_graph_nets.models import GraphEncoder
+from pyro_graph_nets.models import GraphNetwork
+from pyro_graph_nets.models import gt_wrap_replace
+from pyro_graph_nets.utils import generate_networkx_graphs
+from pyro_graph_nets.utils.graph_tuple import print_graph_tuple_shape
+from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
 
 
 seed = 2
@@ -14,7 +23,9 @@ rand = np.random.RandomState(seed=seed)
 
 
 def generate_graph_batch(num_train, n_nodes: Tuple[int, int], theta: int = 20):
-    input_graphs, target_graphs, graphs = generate_networkx_graphs(rand, num_train, n_nodes, theta)
+    input_graphs, target_graphs, graphs = generate_networkx_graphs(
+        rand, num_train, n_nodes, theta
+    )
     return to_graph_tuple(input_graphs), to_graph_tuple(target_graphs)
 
 
@@ -28,18 +39,18 @@ def test_generate_graphs():
     print_graph_tuple_shape(target_gt)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def input_target():
     input_gt, target_gt = generate_graph_batch(100, (2, 20))
     return input_gt, target_gt
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def encoder():
     encoder_model = GraphEncoder(
         EdgeBlock(MLP(1, 1), independent=True),
         NodeBlock(MLP(5, 16, 5), independent=True),
-        None
+        None,
     )
     return encoder_model
 
@@ -51,7 +62,7 @@ def test_encoder(encoder, input_target):
     print_graph_tuple_shape(out)
 
 
-@pytest.mark.parametrize('steps', [1, 5])
+@pytest.mark.parametrize("steps", [1, 5])
 def test_core(input_target, steps):
     input_gt, target_gt = input_target
 
@@ -72,19 +83,19 @@ def test_core(input_target, steps):
     encoder = GraphEncoder(
         EdgeBlock(MLP(*enc_e), independent=True),
         NodeBlock(MLP(*enc_v), independent=True),
-        None
+        None,
     )
 
     core = GraphNetwork(
         EdgeBlock(MLP(*core_e), independent=False),
-        NodeBlock(MLP(*core_v), independent=False, edge_aggregator=Aggregator('mean')),
-        None
+        NodeBlock(MLP(*core_v), independent=False, edge_aggregator=Aggregator("mean")),
+        None,
     )
 
     decoder = GraphEncoder(
         EdgeBlock(MLP(*enc_e), independent=True),
         NodeBlock(MLP(*enc_v), independent=True),
-        None
+        None,
     )
 
     #######
@@ -105,5 +116,3 @@ def test_core(input_target, steps):
         latent = core(core_input)
         decoded = decoder(latent)
         output.append(decoded)
-
-

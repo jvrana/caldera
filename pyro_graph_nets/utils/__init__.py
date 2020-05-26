@@ -1,12 +1,14 @@
-import numpy as np
-import networkx as nx
-import itertools
 import collections
-from scipy import spatial
-from typing import Callable, Generator, Any, Tuple, Union
+import itertools
+from typing import Any
+from typing import Callable
+from typing import Generator
+from typing import Tuple
+from typing import Union
 
 import networkx as nx
 import numpy as np
+from scipy import spatial
 
 GraphType = Union[nx.DiGraph, nx.Graph]
 
@@ -37,11 +39,7 @@ def get_node_dict(graph, attr):
     return {k: v[attr] for k, v in graph.nodes.items()}
 
 
-def generate_graph(rand,
-                   num_nodes_min_max,
-                   dimensions=2,
-                   theta=1000.0,
-                   rate=1.0):
+def generate_graph(rand, num_nodes_min_max, dimensions=2, theta=1000.0, rate=1.0):
     """Creates a connected graph.
 
     The graphs are geographic threshold graphs, but with added edges via a
@@ -69,7 +67,8 @@ def generate_graph(rand,
     pos = dict(enumerate(pos_array))
     weight = dict(enumerate(rand.exponential(rate, size=num_nodes)))
     geo_graph = nx.geographical_threshold_graph(
-        num_nodes, theta, pos=pos, weight=weight)
+        num_nodes, theta, pos=pos, weight=weight
+    )
 
     # Create minimum spanning tree across geo_graph's nodes.
     distances = spatial.distance.squareform(spatial.distance.pdist(pos_array))
@@ -86,8 +85,9 @@ def generate_graph(rand,
     combined_graph = nx.compose_all((mst_graph, geo_graph.copy()))
     # Put all distance weights into edge attributes.
     for i, j in combined_graph.edges():
-        combined_graph.get_edge_data(i, j).setdefault(DISTANCE_WEIGHT_NAME,
-                                                      distances[i, j])
+        combined_graph.get_edge_data(i, j).setdefault(
+            DISTANCE_WEIGHT_NAME, distances[i, j]
+        )
     return combined_graph, mst_graph, geo_graph
 
 
@@ -115,9 +115,9 @@ def add_shortest_path(rand, graph, min_length=1):
         # This is for compatibility with newer networkx.
         lengths = list(nx.all_pairs_shortest_path_length(graph))
     for x, yy in lengths:
-        for y, l in yy.items():
-            if l >= min_length:
-                pair_to_length_dict[x, y] = l
+        for y, length in yy.items():
+            if length >= min_length:
+                pair_to_length_dict[x, y] = length
     if max(pair_to_length_dict.values()) < min_length:
         raise ValueError("All shortest paths are below the minimum length")
     # The node pairs which exceed the minimum length.
@@ -136,7 +136,8 @@ def add_shortest_path(rand, graph, min_length=1):
     i = rand.choice(len(node_pairs), p=probabilities)
     start, end = node_pairs[i]
     path = nx.shortest_path(
-        graph, source=start, target=end, weight=DISTANCE_WEIGHT_NAME)
+        graph, source=start, target=end, weight=DISTANCE_WEIGHT_NAME
+    )
 
     # Creates a directed graph, to store the directed path from start to end.
     digraph = graph.to_directed()
@@ -183,18 +184,22 @@ def graph_to_input_target(graph):
     solution_length = 0
     for node_index, node_feature in graph.nodes(data=True):
         input_graph.add_node(
-            node_index, features=create_feature(node_feature, input_node_fields))
+            node_index, features=create_feature(node_feature, input_node_fields)
+        )
         target_node = to_one_hot(
-            create_feature(node_feature, target_node_fields).astype(int), 2)[0]
+            create_feature(node_feature, target_node_fields).astype(int), 2
+        )[0]
         target_graph.add_node(node_index, features=target_node)
         solution_length += int(node_feature["solution"])
     solution_length /= graph.number_of_nodes()
 
     for receiver, sender, features in graph.edges(data=True):
         input_graph.add_edge(
-            sender, receiver, features=create_feature(features, input_edge_fields))
+            sender, receiver, features=create_feature(features, input_edge_fields)
+        )
         target_edge = to_one_hot(
-            create_feature(features, target_edge_fields).astype(int), 2)[0]
+            create_feature(features, target_edge_fields).astype(int), 2
+        )[0]
         target_graph.add_edge(sender, receiver, features=target_edge)
 
     input_graph.graph["features"] = np.array([0.0])
