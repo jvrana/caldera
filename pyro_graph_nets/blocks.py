@@ -10,7 +10,7 @@ from typing import List, Dict
 # TODO: clean interface for removing or adding various blocks
 # TODO: have the NN select the appropriate aggregation!
 # TODO: demonstration of Tensorboard
-
+# TODO: different types of aggregations (source and node?)
 
 class MLPBlock(nn.Module):
     """
@@ -77,11 +77,12 @@ class Aggregator(nn.Module):
 class Block(nn.Module):
 
     def __init__(self, module_dict: Dict[str, nn.Module], independent: bool):
+        super().__init__()
         self._independent = independent
-        self.block_dict = nn.ModuleDict(dict(module_dict))
+        self.block_dict = nn.ModuleDict({name: mod for name, mod in module_dict.items() if mod is not None})
 
 
-class EdgeModel(Block):
+class EdgeBlock(Block):
 
     def __init__(self, input_size: int, layers: List[int], independent: bool):
         super().__init__(
@@ -91,16 +92,17 @@ class EdgeModel(Block):
             independent=independent
         )
 
-    def forward(self, src, dest, edge_attr, u, batch):
+    def forward(self, src, dest, edge_attr, u, node_idx, edge_idx):
         if not self._independent:
             out = torch.cat([src, dest, edge_attr], 1)
         else:
             out = edge_attr
-        return self.block_dict['mlp'](out)
+        results = self.block_dict['mlp'](out)
+        return results
 
 
 # TODO: add global features
-class NodeModel(Block):
+class NodeBlock(Block):
 
     def __init__(self, input_size: int, layers: List[int], independent: bool):
         super().__init__({
@@ -108,10 +110,10 @@ class NodeModel(Block):
             'mlp': MLP(input_size, *layers)
         }, independent=independent)
 
-    def forward(self, v, edge_index, edge_attr, u, barch):
+    def forward(self, v, edge_index, edge_attr, u, node_idx, edge_idx):
         if not self._independent:
             row, col = edge_index
-            aggregated = self.blocks['aggregator'](edge_attr, col, dim=0,
+            aggregated = self.block_dict['aggregator'](edge_attr, col, dim=0,
                                                    dim_size=v.size(0))
             out = torch.cat([aggregated, v], dim=1)
         else:
@@ -119,16 +121,19 @@ class NodeModel(Block):
         return self.block_dict['mlp'](out)
 
 
-class GlobalModel(Block):
+class GlobalBlock(Block):
     def __init__(self, input_size: int, layers: List[int], independent: bool):
         super().__init__({
             'node_aggregator': Aggregator('mean'),
+            'edge_aggregator': Aggregator('mean'),
             'mlp': MLP(input_size, *layers)
         }, independent=independent)
 
-    def forward(self, node_attr, edge_index, edge_attr, u, batch):
+    def forward(self, node_attr, edge_index, edge_attr, u, node_idx, edge_idx):
         if not self._independent:
-            out = torch.cat([u, self.blocks['node_aggregator'](node_attr, batch, dim=0)], dim=1)
+            node_agg = self.block_dict['node_aggregator'](node_attr, node_idx, dim=0)
+            edge_agg = self.block_dict['edge_aggregator'](edge_attr, edge_idx, dim=0)
+            out = torch.cat([u, node_agg, edge_agg], dim=1)
         else:
             out = u
-        return torch.block_dict['mlp'](out)
+        return self.block_dict['mlp'](out)

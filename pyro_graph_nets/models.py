@@ -1,8 +1,20 @@
 from functools import partial
-from pyro_graph_nets.graph_tuple import replace_key, GraphTuple
+from pyro_graph_nets.utils.graph_tuple import replace_key, GraphTuple
 import torch
-from pyro_graph_nets.blocks import NodeModel, EdgeModel, GlobalModel
+from pyro_graph_nets.blocks import NodeBlock, EdgeBlock, GlobalBlock
 from torch import nn
+
+def gt_wrap_replace(func):
+    def forward(gt):
+        v, e, u = func(gt.node_attr, gt.edges.T, gt.edge_attr, gt.global_attr, gt.node_indices, gt.edge_indices)
+        gt = replace_key(gt, {
+            'node_attr': v,
+            'edge_attr': e,
+            'global_attr': u
+        })
+        return gt
+
+    return forward
 
 class GraphAbstractModel(nn.Module):
 
@@ -15,6 +27,8 @@ class GraphAbstractModel(nn.Module):
             'global_model': global_model
         })
         self.reset_parameters()
+        self.forward = gt_wrap_replace(self.forward_helper)
+
 
     def reset_parameters(self):
 
@@ -23,29 +37,30 @@ class GraphAbstractModel(nn.Module):
                 mod.reset_parameters()
 
 
+
+
 class GraphEncoder(GraphAbstractModel):
 
-    def forward(self, x, edge_index, edge_attr=None, u=None, batch=None):
+    def forward_helper(self, node_attr, connectivity, edge_attr=None, u=None, node_idx=None, edge_idx=None):
 
         edge_model = self.blocks['edge_model']
         node_model = self.blocks['node_model']
         global_model = self.blocks['global_model']
 
-        row, col = edge_index
+        row, col = connectivity
 
         if edge_model is not None:
-            edge_attr = edge_model(x[row], x[col], edge_attr, u,
-                                   batch if batch is None else batch[row])
+            edge_attr = edge_model(node_attr[row], node_attr[col], edge_attr, u, node_idx, edge_idx)
         else:
             edge_attr = None
 
         if node_model is not None:
-            node_attr = node_model(x, edge_index, edge_attr, u, batch)
+            node_attr = node_model(node_attr, connectivity, edge_attr, u, node_idx, edge_idx)
         else:
             node_attr = None
 
         if global_model is not None:
-            global_attr = global_model(node_attr, edge_index, edge_attr, u, batch)
+            global_attr = global_model(node_attr, connectivity, edge_attr, u, node_idx, edge_idx)
         else:
             global_attr = torch.zeros_like(u)
 
@@ -54,7 +69,8 @@ class GraphEncoder(GraphAbstractModel):
 
 class GraphNetwork(GraphAbstractModel):
 
-    def forward(self, x, edge_index, edge_attr=None, u=None, batch=None):
+
+    def forward_helper(self, node_attr, edge_index, edge_attr=None, u=None, node_idx=None, edge_idx=None):
         row, col = edge_index
 
         edge_model = self.blocks['edge_model']
@@ -63,8 +79,7 @@ class GraphNetwork(GraphAbstractModel):
 
         if edge_model is not None:
             try:
-                edge_attr = edge_model(x[row], x[col], edge_attr, u,
-                                       batch if batch is None else batch[row])
+                edge_attr = edge_model(node_attr[row], node_attr[col], edge_attr, u, node_idx, edge_idx)
             except RuntimeError as e:
                 raise e
                 raise type(e)('Edge model error: ' + str(e)) from e
@@ -73,32 +88,20 @@ class GraphNetwork(GraphAbstractModel):
 
         if node_model is not None:
             try:
-                node_attr = node_model(x, edge_index, edge_attr, u, batch)
+                node_attr = node_model(node_attr, edge_index, edge_attr, u, node_idx, edge_idx)
             except RuntimeError as e:
                 raise e
                 raise type(e)('Node model error: ' + str(e)) from e
         else:
-            node_attr = torch.zeros_like(x)
+            node_attr = torch.zeros_like(node_attr)
 
         if global_model is not None:
-            global_attr = global_model(node_attr, edge_index, edge_attr, u, batch)
+            global_attr = global_model(node_attr, edge_index, edge_attr, u, node_idx, edge_idx)
         else:
             global_attr = torch.zeros_like(u)
 
         return node_attr, edge_attr, global_attr
 
-
-def gt_wrap_replace(func):
-    def forward(gt):
-        v, e, u = func(gt.node_attr, gt.edges.T, gt.edge_attr, gt.global_attr)
-        replace_key(gt, {
-            'node_attr': v,
-            'edge_attr': e,
-            'global_attr': u
-        })
-        return gt
-
-    return forward
 
 
 def cat_gt(*gts):
@@ -181,20 +184,20 @@ class EncoderProcessDecoder(torch.nn.Module):
         #         v_encoded_size =
 
         self.encoder = GraphEncoder(
-            EdgeModel(e_enc_in, [latent_size, e_enc_out], independent=True),
-            NodeModel(v_enc_in, [latent_size, v_enc_out], independent=True),
+            EdgeBlock(e_enc_in, [latent_size, e_enc_out], independent=True),
+            NodeBlock(v_enc_in, [latent_size, v_enc_out], independent=True),
             None
         )
 
         self.core = GraphNetwork(
-            EdgeModel(e_enc_in * 2, [latent_size, e_enc_out], independent=False),
-            NodeModel(v_enc_in * 2, [latent_size, e_enc_out], independent=False),
+            EdgeBlock(e_enc_in * 2, [latent_size, e_enc_out], independent=False),
+            NodeBlock(v_enc_in * 2, [latent_size, e_enc_out], independent=False),
             None
         )
 
         self.decoder = GraphEncoder(
-            EdgeModel(11, [16, 11], independent=True),
-            NodeModel(32, [16, 11], independent=True),
+            EdgeBlock(11, [16, 11], independent=True),
+            NodeBlock(32, [16, 11], independent=True),
             None
         )
 
