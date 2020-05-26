@@ -93,3 +93,8 @@ def apply_to_tuple(x, func: Callable[[List[Tuple]], Tuple]):
     return type(x)(
         *[func(x) for x in x]
     )
+
+
+def print_graph_tuple_shape(graph_tuple):
+    for field, x in zip(graph_tuple._fields, graph_tuple):
+        print(field, '  ', x.shape)

@@ -1,10 +1,15 @@
 import torch
-from typing import *
-import itertools
-from torch_scatter import scatter_mean
 import torch_scatter
 from torch import nn
 from pyro_graph_nets.utils import pairwise
+from typing import List, Dict
+
+# TODO: rename arguments to v, e, u
+# TODO: incoporate aggregation of global attributes
+# TODO: edge aggregation at global block
+# TODO: clean interface for removing or adding various blocks
+# TODO: have the NN select the appropriate aggregation!
+# TODO: demonstration of Tensorboard
 
 
 class MLPBlock(nn.Module):
@@ -39,7 +44,7 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.blocks(x)
 
-# TODO: have the NN select the appropriate aggregation!
+
 class Aggregator(nn.Module):
     """Aggregation layer"""
 
@@ -93,6 +98,7 @@ class EdgeModel(Block):
             out = edge_attr
         return self.block_dict['mlp'](out)
 
+
 # TODO: add global features
 class NodeModel(Block):
 
@@ -120,9 +126,9 @@ class GlobalModel(Block):
             'mlp': MLP(input_size, *layers)
         }, independent=independent)
 
-    def forward(self, x, edge_index, edge_attr, u, batch):
+    def forward(self, node_attr, edge_index, edge_attr, u, batch):
         if not self._independent:
-            out = torch.cat([u, self.blocks['node_aggregator'](x, batch, dim=0)], dim=1)
+            out = torch.cat([u, self.blocks['node_aggregator'](node_attr, batch, dim=0)], dim=1)
         else:
             out = u
         return torch.block_dict['mlp'](out)
