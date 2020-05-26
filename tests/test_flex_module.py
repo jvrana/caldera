@@ -3,7 +3,7 @@ from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock, MLP, Aggre
 from pyro_graph_nets.models import GraphEncoder, GraphNetwork
 import torch
 import numpy as np
-from pyro_graph_nets.utils.data import random_input_output_graphs
+from pyro_graph_nets.utils.data import random_input_output_graphs, GraphDataLoader, GraphDataset
 from pyro_graph_nets.utils.graph_tuple import to_graph_tuple, cat_gt
 from pyro_graph_nets.flex import Flex, FlexBlock, FlexDim
 
@@ -98,19 +98,19 @@ class TestFlexibleModel(MetaTest):
         print(network)
 
 
-class TestFlexEncodeProcessDecode(MetaTest):
+class EncodeProcessDecode(torch.nn.Module):
 
-    def test_main(self):
+    def __init__(self):
+        super().__init__()
         FlexMLP = Flex(MLP)
-
-        encoder = GraphEncoder(
+        self.encoder = GraphEncoder(
             EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
             NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
             GlobalBlock(FlexMLP(Flex.d(), 16, 16), independent=True)
         )
 
         # note that core should have the same output dimensions as the encoder
-        core = GraphNetwork(
+        self.core = GraphNetwork(
             EdgeBlock(FlexMLP(Flex.d(), 16, 16),
                       independent=False),
             NodeBlock(FlexMLP(Flex.d(), 16, 16),
@@ -122,27 +122,67 @@ class TestFlexEncodeProcessDecode(MetaTest):
                         node_aggregator=Aggregator('mean'))
         )
 
-        decoder = GraphEncoder(
+        self.decoder = GraphEncoder(
             EdgeBlock(FlexMLP(Flex.d(), 16, 1), independent=True),
             NodeBlock(FlexMLP(Flex.d(), 16, 1), independent=True),
             GlobalBlock(FlexMLP(Flex.d(), 16, 1), independent=True)
         )
 
-        output_transform = GraphEncoder(
+        self.output_transform = GraphEncoder(
             EdgeBlock(Flex(torch.nn.Linear)(Flex.d(), 1), independent=True),
             NodeBlock(Flex(torch.nn.Linear)(Flex.d(), 1), independent=True),
             GlobalBlock(Flex(torch.nn.Linear)(Flex.d(), 1), independent=True),
         )
 
-        input_gt, target_gt = self.input_target()
-
-        latent = encoder(input_gt)
+    def forward(self, input_gt, num_steps: int):
+        latent = self.encoder(input_gt)
         latent0 = latent
 
-
-        for step in range(10):
+        output = []
+        for step in range(num_steps):
             core_input = cat_gt(latent0, latent)
-            latent = core(core_input)
-            decoded = output_transform(decoder(latent))
+            latent = self.core(core_input)
+            decoded = self.output_transform(self.decoder(latent))
+            output.append(decoded)
+        return output
 
-        # print(core())
+
+class TestFlexEncodeProcessDecode(MetaTest):
+
+    def test_forward(self):
+        input_gt, target_gt = self.input_target()
+        model = EncodeProcessDecode()
+        model(input_gt, 10)
+
+    def test_training(self):
+        generator = graph_generator(
+            (2, 25), (10, 1), (5, 2), (1, 3)
+        )
+
+        graphs = [next(generator) for _ in range(1000)]
+
+        dataset = GraphDataset(graphs)
+        loader = GraphDataLoader(dataset, batch_size=50, shuffle=True)
+        model = EncodeProcessDecode()
+
+        optimizer = torch.optim.Adam(lr=0.001, params=model.parameters())
+        criterion = torch.nn.BCEWithLogitsLoss()
+
+        running_loss = []
+        num_epochs = 10
+        for epoch in range(num_epochs):
+            # min batch
+            for batch_ndx, bg in enumerate(loader):
+                input_gt = to_graph_tuple(bg, feature_key='features')
+                target_gt = to_graph_tuple(bg, feature_key='target')
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                outputs = model(input_gt)
+                loss = criterion(outputs, target_gt)
+                loss.backward()
+                optimizer.step()
+
+                running_loss += loss.item()
