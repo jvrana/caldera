@@ -15,7 +15,6 @@ GraphTuple = namedtuple('GraphTuple', [
     'edge_indices'  # tensor where each element indicates the index of the graph that the edge_attr and edges belong to.
 ])
 
-
 def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', global_attr_key: str = 'data') -> GraphTuple:
     """
     Convert a list og networkx graphs into a GraphTuple. 
@@ -38,16 +37,25 @@ def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', glob
     for index, graph in enumerate(graphs):
         n_nodes.append(graph.number_of_nodes())
         n_edges.append(graph.number_of_edges())
+
+        nodes = list(graph.nodes(data=True))
+        edges = list(graph.edges(data=True))
+
+        new_nodes = list(range(
+            len(node_attributes),
+            len(node_attributes) + graph.number_of_nodes()))
+        ndict = dict(zip([n[0] for n in nodes], new_nodes))
+
         if not hasattr(graph, global_attr_key):
             global_attributes.append([1.])
         else:
             global_attributes.append(graph.data[feature_key])
-        for node, ndata in sorted(graph.nodes(data=True)):
+        for node, ndata in nodes:
             node_attributes.append(ndata[feature_key])
             node_indices.append(index)
-        for n1, n2, edata in graph.edges(data=True):
-            senders.append(n1)
-            receivers.append(n2)
+        for n1, n2, edata in edges:
+            senders.append(ndict[n1])
+            receivers.append(ndict[n2])
             edge_attributes.append(edata[feature_key])
             edge_indices.append(index)
 
@@ -58,7 +66,7 @@ def to_graph_tuple(graphs: List[nx.DiGraph], feature_key: str = 'features', glob
     node_attr = torch.tensor(vstack(node_attributes), dtype=torch.float)
     edge_attr = torch.tensor(vstack(edge_attributes), dtype=torch.float)
     edges = torch.tensor(np.vstack([senders, receivers]).T, dtype=torch.long)
-    global_attr = torch.tensor(global_attributes, dtype=torch.float).detach()
+    global_attr = torch.tensor(vstack(global_attributes), dtype=torch.float).detach()
     node_indices = torch.tensor(node_indices, dtype=torch.long).detach()
     edge_indices = torch.tensor(edge_indices, dtype=torch.long).detach()
     return GraphTuple(node_attr, edge_attr, global_attr, edges, node_indices,
@@ -137,3 +145,39 @@ def cat_gt(*gts: Tuple[GraphTuple, ...]) -> GraphTuple:
         gts[0].node_indices,
         gts[0].edge_indices
     )
+
+
+def gt_to_device(x: Tuple, device):
+    for v in x:
+        x.to(device)
+
+class InvalidGraphTuple(Exception):
+    pass
+
+def validate_gt(gt: GraphTuple):
+    if not isinstance(gt, GraphTuple):
+        raise InvalidGraphTuple("{} is not a {}".format(gt, GraphTuple))
+
+
+    if not gt.edge_attr.shape[0] == gt.edges.shape[0]:
+        raise InvalidGraphTuple("Edge attribute shape {} does not match edges shape {}".format(gt.edge_attr.shape, gt.edges.shape))
+
+    if not gt.edge_attr.shape[0] == gt.edge_indices.shape[0]:
+        raise InvalidGraphTuple(
+            "Edge attribute shape {} does not match edge idx shape {}".format(gt.edge_attr.shape, gt.edge_indices.shape))
+
+    if not gt.node_attr.shape[0] == gt.node_indices.shape[0]:
+        raise InvalidGraphTuple(
+            "Node attribute shape {} does not match node idx shape {}".format(gt.node_attr.shape,
+                                                                              gt.node_indices.shape))
+
+    # edges cannot refer to non-existent nodes
+    if not gt.edges.max() < gt.node_attr.shape[0]:
+        raise InvalidGraphTuple(
+            "Edges reference node {} which does not exist nodes of size {}".format(
+                gt.edges.max(), gt.node_attr.shape[0]
+            )
+        )
+
+    if not gt.edges.min() >= 0:
+        raise InvalidGraphTuple("Node index must be greater than 0, not {}".format(gt.edges.min()))

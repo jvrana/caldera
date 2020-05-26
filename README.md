@@ -143,6 +143,11 @@ Custom types of aggregation layers
 
 Custom blocks
 
+### Hyperparameter Optimization
+
+* optimization on neural network shape
+* optimization of aggregation methods and options
+
 ### Non-Bayesian Examples
 
 ### Bayesian Graph Neural Nets

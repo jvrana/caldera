@@ -13,6 +13,8 @@ from functools import wraps
 # TODO: demonstration of Tensorboard
 # TODO: different types of aggregations (source and node?)
 
+
+
 class MLPBlock(nn.Module):
     """
     A multilayer perceptron block

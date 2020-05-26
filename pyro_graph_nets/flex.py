@@ -5,16 +5,18 @@ from functools import wraps
 
 class FlexDim(object):
 
-    def __init__(self, pos: int = 0):
+    def __init__(self, pos: int = 0, dim: int = 1):
         """
         Flexible dimension to be used in conjunction with `FlexBlock`
 
-        :param arg_pos: The position of the argument to extract the size `input_args[self.pos].shape[`]`
+        :param pos: position of the input arguments that contains the input data
+        :param dim: dimension to use for the input shape
         """
         self.pos = pos
+        self.dim = dim
 
     def resolve(self, input_args, input_kwargs):
-        return input_args[self.pos].shape[1]
+        return input_args[self.pos].shape[self.dim]
 
 
 class FlexBlock(torch.nn.Module):

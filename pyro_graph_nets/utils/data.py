@@ -157,7 +157,7 @@ class GraphDataLoader(DataLoader):
     def collate_graphs(graphs: List[GraphType], ) -> GraphTuple:
         return list(graphs)
 
-
+# TODO: this produces batches of variable sizes, which may become an issue on smaller GPUs
 class GraphTupleDataLoader(DataLoader):
 
     def __init__(self, *args,
