@@ -4,6 +4,7 @@ import torch
 from pyro_graph_nets.blocks import NodeBlock, EdgeBlock, GlobalBlock
 from torch import nn
 
+
 def gt_wrap_replace(func):
     def forward(gt):
         v, e, u = func(gt.node_attr, gt.edges.T, gt.edge_attr, gt.global_attr, gt.node_indices, gt.edge_indices)
@@ -15,6 +16,7 @@ def gt_wrap_replace(func):
         return gt
 
     return forward
+
 
 class GraphAbstractModel(nn.Module):
 

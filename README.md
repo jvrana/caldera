@@ -28,6 +28,46 @@ make lock
 
 ## Tour
 
+**Flex API**
+
+The `Flex` API allows automatic setting of input dimensions.
+A simple example demonstrates this.
+
+```python
+from pyro_graph_nets.blocks import Flex
+from torch import nn
+from torch import tensor
+
+flex_linear = Flex(nn.Linear)(Flex.d(), 11)
+
+# input size for Linear is unknown until given data
+print(flex_linear)
+
+"""
+FlexBlock()
+"""
+
+x = tensor.randn((10, 55))
+
+flex_linear(x)
+
+"""
+FlexBlock(
+  (resolved_module): Linear(in_features=55, out_features=11, bias=True)
+)
+"""
+```
+
+```python
+from pyro_graph_nets.models import GraphNetwork
+from pyro_graph_nets.blocks import FlexBlock, EdgeBlock, MLP
+model = GraphNetwork(
+    FlexBlock(EdgeBlock, MLP(FlexBlock.dim(), 16, 20))
+)
+```
+
+### Graph Neural Network implementations
+
 [Battaglia et. al. 2018](https://arxiv.org/pdf/1806.01261.pdf)
 
 * Full GN

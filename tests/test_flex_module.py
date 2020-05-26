@@ -1,52 +1,22 @@
 from typing import Tuple, Any, Dict
-from pyro_graph_nets.blocks import EdgeBlock, NodeBlock
+from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock, MLP, Aggregator
 from pyro_graph_nets.models import GraphEncoder, GraphNetwork
 import torch
 import numpy as np
 from pyro_graph_nets.utils.data import random_input_output_graphs
 from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
+from pyro_graph_nets.flex import Flex, FlexBlock, FlexDim
 
 
-class FlexDim(object):
+class TestFlexBlock(object):
 
-    def __init__(self, arg_pos: int = 0):
-        self.arg_pos = arg_pos
-
-    def resolve(self, input_args, input_kwargs):
-        return input_args[self.arg_pos].shape[1]
-
-
-class UnsetModule(torch.nn.Module):
-
-    def __init__(self, module_fn, *args, **kwargs):
-        super().__init__()
-        self.module = module_fn
-        self.args = args
-        self.kwargs = kwargs
-        self.resolved_module = None
-
-    def resolve_args(self, input_args: Tuple[Any, ...], input_kwargs: Dict[str, Any]):
-        rargs = []
-        for i, a in enumerate(self.args):
-            if isinstance(a, FlexDim):
-                rargs.append(a.resolve(input_args, input_kwargs))
-            else:
-                rargs.append(a)
-        return rargs
-
-    def resolve_kwargs(self, input_args: Tuple[Any, ...], input_kwargs: Dict[str, Any]):
-        return self.kwargs
-
-    def resolve(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
-        resolved_args = self.resolve_args(args, kwargs)
-        resolved_kwargs = self.resolve_kwargs(args, kwargs)
-        self.resolved_module = self.module(*resolved_args, **resolved_kwargs)
-
-    def forward(self, *args, **kwargs):
-        if self.resolved_module is None:
-            self.resolve(args, kwargs)
-        return self.resolved_module(*args, **kwargs)
-
+    def test_flex_block(self):
+        flex_linear = Flex(torch.nn.Linear)
+        model = flex_linear(Flex.d(), 11)
+        print(model)
+        x = torch.randn((30, 55))
+        model(x)
+        print(model)
 
 def graph_generator(
         n_nodes: Tuple[int, int],
@@ -92,8 +62,8 @@ class TestFlexibleModel(MetaTest):
     def test_flex_encoder(self):
         input_gt, target_gt = self.input_target()
         encoder = GraphEncoder(
-            UnsetModule(EdgeBlock, FlexDim(2), [16, 16], independent=True),
-            UnsetModule(NodeBlock, FlexDim(0), [16, 16], independent=True),
+            EdgeBlock(FlexBlock(MLP, FlexDim(), 16, 16), independent=True),
+            NodeBlock(FlexBlock(MLP, FlexDim(), 16, 16), independent=True),
             None
         )
         print(encoder)
@@ -101,13 +71,28 @@ class TestFlexibleModel(MetaTest):
         encoder(input_gt)
 
 
-    def test_flex_network(self):
+    def test_flex_network_0(self):
         input_gt, target_gt = self.input_target()
-        encoder = GraphNetwork(
-            UnsetModule(EdgeBlock, FlexDim(2), [16, 16], independent=False),
-            UnsetModule(NodeBlock, FlexDim(0), [16, 16], independent=False),
+        FlexMLP = Flex(MLP)
+        network = GraphNetwork(
+            EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=False),
+            NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=False, edge_aggregator=Aggregator('mean')),
             None
         )
-        print(encoder)
+        print(network)
+        network(input_gt)
+        print(network)
 
-        encoder(input_gt)
+
+    def test_flex_network_0(self):
+        input_gt, target_gt = self.input_target()
+        FlexMLP = Flex(MLP)
+        network = GraphNetwork(
+            EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=False),
+            NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=False, edge_aggregator=Aggregator('mean')),
+            GlobalBlock(FlexMLP(Flex.d(), 16, 2), independent=False, edge_aggregator=Aggregator('add'),
+                        node_aggregator=Aggregator('mean'))
+        )
+        print(network)
+        network(input_gt)
+        print(network)
