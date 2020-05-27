@@ -18,7 +18,10 @@ class FlexDim:
         self.dim = dim
 
     def resolve(self, input_args, input_kwargs):
-        return input_args[self.pos].shape[self.dim]
+        d = input_args[self.pos].shape[self.dim]
+        if d == 0:
+            raise ValueError("Dimension cannot be zero")
+        return d
 
 
 class FlexBlock(torch.nn.Module):

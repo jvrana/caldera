@@ -27,16 +27,16 @@ class EncodeProcessDecode(torch.nn.Module):
         super().__init__()
         FlexMLP = Flex(MLP)
         self.encoder = GraphEncoder(
-            EdgeBlock(FlexMLP(Flex.d(), 16, 5), independent=True),
-            NodeBlock(FlexMLP(Flex.d(), 16, 5), independent=True),
+            EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
+            NodeBlock(FlexMLP(Flex.d(), 16, 16), independent=True),
             None,
         )
 
         # note that core should have the same output dimensions as the encoder
         self.core = GraphNetwork(
-            EdgeBlock(FlexMLP(Flex.d(), 16, 5), independent=False),
+            EdgeBlock(FlexMLP(Flex.d(), 16, 16), independent=False),
             NodeBlock(
-                FlexMLP(Flex.d(), 16, 5),
+                FlexMLP(Flex.d(), 16, 16),
                 independent=False,
                 edge_aggregator=Aggregator("mean"),
             ),
@@ -71,6 +71,30 @@ class EncodeProcessDecode(torch.nn.Module):
             output.append(decoded)
         return output
 
+def test_tensorboard(new_writer):
+
+    rand = np.random.RandomState(3)
+    writer = new_writer("shortest_path", suffix='_tb_test')
+
+    # preprocessed graphs
+    def preprocess(graphs):
+        for graph in graphs:
+            for _, ndata in graph.nodes(data=True):
+                ndata["x"] = torch.tensor(ndata["features"][:3])
+                ndata["y"] = torch.tensor([ndata["solution"]])
+
+            for _, _, edata in graph.edges(data=True):
+                edata["x"] = torch.tensor(edata["features"])
+                edata["y"] = torch.tensor([edata["solution"]])
+
+    # training loader
+    input_graphs, _, _ = generate_networkx_graphs(rand, 10, (2, 50), 20)
+    preprocess(input_graphs)
+    dataset = GraphDataset(input_graphs)
+    n_train = int((len(dataset) * 0.9))
+    n_test = len(dataset) - n_train
+    train_set, test_set = torch.utils.data.random_split(dataset, [n_train, n_test])
+
 
 def test_shortest_path_examples(new_writer):
 
@@ -97,17 +121,18 @@ def test_shortest_path_examples(new_writer):
                 edata["y"] = torch.tensor([edata["solution"]])
 
     # training loader
-    input_graphs, _, _ = generate_networkx_graphs(rand, 100, (2, 50), 20)
+    input_graphs, _, _ = generate_networkx_graphs(rand, 5000, (2, 50), 20)
     preprocess(input_graphs)
     dataset = GraphDataset(input_graphs)
     n_train = int((len(dataset) * 0.9))
     n_test = len(dataset) - n_train
     train_set, test_set = torch.utils.data.random_split(dataset, [n_train, n_test])
-    loader = GraphDataLoader(train_set, batch_size=50, shuffle=True)
-    test_loader = GraphDataLoader(test_set, batch_size=50, shuffle=False)
+    loader = GraphDataLoader(train_set, batch_size=500, shuffle=True)
+    test_loader = GraphDataLoader(test_set, batch_size=500, shuffle=False)
 
     model = EncodeProcessDecode()
 
+    device = "cuda:0"
     # prime the model
     input_gt = to_graph_tuple([dataset[0]], feature_key="x")
     with torch.no_grad():
@@ -115,20 +140,22 @@ def test_shortest_path_examples(new_writer):
 
     # writer.add_graph(model, (input_gt, 10))
 
-    optimizer = torch.optim.Adam(lr=0.001, params=model.parameters())
+    model.to(device)
+    optimizer = torch.optim.Adam(lr=0.02, params=model.parameters())
     criterion = torch.nn.BCEWithLogitsLoss()
 
     def loss_fn(outputs, target_gt):
-        return criterion(outputs[-1].node_attr, target_gt.node_attr) + criterion(
-            outputs[-1].edge_attr, target_gt.edge_attr
-        )
+        return [
+            criterion(out.node_attr, target_gt.node_attr) + \
+            criterion(out.edge_attr, target_gt.edge_attr
+        ) for out in outputs]
 
     running_loss = 0.0
-    num_epochs = 30
+    num_epochs = 300
     num_steps = 10
 
-    device = "cuda:0"
-    model.to(device)
+    log_every_epoch = 10
+
     for epoch in range(num_epochs):
 
         # min batch
@@ -139,25 +166,11 @@ def test_shortest_path_examples(new_writer):
             # zero the parameter gradients
             optimizer.zero_grad()
 
-            # a = list(self.parameters())[0].clone()
-            # loss.backward()
-            # self.optimizer.step()
-            # b = list(self.parameters())[0].clone()
-            # torch.equal(a.data, b.data)
-
             # forward + backward + optimize
             outputs = model(input_gt, num_steps)
-            loss = torch.sum(loss_fn(outputs, target_gt)) / num_steps
-            #
-            # a = list(model.parameters())[0].clone()
+            loss = sum(loss_fn(outputs, target_gt)) / num_steps
             loss.backward()
             optimizer.step()
-            #
-            # b = list(model.parameters())[0].clone()
-            # c = torch.equal(a.data, b.data)
-            #
-            # d = [p.grad for p in model.parameters()]
-
             running_loss += loss.item()
 
         with torch.no_grad():
@@ -171,9 +184,12 @@ def test_shortest_path_examples(new_writer):
                 )
 
                 test_outputs = model(test_input_gt, num_steps)
-                test_loss = loss_fn(test_outputs, test_target_gt)
+                test_loss = loss_fn(test_outputs, test_target_gt)[-1]
                 running_test_loss += test_loss.item()
         writer.add_scalar("test_loss", running_test_loss, epoch)
 
         writer.add_scalar("training loss", running_loss, epoch)
         running_loss = 0.0
+
+        if epoch % log_every_epoch == 0:
+            pass

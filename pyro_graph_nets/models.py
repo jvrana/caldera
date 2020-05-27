@@ -107,7 +107,7 @@ class GraphNetwork(GraphAbstractModel):
         node_attr,
         edge_index,
         edge_attr=None,
-        u=None,
+        global_attr=None,
         node_idx=None,
         edge_idx=None,
     ):
@@ -119,33 +119,19 @@ class GraphNetwork(GraphAbstractModel):
         global_model = blocks.get("global_model", None)
 
         if edge_model is not None:
-            try:
-                edge_attr = edge_model(
-                    node_attr[row], node_attr[col], edge_attr, u, node_idx, edge_idx
-                )
-            except RuntimeError as e:
-                raise e
-                raise type(e)("Edge model error: " + str(e)) from e
-        else:
-            edge_attr = torch.zeros(1, 1, requires_grad=True)
+            edge_attr = edge_model(
+                node_attr[row], node_attr[col], edge_attr, global_attr, node_idx, edge_idx
+            )
 
         if node_model is not None:
-            try:
-                node_attr = node_model(
-                    node_attr, edge_index, edge_attr, u, node_idx, edge_idx
-                )
-            except RuntimeError as e:
-                raise e
-                raise type(e)("Node model error: " + str(e)) from e
-        else:
-            node_attr = torch.zeros(1, 1, requires_grad=True)
+            node_attr = node_model(
+                node_attr, edge_index, edge_attr, global_attr, node_idx, edge_idx
+            )
 
         if global_model is not None:
             global_attr = global_model(
-                node_attr, edge_index, edge_attr, u, node_idx, edge_idx
+                node_attr, edge_index, edge_attr, global_attr, node_idx, edge_idx
             )
-        else:
-            global_attr = torch.zeros(1, 1)
 
         return node_attr, edge_attr, global_attr
 

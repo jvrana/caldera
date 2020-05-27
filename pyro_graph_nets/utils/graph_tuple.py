@@ -4,6 +4,7 @@ from functools import partial
 from typing import Callable
 from typing import List
 from typing import Tuple
+from typing import Dict
 
 import networkx as nx
 import numpy as np
@@ -23,14 +24,18 @@ GraphTuple = namedtuple(
 )
 
 
-def pick_edge(g):
-    for x in g.edges(data=True):
-        return x
+def pick_edge(graphs):
+    for g in graphs:
+        for x in g.edges(data=True):
+            if x[-1] is not None:
+                return x
 
 
-def pick_node(g):
-    for n in g.nodes(data=True):
-        return n
+def pick_node(graphs):
+    for g in graphs:
+        for x in g.nodes(data=True):
+            if x[-1] is not None:
+                return x
 
 
 def to_graph_tuple(
@@ -57,9 +62,24 @@ def to_graph_tuple(
     node_idx = np.empty(n_nodes)
     edge_idx = np.empty(n_edges)
 
-    edata = pick_edge(graph)[-1][feature_key]
-    vdata = pick_node(graph)[-1][feature_key]
-    udata = getattr(graph, global_attr_key)[feature_key]
+
+    edge = pick_edge(graphs)
+    if edge:
+        edata = edge[-1][feature_key]
+    else:
+        edata = np.empty(1)
+
+    node = pick_node(graphs)
+    if node:
+        vdata = node[-1][feature_key]
+    else:
+        vdata = np.empty(1)
+
+    if hasattr(graph, global_attr_key):
+        udata = getattr(graph, global_attr_key)[feature_key]
+    else:
+        udata = np.zeros(1)
+
     connectivity = np.empty((n_edges, 2))
 
     v = np.empty((n_nodes, *tuple(vdata.shape)))
@@ -84,7 +104,10 @@ def to_graph_tuple(
             connectivity[_e] = [ndict[n1], ndict[n2]]
             _e += 1
 
-        u[gidx] = getattr(graph, global_attr_key)[feature_key]
+        if hasattr(graph, global_attr_key):
+            u[gidx] = getattr(graph, global_attr_key)[feature_key]
+        else:
+            u[gidx] = 0
 
     result = GraphTuple(
         torch.tensor(v, dtype=torch.float),
@@ -99,16 +122,21 @@ def to_graph_tuple(
     return result
 
 
-# def batch(a, batch_size):
-#     """Batches the tensor according to the batch size.
-#
-#     .. code-block::
-#
-#         batch(torch.rand(20, 8, 10), batch_size=5).shape
-#         # >>> torch.Size([5, 4, 8, 10])
-#     """
-#     b = torch.unsqueeze(a, 1).reshape(batch_size, -1, *a.shape[1:])
-#     return b
+def from_graph_tuple(gt: GraphTuple, feature_key: str = 'features') -> Dict[int, nx.DiGraph]:
+
+    graph_dict = {}
+
+    for node, (gidx, ndata) in enumerate(zip(gt.node_indices, gt.node_attr)):
+        graph_dict.setdefault(gidx.item(), nx.DiGraph())
+    g = graph_dict[gidx.item()]
+    g.add_node(node, **{'features': ndata})
+
+    for gidx, (n1, n2), edata in zip(gt.edge_indices, gt.edges, gt.edge_attr):
+        graph_dict.setdefault(gidx.item(), nx.DiGraph())
+    g = graph_dict[gidx.item()]
+    g.add_edge(n1.item(), n2.item(), **{'features': edata})
+
+    return graph_dict
 
 
 def collate_tuples(tuples: List[Tuple], func: Callable[[List[Tuple]], Tuple]):
@@ -209,14 +237,14 @@ def validate_gt(gt: GraphTuple):
         )
 
     # edges cannot refer to non-existent nodes
-    if not gt.edges.max() < gt.node_attr.shape[0]:
+    if gt.edges.shape[0] and not (gt.edges.max().item() < gt.node_attr.shape[0]):
         raise InvalidGraphTuple(
             "Edges reference node {} which does not exist nodes of size {}".format(
                 gt.edges.max(), gt.node_attr.shape[0]
             )
         )
 
-    if not gt.edges.min() >= 0:
+    if gt.edges.shape[0] and not (gt.edges.min().item() >= 0):
         raise InvalidGraphTuple(
             "Node index must be greater than 0, not {}".format(gt.edges.min())
         )

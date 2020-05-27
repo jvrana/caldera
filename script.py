@@ -1,9 +1,11 @@
 from os.path import abspath
 from os.path import dirname
 from os.path import join
+
 from pyro_graph_nets.utils.tensorboard import new_writer as new_summary_writer
 
 runs = join(abspath(dirname(__file__)), ".runs")
+
 
 def new_writer():
     """Return a function that creates a new writer.
