@@ -42,15 +42,16 @@ def graph_generator(
     e_features: Tuple[int, int],
     g_features: Tuple[int, int],
 ):
+    a, b = 1, 3
     gen = random_input_output_graphs(
         lambda: np.random.randint(*n_nodes),
         20,
-        lambda: np.random.uniform(1, 10, n_features[0]),
-        lambda: np.random.uniform(1, 10, e_features[0]),
-        lambda: np.random.uniform(1, 10, g_features[0]),
-        lambda: np.random.uniform(1, 10, n_features[1]),
-        lambda: np.random.uniform(1, 10, e_features[1]),
-        lambda: np.random.uniform(1, 10, g_features[1]),
+        lambda: np.random.uniform(a, b, n_features[0]),
+        lambda: np.random.uniform(a, b, e_features[0]),
+        lambda: np.random.uniform(a, b, g_features[0]),
+        lambda: np.random.uniform(a, b, n_features[1]),
+        lambda: np.random.uniform(a, b, e_features[1]),
+        lambda: np.random.uniform(a, b, g_features[1]),
         input_attr_name="features",
         target_attr_name="target",
         do_copy=False,
@@ -110,7 +111,11 @@ class TestFlexibleModel(MetaTest):
         )
         print(encoder)
 
-        encoder(input_gt)
+        out = encoder(input_gt)
+
+        assert out.node_attr.requires_grad
+        assert out.edge_attr.requires_grad
+        assert out.global_attr.requires_grad
 
     def test_flex_network_0(self):
         input_gt, target_gt = self.input_target()
@@ -175,7 +180,8 @@ class EncodeProcessDecode(torch.nn.Module):
         for step in range(num_steps):
             core_input = cat_gt(latent0, latent)
             latent = self.core(core_input)
-            decoded = self.output_transform(self.decoder(latent))
+            decoded = self.decoder(latent)
+            out = self.output_transform(decoded)
             output.append(decoded)
         return output
 
@@ -199,7 +205,10 @@ class TestFlexEncodeProcessDecode(MetaTest):
         input_gt = to_graph_tuple([dataset[0]], feature_key="features")
 
         validate_gt(input_gt)
-        model(input_gt, 10)
+        outputs = model(input_gt, 10)
+
+        print(outputs[0].node_attr[0, :10])
+        print(outputs[-1].node_attr[0, :10])
 
     def test_loss(self):
         input_gt, target_gt = self.input_target()
@@ -216,20 +225,29 @@ class TestFlexEncodeProcessDecode(MetaTest):
         print(loss)
 
     # TODO: demonstrate cuda training
-    def test_training(self):
+    def test_training(self, new_writer):
+        writer = new_writer("test_encoder_decoder", suffix="_test")
+
         generator = graph_generator((2, 25), (10, 1), (5, 2), (1, 3))
 
-        graphs = [next(generator) for _ in range(1000)]
+        graphs = [next(generator) for _ in range(100)]
 
+        # training loader
         dataset = GraphDataset(graphs)
-        loader = GraphDataLoader(dataset, batch_size=50, shuffle=True)
+        n_train = int((len(dataset) * 0.9))
+        n_test = len(dataset) - n_train
+        train_set, test_set = torch.utils.data.random_split(dataset, [n_train, n_test])
+        loader = GraphDataLoader(train_set, batch_size=50, shuffle=True)
+        test_loader = GraphDataLoader(test_set, batch_size=50, shuffle=False)
+
         model = EncodeProcessDecode()
 
         # prime the model
         input_gt = to_graph_tuple([dataset[0]], feature_key="features")
-        model(input_gt, 10)
+        with torch.no_grad():
+            model(input_gt, 10)
 
-        optimizer = torch.optim.Adam(lr=0.001, params=model.parameters())
+        optimizer = torch.optim.Adam(lr=0.01, params=model.parameters())
         criterion = torch.nn.MSELoss()
 
         def loss_fn(outputs, target_gt):
@@ -240,9 +258,10 @@ class TestFlexEncodeProcessDecode(MetaTest):
             return loss
 
         running_loss = 0.0
-        num_epochs = 10
+        num_epochs = 50
         num_steps = 10
         for epoch in range(num_epochs):
+
             # min batch
             for batch_ndx, bg in enumerate(loader):
                 input_gt = to_graph_tuple(bg, feature_key="features")
@@ -264,3 +283,16 @@ class TestFlexEncodeProcessDecode(MetaTest):
                 optimizer.step()
                 #
                 running_loss += loss.item()
+
+            with torch.no_grad():
+                running_test_loss = 0.0
+                for test_batch in test_loader:
+                    test_input_gt = to_graph_tuple(test_batch, feature_key="features")
+                    test_target_gt = to_graph_tuple(test_batch, feature_key="target")
+                    test_outputs = model(test_input_gt, num_steps)
+                    test_loss = loss_fn(test_outputs, test_target_gt)
+                    running_test_loss += test_loss.item()
+            writer.add_scalar("test_loss", running_test_loss / 1000.0, epoch)
+
+            writer.add_scalar("training loss", running_loss / 1000, epoch)
+            running_loss = 0.0

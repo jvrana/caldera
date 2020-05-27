@@ -6,7 +6,6 @@ from torch import nn
 from pyro_graph_nets.blocks import EdgeBlock
 from pyro_graph_nets.blocks import GlobalBlock
 from pyro_graph_nets.blocks import NodeBlock
-from pyro_graph_nets.utils.graph_tuple import cat_gt
 from pyro_graph_nets.utils.graph_tuple import GraphTuple
 from pyro_graph_nets.utils.graph_tuple import replace_key
 
@@ -27,18 +26,28 @@ def gt_wrap_replace(func):
     return forward
 
 
+class IdentityModel(torch.nn.Module):
+    def __init__(self, pos):
+        self.pos = pos
+
+    def forward(self, *args):
+        return args[self.pos]
+
+
 class GraphAbstractModel(nn.Module):
     def __init__(
         self, edge_model: nn.Module, node_model: nn.Module, global_model: nn.Module
     ):
         super().__init__()
-        self.blocks = nn.ModuleDict(
-            {
-                "edge_model": edge_model,
-                "node_model": node_model,
-                "global_model": global_model,
-            }
-        )
+
+        mod_dict = {
+            "edge_model": edge_model,
+            "node_model": node_model,
+            "global_model": global_model,
+        }
+        mod_dict = {k: v for k, v in mod_dict.items() if v is not None}
+
+        self.blocks = nn.ModuleDict(mod_dict)
         self.reset_parameters()
         self.forward = gt_wrap_replace(self.forward_helper)
 
@@ -60,9 +69,10 @@ class GraphEncoder(GraphAbstractModel):
         edge_idx=None,
     ):
 
-        edge_model = self.blocks["edge_model"]
-        node_model = self.blocks["node_model"]
-        global_model = self.blocks["global_model"]
+        blocks = dict(self.blocks.items())
+        edge_model = blocks.get("edge_model", None)
+        node_model = blocks.get("node_model", None)
+        global_model = blocks.get("global_model", None)
 
         row, col = connectivity
 
@@ -86,6 +96,7 @@ class GraphEncoder(GraphAbstractModel):
             )
         else:
             global_attr = torch.zeros_like(u)
+            global_attr.requires_grad = True
 
         return node_attr, edge_attr, global_attr
 
@@ -102,9 +113,10 @@ class GraphNetwork(GraphAbstractModel):
     ):
         row, col = edge_index
 
-        edge_model = self.blocks["edge_model"]
-        node_model = self.blocks["node_model"]
-        global_model = self.blocks["global_model"]
+        blocks = dict(self.blocks.items())
+        edge_model = blocks.get("edge_model", None)
+        node_model = blocks.get("node_model", None)
+        global_model = blocks.get("global_model", None)
 
         if edge_model is not None:
             try:
@@ -115,7 +127,7 @@ class GraphNetwork(GraphAbstractModel):
                 raise e
                 raise type(e)("Edge model error: " + str(e)) from e
         else:
-            edge_attr = torch.zeros_like(edge_attr)
+            edge_attr = torch.zeros(1, 1, requires_grad=True)
 
         if node_model is not None:
             try:
@@ -126,32 +138,16 @@ class GraphNetwork(GraphAbstractModel):
                 raise e
                 raise type(e)("Node model error: " + str(e)) from e
         else:
-            node_attr = torch.zeros_like(node_attr)
+            node_attr = torch.zeros(1, 1, requires_grad=True)
 
         if global_model is not None:
             global_attr = global_model(
                 node_attr, edge_index, edge_attr, u, node_idx, edge_idx
             )
         else:
-            global_attr = torch.zeros_like(u)
+            global_attr = torch.zeros(1, 1)
 
         return node_attr, edge_attr, global_attr
-
-
-class OutputTransform(torch.nn.Module):
-    def __init__(self, node_fn, edge_fn, global_fn):
-        super().__init__()
-        self.node_fn = node_fn
-        self.edge_fn = edge_fn
-        if global_fn is None:
-
-            def global_fn(x):
-                return x
-
-        self.global_fn = global_fn
-
-    def forward(self, v, connectivity, e, u):
-        return self.node_fn(v), self.edge_fn(e), self.global_fn(u)
 
 
 # # TODO: why are the concatenations all mixed up???

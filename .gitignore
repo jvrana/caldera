@@ -679,3 +679,5 @@ healthchecksdb
 MigrationBackup/
 
 *.yaml
+
+.runs/**/*

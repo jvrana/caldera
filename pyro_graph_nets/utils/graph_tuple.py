@@ -18,17 +18,26 @@ GraphTuple = namedtuple(
         "edges",  # node-to-node connectivity
         "node_indices",  # tensor where each element indicates the index of the graph the node_attr belongs to
         "edge_indices",
-        (
-            # tensor where each element indicates the index of the graph that the edge_attr and edges belong to.
-        ),
+        # tensor where each element indicates the index of the graph that the edge_attr and edges belong to.
     ],
 )
+
+
+def pick_edge(g):
+    for x in g.edges(data=True):
+        return x
+
+
+def pick_node(g):
+    for n in g.nodes(data=True):
+        return n
 
 
 def to_graph_tuple(
     graphs: List[nx.DiGraph],
     feature_key: str = "features",
     global_attr_key: str = "data",
+    device: str = None,
 ) -> GraphTuple:
     """Convert a list og networkx graphs into a GraphTuple.
 
@@ -38,67 +47,68 @@ def to_graph_tuple(
     :return: GraphTuple, a namedtuple of ['node_attr', 'edge_attr', 'global_attr',
         'edges', 'node_inices', 'edge_indices']
     """
-    senders = []
-    receivers = []
-    edge_attributes = []
-    node_attributes = []
-    global_attributes = []
-    n_nodes = []
-    n_edges = []
-    node_indices = []
-    edge_indices = []
+    n_edges = 0
+    n_nodes = 0
+    for graph in graphs:
+        n_edges += graph.number_of_edges()
+        n_nodes += graph.number_of_nodes()
 
-    for index, graph in enumerate(graphs):
-        n_nodes.append(graph.number_of_nodes())
-        n_edges.append(graph.number_of_edges())
+    n = len(graphs)
+    node_idx = np.empty(n_nodes)
+    edge_idx = np.empty(n_edges)
 
-        nodes = list(graph.nodes(data=True))
-        edges = list(graph.edges(data=True))
+    edata = pick_edge(graph)[-1][feature_key]
+    vdata = pick_node(graph)[-1][feature_key]
+    udata = getattr(graph, global_attr_key)[feature_key]
+    connectivity = np.empty((n_edges, 2))
 
-        new_nodes = list(
-            range(len(node_attributes), len(node_attributes) + graph.number_of_nodes())
-        )
-        ndict = dict(zip([n[0] for n in nodes], new_nodes))
+    v = np.empty((n_nodes, *tuple(vdata.shape)))
+    e = np.empty((n_edges, *tuple(edata.shape)))
+    u = np.empty((n, *tuple(udata.shape)))
 
-        if not hasattr(graph, global_attr_key):
-            global_attributes.append([1.0])
-        else:
-            global_attributes.append(graph.data[feature_key])
-        for node, ndata in nodes:
-            node_attributes.append(ndata[feature_key])
-            node_indices.append(index)
-        for n1, n2, edata in edges:
-            senders.append(ndict[n1])
-            receivers.append(ndict[n2])
-            edge_attributes.append(edata[feature_key])
-            edge_indices.append(index)
+    _v = 0
+    _e = 0
 
-    def vstack(arr):
-        if not arr:
-            return []
-        return np.vstack(arr)
+    ndict = {}
 
-    node_attr = torch.tensor(vstack(node_attributes), dtype=torch.float)
-    edge_attr = torch.tensor(vstack(edge_attributes), dtype=torch.float)
-    edges = torch.tensor(np.vstack([senders, receivers]).T, dtype=torch.long)
-    global_attr = torch.tensor(vstack(global_attributes), dtype=torch.float).detach()
-    node_indices = torch.tensor(node_indices, dtype=torch.long).detach()
-    edge_indices = torch.tensor(edge_indices, dtype=torch.long).detach()
-    return GraphTuple(
-        node_attr, edge_attr, global_attr, edges, node_indices, edge_indices
+    for gidx, graph in enumerate(graphs):
+        for node, ndata in graph.nodes(data=True):
+            v[_v] = ndata[feature_key]
+            ndict[node] = _v
+            node_idx[_v] = gidx
+            _v += 1
+
+        for n1, n2, edata in graph.edges(data=True):
+            e[_e] = edata[feature_key]
+            edge_idx[_e] = gidx
+            connectivity[_e] = [ndict[n1], ndict[n2]]
+            _e += 1
+
+        u[gidx] = getattr(graph, global_attr_key)[feature_key]
+
+    result = GraphTuple(
+        torch.tensor(v, dtype=torch.float),
+        torch.tensor(e, dtype=torch.float),
+        torch.tensor(u, dtype=torch.float),
+        torch.tensor(connectivity, dtype=torch.long),
+        torch.tensor(node_idx, dtype=torch.long),
+        torch.tensor(edge_idx, dtype=torch.long),
     )
+    if device:
+        return GraphTuple(*[x.to(device) for x in result])
+    return result
 
 
-def batch(a, batch_size):
-    """Batches the tensor according to the batch size.
-
-    .. code-block::
-
-        batch(torch.rand(20, 8, 10), batch_size=5).shape
-        # >>> torch.Size([5, 4, 8, 10])
-    """
-    b = torch.unsqueeze(a, 1).reshape(batch_size, -1, *a.shape[1:])
-    return b
+# def batch(a, batch_size):
+#     """Batches the tensor according to the batch size.
+#
+#     .. code-block::
+#
+#         batch(torch.rand(20, 8, 10), batch_size=5).shape
+#         # >>> torch.Size([5, 4, 8, 10])
+#     """
+#     b = torch.unsqueeze(a, 1).reshape(batch_size, -1, *a.shape[1:])
+#     return b
 
 
 def collate_tuples(tuples: List[Tuple], func: Callable[[List[Tuple]], Tuple]):
@@ -166,8 +176,7 @@ def cat_gt(*gts: Tuple[GraphTuple, ...]) -> GraphTuple:
 
 
 def gt_to_device(x: Tuple, device):
-    for v in x:
-        x.to(device)
+    return GraphTuple(*[v.to(device) for v in x])
 
 
 class InvalidGraphTuple(Exception):

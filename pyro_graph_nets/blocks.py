@@ -73,7 +73,8 @@ class Aggregator(nn.Module):
         func_kwargs = dict(self.kwargs)
         func_kwargs.update(kwargs)
         func = self.valid_aggregators[self.aggregator]
-        return func(x, indices, **func_kwargs)
+        result = func(x, indices, **func_kwargs)
+        return result
 
     @staticmethod
     @wraps(torch_scatter.scatter_max)

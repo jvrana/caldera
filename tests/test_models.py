@@ -178,6 +178,11 @@ class TestEncoder(MetaTest):
         input_gt, target_gt = self.input_target()
 
         out = model(input_gt)
+
+        assert out.node_attr.requires_grad
+        assert out.edge_attr.requires_grad
+        assert out.global_attr.requires_grad
+
         assert out.edge_attr.shape[1] == 15
         assert out.node_attr.shape[1] == 5
         assert out.global_attr.shape[1] == 2
