@@ -88,13 +88,21 @@ def test_tensorboard(new_writer):
                 edata["y"] = torch.tensor([edata["solution"]])
 
     # training loader
-    input_graphs, _, _ = generate_networkx_graphs(rand, 10, (2, 50), 20)
+    input_graphs, _, _ = generate_networkx_graphs(rand, 100, (2, 50), 20)
     preprocess(input_graphs)
-    dataset = GraphDataset(input_graphs)
-    n_train = int((len(dataset) * 0.9))
-    n_test = len(dataset) - n_train
-    train_set, test_set = torch.utils.data.random_split(dataset, [n_train, n_test])
 
+    model = EncodeProcessDecode()
+
+    input_gt = to_graph_tuple(input_graphs[:1], feature_key="x")
+    with torch.no_grad():
+        outputs = model(input_gt, 10)
+
+    writer.add_histogram('out[0].nodeattr', outputs[0].node_attr)
+    writer.add_histogram('out[-1].nodeattr', outputs[-1].node_attr)
+
+    encoded = model.encoder(input_gt)
+
+    writer.add_histogram('encoded.nodeattr', outputs[0].node_attr)
 
 def test_shortest_path_examples(new_writer):
 
@@ -121,14 +129,14 @@ def test_shortest_path_examples(new_writer):
                 edata["y"] = torch.tensor([edata["solution"]])
 
     # training loader
-    input_graphs, _, _ = generate_networkx_graphs(rand, 5000, (2, 50), 20)
+    input_graphs, _, _ = generate_networkx_graphs(rand, 1000, (2, 50), 20)
     preprocess(input_graphs)
     dataset = GraphDataset(input_graphs)
     n_train = int((len(dataset) * 0.9))
     n_test = len(dataset) - n_train
     train_set, test_set = torch.utils.data.random_split(dataset, [n_train, n_test])
-    loader = GraphDataLoader(train_set, batch_size=500, shuffle=True)
-    test_loader = GraphDataLoader(test_set, batch_size=500, shuffle=False)
+    loader = GraphDataLoader(train_set, batch_size=100, shuffle=True)
+    test_loader = GraphDataLoader(test_set, batch_size=100, shuffle=False)
 
     model = EncodeProcessDecode()
 
@@ -186,6 +194,12 @@ def test_shortest_path_examples(new_writer):
                 test_outputs = model(test_input_gt, num_steps)
                 test_loss = loss_fn(test_outputs, test_target_gt)[-1]
                 running_test_loss += test_loss.item()
+
+                writer.add_histogram('output_node_attr_0', test_outputs[0].node_attr)
+                writer.add_histogram('output_node_attr_-1', test_outputs[-1].node_attr)
+
+                writer.add_histogram('output_edge_attr_0', test_outputs[0].edge_attr)
+                writer.add_histogram('output_edge_attr_-1', test_outputs[-1].edge_attr)
         writer.add_scalar("test_loss", running_test_loss, epoch)
 
         writer.add_scalar("training loss", running_loss, epoch)

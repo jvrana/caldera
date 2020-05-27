@@ -191,7 +191,8 @@ class TestFlexEncodeProcessDecode(MetaTest):
     def test_forward(self):
         input_gt, target_gt = self.input_target()
         model = EncodeProcessDecode()
-        model(input_gt, 10)
+        out = model(input_gt, 10)
+        out = model(input_gt, 10)
 
     def test_forward_with_data_loader(self):
         generator = graph_generator((2, 25), (10, 1), (5, 2), (1, 3))

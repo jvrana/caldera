@@ -36,7 +36,7 @@ class IdentityModel(torch.nn.Module):
 
 class GraphAbstractModel(nn.Module):
     def __init__(
-        self, edge_model: nn.Module, node_model: nn.Module, global_model: nn.Module
+        self, edge_model: EdgeBlock, node_model: NodeBlock, global_model: GlobalBlock
     ):
         super().__init__()
 

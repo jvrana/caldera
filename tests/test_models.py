@@ -146,6 +146,7 @@ class TestEncoder(MetaTest):
         model = GraphEncoder(None, NodeBlock(MLP(10, 16, 5), independent=True), None)
         input_gt, target_gt = self.input_target()
         out = model(input_gt)
+        print(out.node_attr)
         assert out
 
     def test_edge_block(self):
@@ -153,6 +154,7 @@ class TestEncoder(MetaTest):
         model = GraphEncoder(EdgeBlock(MLP(5, 16, 5), independent=True), None, None)
         input_gt, target_gt = self.input_target()
         out = model(input_gt)
+        print(out.edge_attr)
         assert out
 
     def test_global_block(self):
@@ -160,12 +162,14 @@ class TestEncoder(MetaTest):
         model = GraphEncoder(None, None, GlobalBlock(MLP(1, 16, 2), independent=True))
         input_gt, target_gt = self.input_target()
         out = model(input_gt)
+        print(out.global_attr)
         assert out
 
     def test_empty_graph_global_block(self):
         model = GraphEncoder(None, None, GlobalBlock(MLP(1, 16, 2), independent=True))
         input_gt, target_gt = self.input_target((1, 2))
         out = model(input_gt)
+        print(out.global_attr)
         assert out
 
     def test_all(self):
