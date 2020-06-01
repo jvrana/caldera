@@ -393,25 +393,4 @@ class TestGraphBatch:
             print(sort(data.edges))
 
         for d1, d2 in zip(datalist, datalist2):
-            assert d1.x.shape == d2.x.shape
-            assert d1.e.shape == d2.e.shape
-            assert d1.g.shape == d2.g.shape
-            # assert d1.allclose(d2)
-
-            print(d1.x)
-            print(d2.x)
             assert d1.allclose(d2)
-            # assert torch.all(torch.eq(d1.edges, d2.edges))
-
-            # assert torch.allclose(d1.x, d2.x)
-            # print(d1.x)
-            # print(d2.x)
-            # assert d1 == d2
-        # graphs = batch.to_networkx_list()
-        # assert len(graphs) == len(datalist)
-        # assert len(datalist) == 1000
-        # for g, d in zip(graphs, datalist):
-        #     Comparator.data_to_nx(d, g, 'features', 'data')
-        #
-        # from_graphs = GraphBatch.from_networkx_list(graphs)
-

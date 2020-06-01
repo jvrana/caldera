@@ -15,15 +15,22 @@ def stable_arg_sort_long(arr):
 
 
 @torch.jit.script
-def unique_with_counts(idx, grouped: Dict[int, int]):
-    for x in idx:
+def unique_with_counts(arr, grouped: Dict[int, int]):
+    """
+    Equivalent to `np.unqiue(x, return_counts=True)`
+    
+    :param arr:
+    :param grouped:
+    :return:
+    """
+    for x in arr:
         if x.item() not in grouped:
             grouped[x.item()] = 1
         else:
             grouped[x.item()] += 1
 
     counts = torch.zeros(len(grouped), dtype=torch.long)
-    values = torch.empty(len(grouped), dtype=idx.dtype)
+    values = torch.empty(len(grouped), dtype=arr.dtype)
     for i, (k, v) in enumerate(grouped.items()):
         values[i] = k
         counts[i] = v
