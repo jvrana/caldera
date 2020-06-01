@@ -1,14 +1,11 @@
-import networkx as nx
-import itertools
 from typing import Optional
-import numpy as np
-from pyrographnets.data import GraphBatch, GraphData
-import torch
-from pyrographnets.utils import scatter_group
 
-def _first(i):
-    """Select the first element in an iterable"""
-    return next((x for x in itertools.tee(i)[0]))
+import networkx as nx
+import numpy as np
+import torch
+
+from pyrographnets.data import GraphData, GraphBatch
+from pyrographnets.utils import _first, scatter_group
 
 
 def to_graph_data(g: nx.DiGraph,
@@ -85,3 +82,14 @@ def graph_data_to_nx(data: GraphData):
         g.add_edge(e[0], e[1], **{'features': data.e[i]})
     g.data = {'features': data.g}
     return g
+
+
+def random_data(n_features, e_features, g_features):
+    n_nodes = torch.randint(1, 10, torch.Size([])).item()
+    n_edges = torch.randint(1, 20, torch.Size([])).item()
+    return GraphData(
+        torch.randn(n_nodes, n_features),
+        torch.randn(n_edges, e_features),
+        torch.randn(1, g_features),
+        torch.randint(0, n_nodes, torch.Size([2, n_edges]))
+    )
