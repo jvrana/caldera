@@ -8,6 +8,7 @@ def pairwise(iterable):
     next(b, None)
     return zip(a, b)
 
+
 def _first(i):
     """Select the first element in an iterable"""
     return next((x for x in itertools.tee(i)[0]))

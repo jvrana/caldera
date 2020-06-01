@@ -6,6 +6,11 @@ from typing import Optional
 import numpy as np
 import networkx as nx
 from typing import Callable
+from typing import TypeVar, Type
+
+
+GraphType = TypeVar('GraphType', nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
+
 
 class GraphData(object):
     """Data representing a single graph"""
@@ -19,7 +24,7 @@ class GraphData(object):
         GraphData.debug(self)
 
     def debug(self):
-        if self.edges.max() >= self.x.shape[0]:
+        if self.edges.shape[0] and self.edges.shape[1] and self.edges.max() >= self.x.shape[0]:
             raise RuntimeError(
                 "Edge coordinate {} is greater than number of nodes {}".format(self.edges.max(), self.x.shape[0
                 ]))
@@ -122,7 +127,7 @@ class GraphData(object):
         )
 
     @staticmethod
-    def from_networkx(g: nx.DiGraph,
+    def from_networkx(g: GraphType,
                       n_node_feat: Optional[int] = None,
                       n_edge_feat: Optional[int] = None,
                       n_glob_feat: Optional[int] = None,
@@ -134,15 +139,24 @@ class GraphData(object):
             gdata = {}
 
         if n_node_feat is None:
-            _, ndata = _first(g.nodes(data=True))
-            n_node_feat = ndata[feature_key].shape[0]
+            try:
+                _, ndata = _first(g.nodes(data=True))
+                n_node_feat = ndata[feature_key].shape[0]
+            except StopIteration:
+                n_node_feat = 0
 
         if n_edge_feat is None:
-            _, _, edata = _first(g.edges(data=True))
-            n_edge_feat = edata[feature_key].shape[0]
+            try:
+                _, _, edata = _first(g.edges(data=True))
+                n_edge_feat = edata[feature_key].shape[0]
+            except StopIteration:
+                n_edge_feat = 0
 
         if n_glob_feat is None:
-            n_glob_feat = gdata[feature_key].shape[0]
+            if feature_key in gdata:
+                n_glob_feat = gdata[feature_key].shape[0]
+            else:
+                n_glob_feat = 0
 
         n_nodes = g.number_of_nodes()
         n_edges = g.number_of_edges()
@@ -161,7 +175,8 @@ class GraphData(object):
             edges[:, i] = np.array([ndict[n1], ndict[n2]])
             edge_attr[i] = edata[feature_key]
 
-        glob_attr[0] = getattr(g, global_attr_key)[feature_key]
+        if feature_key in gdata:
+            glob_attr[0] = gdata[feature_key]
 
         return GraphData(torch.tensor(node_attr, dtype=torch.float),
                          torch.tensor(edge_attr, dtype=torch.float),
@@ -169,12 +184,15 @@ class GraphData(object):
                          torch.tensor(edges, dtype=torch.long))
 
     def to_networkx(self, feature_key: str = 'features',
-                    global_attr_key: str = 'data'):
-        g = nx.DiGraph()
+                    global_attr_key: str = 'data',
+                    graph_type: Type[GraphType] = nx.OrderedMultiDiGraph ) -> GraphType:
+        g = graph_type()
         for n, ndata in enumerate(self.x):
             g.add_node(n, **{feature_key: ndata})
+        g.ordered_edges = []
         for i, e in enumerate(self.edges.T):
-            g.add_edge(e[0].item(), e[1].item(), **{feature_key: self.e[i]})
+            n = g.add_edge(e[0].item(), e[1].item(), **{feature_key: self.e[i]})
+            g.ordered_edges.append((e[0].item(), e[1].item(), n))
         setattr(g, global_attr_key, {feature_key: self.g.clone()})
         return g
 

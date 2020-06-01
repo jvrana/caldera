@@ -1,9 +1,10 @@
 import torch
 
-from pyrographnets.data import GraphData
+from pyrographnets.data.graph_data import GraphData, GraphType
 from pyrographnets.utils import scatter_group
 from typing import List
 import networkx as nx
+from typing import Type
 
 
 class GraphBatch(GraphData):
@@ -105,14 +106,15 @@ class GraphBatch(GraphData):
     def from_networkx(self, *args, **kwargs):
         raise NotImplementedError
 
-    def to_networkx_list(self, feature_key: str = 'features', global_attr_key: str = 'data') -> List[nx.DiGraph]:
+    def to_networkx_list(self, feature_key: str = 'features', global_attr_key: str = 'data',
+                         graph_type: Type[GraphType] = nx.OrderedMultiDiGraph) -> List[GraphType]:
         graphs = []
         for data in self.to_data_list():
-            graphs.append(data.to_networkx(feature_key, global_attr_key=global_attr_key))
+            graphs.append(data.to_networkx(feature_key, global_attr_key=global_attr_key, graph_type=graph_type))
         return graphs
 
     @staticmethod
-    def from_networkx_list(graphs: List[nx.DiGraph], *args, **kwargs) -> 'GraphBatch':
+    def from_networkx_list(graphs: List[GraphType], *args, **kwargs) -> 'GraphBatch':
         data_list = [GraphData.from_networkx(g, *args, **kwargs) for g in graphs]
         return GraphBatch.from_data_list(data_list)
 

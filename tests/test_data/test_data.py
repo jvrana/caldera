@@ -5,6 +5,7 @@ import networkx as nx
 from pyrographnets.data.utils import random_data
 from flaky import flaky
 
+
 class Comparator:
 
     @staticmethod
@@ -29,6 +30,21 @@ class Comparator:
         gdata = getattr(g, gkey)[fkey]
         assert gdata is not None
 
+        # check edges
+        src = []
+        dest = []
+        ndict = {}
+        for i, n in enumerate(g.nodes()):
+            ndict[n] = i
+        for n1, n2, ne in g.ordered_edges:
+            src.append(ndict[n1])
+            dest.append(ndict[n2])
+        edges = torch.tensor([src, dest])
+        print(edges)
+        print(data.edges)
+
+        assert torch.all(torch.eq(edges, data.edges))
+
         # check global data
         assert torch.all(torch.eq(gdata, data.g))
         assert gdata is not data.g
@@ -39,12 +55,12 @@ class Comparator:
             assert torch.all(torch.eq(nodes[i][1][fkey], data.x[i]))
 
         # check edge data
-        edges = list(g.edges(data=True))
-        for i in range(len(edges)):
-            assert torch.all(torch.eq(edges[i][2][fkey], data.e[i]))
+        for i, (n1, n2, ne) in enumerate(g.ordered_edges):
+            edata = g[n1][n2][ne]
+            assert torch.all(torch.eq(edata[fkey], data.e[i]))
 
 
-class TestGraphDataConstructor:
+class TestGraphData:
 
     def test_graph_data_init_0(self):
         data = GraphData(
@@ -103,7 +119,7 @@ class TestGraphDataConstructor:
         )
 
         g = data.to_networkx(**kwargs)
-        assert isinstance(g, nx.DiGraph)
+        assert isinstance(g, nx.OrderedMultiDiGraph)
         assert g.number_of_nodes() == 10
         assert g.number_of_edges() == 5
 
@@ -137,10 +153,54 @@ class TestGraphDataConstructor:
         fkey = kwargs.get('feature_key', 'features')
         gkey = kwargs.get('global_attr_key', 'data')
 
-        g = nx.DiGraph()
+        g = nx.OrderedMultiDiGraph()
         g.add_node('node1', **{fkey: torch.randn(5)})
         g.add_node('node2', **{fkey: torch.randn(5)})
         g.add_edge('node1', 'node2', **{fkey: torch.randn(4)})
+        g.ordered_edges = [
+            ('node1', 'node2', 0)
+        ]
+        setattr(g, gkey, {fkey: torch.randn(3)})
+
+        data = GraphData.from_networkx(g, **kwargs)
+
+        Comparator.data_to_nx(data, g, fkey, gkey)
+
+    def test_empty_networkx(self):
+        """Empty graphs should be OK"""
+        g = nx.DiGraph()
+        GraphData.from_networkx(g)
+
+    @pytest.mark.parametrize(
+        'keys', [
+            (None, None),
+            ('myfeatures', 'mydata'),
+            ('features', 'data')
+        ]
+    )
+    def test_from_networkx_no_edge(self, keys):
+        kwargs = {
+            'feature_key': 'features',
+            'global_attr_key': 'data'
+        }
+        feature_key, global_attr_key = keys
+        if feature_key is not None:
+            kwargs['feature_key'] = feature_key
+        else:
+            del kwargs['feature_key']
+        if global_attr_key is not None:
+            kwargs['global_attr_key'] = global_attr_key
+        else:
+            del kwargs['global_attr_key']
+
+        fkey = kwargs.get('feature_key', 'features')
+        gkey = kwargs.get('global_attr_key', 'data')
+
+        g = nx.OrderedMultiDiGraph()
+        g.add_node('node1', **{fkey: torch.randn(5)})
+        g.add_node('node2', **{fkey: torch.randn(5)})
+        g.ordered_edges = []
+        # g.add_edge('node1', 'node2', **{fkey: torch.randn(4)})
 
         setattr(g, gkey, {fkey: torch.randn(3)})
 
@@ -334,12 +394,6 @@ class TestGraphBatch:
             assert torch.all(torch.eq(d1.edges, d2.edges))
             assert d1.allclose(d2)
 
-    def test_case(self):
-        edges = torch.tensor([
-            [3, 3, 1],
-            [2, 1, 3]
-        ])
-
     @pytest.mark.parametrize('offsets', [
         (1, 0, 0),
         (0, 1, 0),
@@ -375,7 +429,7 @@ class TestGraphBatch:
         assert batch.g.shape[1] == 4
 
     def test_to_datalist(self):
-        datalist = [random_data(5, 5, 5) for _ in range(3)]
+        datalist = [random_data(5, 6, 7) for _ in range(1000)]
         batch = GraphBatch.from_data_list(datalist)
         print(batch.shape)
         print(batch.size)
@@ -394,3 +448,17 @@ class TestGraphBatch:
 
         for d1, d2 in zip(datalist, datalist2):
             assert d1.allclose(d2)
+
+    @pytest.mark.parametrize(
+        'fkey_gkey', [
+            ('features', 'data'),
+            ('myfeatures', 'mydata')
+        ]
+    )
+    def test_to_networkx_list(self, fkey_gkey):
+        fkey, gkey = fkey_gkey
+        datalist = [random_data(5, 5, 5) for _ in range(3)]
+        batch = GraphBatch.from_data_list(datalist)
+        graphs = batch.to_networkx_list(feature_key=fkey, global_attr_key=gkey)
+        for data, graph in zip(datalist, graphs):
+            Comparator.data_to_nx(data, graph, fkey, gkey)
