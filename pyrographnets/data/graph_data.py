@@ -65,7 +65,7 @@ class GraphData(object):
 
     def apply(self, func):
         for f in self.__slots__:
-            func(f)
+            func(getattr(self, f))
 
     def to(self, device: str):
         self.apply(lambda x: x.to(device))

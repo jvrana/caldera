@@ -29,6 +29,7 @@ class AggregatingNodeBlock(NodeBlock):
 
     # TODO: source_to_target, target_to_source
     def forward(self, node_attr, edge_attr, edges):
+        # source_to_dest or dest_to_source
         aggregated = self.block_dict['edge_aggregator'](edge_attr, edges[1], dim=0, dim_size=node_attr.size(0))
         out = torch.cat([node_attr, aggregated], dim=1)
         return self.block_dict['mlp'](out)

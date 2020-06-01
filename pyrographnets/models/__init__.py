@@ -17,10 +17,10 @@ class GraphEncoder(torch.nn.Module):
         self.global_block = global_block
 
     def forward(self, data: GraphBatch) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        a = self.node_block.forward_from_data(data)
-        b = self.edge_block.forward_from_data(data)
-        c = self.global_block.forward_from_data(data)
-        return a, b, c
+        node_attr = self.node_block.forward_from_data(data)
+        edge_attr = self.edge_block.forward_from_data(data)
+        global_attr = self.global_block.forward_from_data(data)
+        return edge_attr, node_attr, global_attr
 
 
 class GraphCore(torch.nn.Module):
@@ -37,5 +37,5 @@ class GraphCore(torch.nn.Module):
     def forward(self, data: GraphBatch) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         edge_attr = self.edge_block(data.e, data.x, data.edges)
         node_attr = self.node_block(data.x, edge_attr, data.edges)
-        global_attr = self.global_block(data.g, data.x, data.e, data.edges, data.node_idx, data.edge_idx)
+        global_attr = self.global_block(data.g, node_attr, edge_attr, data.edges, data.node_idx, data.edge_idx)
         return edge_attr, node_attr, global_attr

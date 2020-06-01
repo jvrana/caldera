@@ -30,12 +30,12 @@ class GraphBatch(GraphData):
                 "Wrong tensor type. `edge_idx` must be dtype={} not {}".format(self.edge_idx.dtype, torch.long))
         if not self.node_idx.max() == self.edge_idx.max():
             raise RuntimeError("Number of graphs in node_idx and edge_idx mismatch")
-        if not self.node_idx.min() == 0:
-            raise RuntimeError(
-                "Minimum graph index (node_idx.min()) must start at 0, not {}".format(self.node_idx.min()))
-        if not self.edge_idx.min() == 0:
-            raise RuntimeError(
-                "Minimum graph index (edge_idx.min()) must start at 0, not {}".format(self.edge_idx.min()))
+        # if not self.node_idx.min() == 0:
+        #     raise RuntimeError(
+        #         "Minimum graph index (node_idx.min()) must start at 0, not {}".format(self.node_idx.min()))
+        # if not self.edge_idx.min() == 0:
+        #     raise RuntimeError(
+        #         "Minimum graph index (edge_idx.min()) must start at 0, not {}".format(self.edge_idx.min()))
 
     @classmethod
     def from_data_list(cls, data_list):
@@ -56,8 +56,8 @@ class GraphBatch(GraphData):
 
         node_repeats = torch.tensor([data.x.shape[0] for data in data_list])
         edge_repeats = torch.tensor([data.e.shape[0] for data in data_list])
-        node_idx = torch.repeat_interleave(torch.range(0, node_repeats.shape[0] - 1, dtype=torch.long), node_repeats)
-        edge_idx = torch.repeat_interleave(torch.range(0, edge_repeats.shape[0] - 1, dtype=torch.long), edge_repeats)
+        node_idx = torch.repeat_interleave(torch.arange(0, node_repeats.shape[0], dtype=torch.long), node_repeats)
+        edge_idx = torch.repeat_interleave(torch.arange(0, edge_repeats.shape[0], dtype=torch.long), edge_repeats)
 
         # concatenate edges
         edges = torch.cat([data.edges for data in data_list], dim=1)
