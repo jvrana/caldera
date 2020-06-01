@@ -89,10 +89,13 @@ class GraphBatch(GraphData):
         edict = to_dict(gidx_e, edge_attr)
         edgesdict = to_dict(gidx_edge, edges)
         datalist = []
+        n_sizes = 0
         for k in ndict:
-            _edges = edgesdict[k].T - edgesdict[k].min()
+            _edges = edgesdict[k].T
+            _edges -= n_sizes
+            n_sizes += ndict[k].shape[0]
 
-            data = GraphData(ndict[k], edict[k], self.g[k], _edges)
+            data = GraphData(ndict[k], edict[k], torch.unsqueeze(self.g[k], 0), _edges)
             datalist.append(data)
         return datalist
 
@@ -106,8 +109,18 @@ class GraphBatch(GraphData):
         graphs = []
         for data in self.to_data_list():
             graphs.append(data.to_networkx(feature_key, global_attr_key=global_attr_key))
+        return graphs
 
     @staticmethod
     def from_networkx_list(graphs: List[nx.DiGraph], *args, **kwargs) -> 'GraphBatch':
         data_list = [GraphData.from_networkx(g, *args, **kwargs) for g in graphs]
         return GraphBatch.from_data_list(data_list)
+
+    def _eq_helper(self, *args, **kwargs):
+        raise NotImplementedError("Cannot compare batches")
+
+    def allclose(self, *args, **kwargs):
+        raise NotImplementedError("Cannot compare batches")
+
+    def __eq__(self, *args, **kwargs):
+        raise NotImplementedError("Cannot compare batches")

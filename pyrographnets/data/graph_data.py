@@ -5,7 +5,7 @@ from pyrographnets.utils import _first
 from typing import Optional
 import numpy as np
 import networkx as nx
-
+from typing import Callable
 
 class GraphData(object):
     """Data representing a single graph"""
@@ -185,3 +185,25 @@ class GraphData(object):
             size=self.x.shape[:1] + self.e.shape[:1] + self.g.shape[:1],
             shape=self.shape
         )
+
+    def _eq_helper(self, other: 'GraphData', comparator: Callable[[torch.Tensor, torch.Tensor], bool]) -> bool:
+        if not torch.all(torch.eq(self.edges, other.edges)):
+            return False
+        for attr in ['x', 'e', 'g']:
+            a = getattr(self, attr)
+            b = getattr(other, attr)
+            if not comparator(a, b):
+                return False
+        return True
+
+    def __eq__(self, other: 'GraphData') -> bool:
+        def is_eq(a, b):
+            if a.shape != b.shape:
+                return False
+            return torch.all(torch.eq(a, b))
+        return self._eq_helper(other, comparator=is_eq)
+
+    def allclose(self, other: 'GraphData', **kwargs) -> bool:
+        def _allclose(a, b):
+            return torch.allclose(a, b, **kwargs)
+        return self._eq_helper(other, comparator=_allclose)
