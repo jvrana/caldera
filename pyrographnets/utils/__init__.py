@@ -1,5 +1,13 @@
 import itertools
-from pyrographnets.utils.scatter_group import scatter_group
+from pyrographnets.utils.jit import scatter_group, stable_arg_sort_long, jit_scatter_group, unique_with_counts
+from typing import TypeVar
+from typing import Callable
+from typing import List, Dict
+
+
+T = TypeVar("T")
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 def pairwise(iterable):
@@ -12,3 +20,18 @@ def pairwise(iterable):
 def _first(i):
     """Select the first element in an iterable"""
     return next((x for x in itertools.tee(i)[0]))
+
+
+def dict_collate(d1: Dict[K, T], d2: Dict[K, T], collate_fn: Callable[[List[T]], V]) -> Dict[K, V]:
+    d = {}
+    for k, v in d1.items():
+        if k not in d:
+            d[k] = [v]
+        else:
+            d[k].append(v)
+    for k, v in d2.items():
+        if k not in d:
+            d[k] = [v]
+        else:
+            d[k].append(v)
+    return {k: collate_fn(v) for k, v in d.items()}

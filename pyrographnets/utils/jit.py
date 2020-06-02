@@ -15,7 +15,7 @@ def stable_arg_sort_long(arr):
 
 
 @torch.jit.script
-def unique_with_counts(arr, grouped: Dict[int, int]):
+def unique_with_counts(arr: torch.Tensor, grouped: Dict[int, int]):
     """
     Equivalent to `np.unqiue(x, return_counts=True)`
     
@@ -40,7 +40,7 @@ def unique_with_counts(arr, grouped: Dict[int, int]):
 
 
 @torch.jit.script
-def _jit_scatter_group(x: torch.Tensor, idx: torch.Tensor, d: Dict[int, int]) -> Tuple[
+def jit_scatter_group(x: torch.Tensor, idx: torch.Tensor, d: Dict[int, int]) -> Tuple[
     torch.Tensor, List[torch.Tensor]]:
     """
     Assume idx is a sorted index
@@ -91,4 +91,4 @@ def scatter_group(x: torch.Tensor, idx: torch.Tensor) -> Tuple[torch.Tensor, Lis
     :param idx: indices
     :return: tuple of unique, sorted indices and a list of tensors corresponding to the groups
     """
-    return _jit_scatter_group(x, idx, {})
+    return jit_scatter_group(x, idx, {})

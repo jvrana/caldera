@@ -208,6 +208,152 @@ class TestGraphData:
 
         Comparator.data_to_nx(data, g, fkey, gkey)
 
+class TestGraphDataModifiers:
+
+    def test_append_nodes(self):
+        data = GraphData(
+            torch.randn(10, 5),
+            torch.randn(5, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 5]))
+        )
+
+        assert data.x.shape[0] == 10
+        data.append_nodes(torch.randn(2, 5))
+        assert data.x.shape[0] == 12
+
+    def test_append_edges(self):
+        data = GraphData(
+            torch.randn(10, 5),
+            torch.randn(5, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 5]))
+        )
+
+        e = torch.randn(3, 4)
+        edges = torch.randint(0, 10, torch.Size([2, 3]))
+        data.append_edges(e, edges)
+
+    def test_invalid_append_edges(self):
+        data = GraphData(
+            torch.randn(10, 5),
+            torch.randn(5, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 5]))
+        )
+
+        e = torch.randn(3, 4)
+        edges = torch.randint(0, 10, torch.Size([2, 4]))
+        with pytest.raises(RuntimeError):
+            data.append_edges(e, edges)
+
+
+
+
+class TestGraphBatchModifiers:
+
+    def test_batch_append_nodes(self):
+
+        datalist = [random_data(5, 6, 7) for _ in range(10)]
+        batch = GraphBatch.from_data_list(datalist)
+
+        x = torch.randn(3, 5)
+        idx = torch.tensor([0, 1, 2])
+
+        node_shape = batch.x.shape
+        batch.append_nodes(x, idx)
+        print(batch.node_idx.shape)
+
+        assert node_shape[0] < batch.x.shape[0]
+        print(batch.node_idx.shape)
+        print(batch.x.shape)
+
+
+    def test_change_connectivity(self):
+        """Tests changing the connectivity of the batch"""
+        datalist = [random_data(5, 3, 4) for _ in range(2000)]
+        batch = GraphBatch.from_data_list(datalist)
+
+        a = torch.randint(0, 2, (batch.e.shape[0],))
+
+        # begin tracking gradients
+        a.requires_grad = True
+
+        b = torch.where(a == 1)
+        e = batch.e
+        edge_idx = batch.edge_idx
+        edges = batch.edges
+
+        # mask connectivity
+        edges = edges.T[b].T
+        edge_idx = edge_idx[b]
+        e = e[b]
+
+        assert edges.shape[1] < batch.edges.shape[1]
+        assert e.shape[0] < batch.e.shape[0]
+        assert edge_idx.shape[0] < batch.edge_idx.shape[0]
+
+        new_batch = GraphBatch(batch.x, e, batch.g, edges, batch.node_idx, edge_idx)
+
+        assert new_batch.edges.shape[1] < batch.edges.shape[1]
+
+    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    def test_is_differentiable__to_datalist(self, attr):
+        datalist = [random_data(5, 3, 4) for _ in range(300)]
+
+        batch = GraphBatch.from_data_list(datalist)
+
+        getattr(batch, attr).requires_grad = True
+
+        datalist = batch.to_data_list()
+        for data in datalist:
+            assert getattr(data, attr).requires_grad
+
+    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    def test_is_differentiable__from_datalist(self, attr):
+        datalist = [random_data(5, 3, 4) for _ in range(300)]
+        for data in datalist:
+            getattr(data, attr).requires_grad = True
+        batch = GraphBatch.from_data_list(datalist)
+        assert getattr(batch, attr).requires_grad
+
+    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    def test_is_differentiable__append_nodes(self, attr):
+        datalist = [random_data(5, 3, 4) for _ in range(300)]
+        for data in datalist:
+            getattr(data, attr).requires_grad = True
+        batch = GraphBatch.from_data_list(datalist)
+
+        new_nodes = torch.randn(10, 5)
+        idx = torch.ones(10, dtype=torch.long)
+        n_nodes = batch.x.shape[0]
+        batch.append_nodes(new_nodes, idx)
+        assert batch.x.shape[0] == n_nodes + 10
+        assert getattr(batch, attr).requires_grad
+
+
+    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    def test_is_differentiable__append_edges(self, attr):
+        datalist = [random_data(5, 3, 4) for _ in range(300)]
+        for data in datalist:
+            getattr(data, attr).requires_grad = True
+        batch = GraphBatch.from_data_list(datalist)
+
+        new_edge_attr = torch.randn(20, 3)
+        new_edges = torch.randint(0, batch.x.shape[0], (2, 20))
+        idx = torch.randint(0, 30, (new_edges.shape[1],))
+        idx = torch.sort(idx).values
+
+        n_edges = batch.e.shape[0]
+        batch.append_edges(new_edge_attr, new_edges, idx)
+        assert batch.e.shape[0] == n_edges + 20
+        assert batch.edge_idx.shape[0] == n_edges + 20
+        assert batch.edges.shape[1] == n_edges + 20
+
+        assert getattr(batch, attr).requires_grad
+
+
+
 
 class TestInvalidGraphData:
     def test_invalid_number_of_edges(self):
@@ -417,7 +563,7 @@ class TestGraphBatch:
         with pytest.raises(RuntimeError):
             GraphBatch.from_data_list([data1, data2])
 
-    @pytest.mark.parametrize('n', [1, 3, 10, 1000])
+    @pytest.mark.parametrize('n', [3, 10, 1000])
     def test_from_data_list(self, n):
         datalist = [random_data(5, 3, 4) for _ in range(n)]
         batch = GraphBatch.from_data_list(datalist)

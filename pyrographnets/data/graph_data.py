@@ -221,6 +221,21 @@ class GraphData(object):
             return torch.all(torch.eq(a, b))
         return self._eq_helper(other, comparator=is_eq)
 
+    # TODO: implement this for batch?
+    def append_nodes(self, node_attr: torch.Tensor):
+        assert isinstance(self, GraphData)
+        if not node_attr.ndim == 2:
+            raise RuntimeError("Node attributes must have 2 dimensions")
+
+        self.x = torch.cat([self.x, node_attr])
+        self.debug()
+
+    def append_edges(self, edge_attr: torch.Tensor, edges: torch.Tensor):
+        assert isinstance(self, GraphData)
+        self.edges = torch.cat([self.edges, edges], dim=1)
+        self.e = torch.cat([self.e, edge_attr])
+        self.debug()
+
     def allclose(self, other: 'GraphData', **kwargs) -> bool:
         def _allclose(a, b):
             return torch.allclose(a, b, **kwargs)
