@@ -681,3 +681,4 @@ MigrationBackup/
 *.yaml
 
 tests/pytest_runs/**/*
+runs/**/*
