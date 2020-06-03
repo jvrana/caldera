@@ -30,15 +30,15 @@ class GraphBatch(GraphData):
         if not self.edge_idx.dtype == torch.long:
             raise RuntimeError(
                 "Wrong tensor type. `edge_idx` must be dtype={} not {}".format(self.edge_idx.dtype, torch.long))
-        if not self.node_idx.max() == self.edge_idx.max():
+        if self.node_idx.shape[0] and self.edge_idx.shape[0] and self.node_idx.max() != self.edge_idx.max():
             raise RuntimeError("Number of graphs in node_idx {} and edge_idx {} mismatch".format(
                 self.node_idx.max(), self.edge_idx.max()
             ))
-        if not self.node_idx.shape[0] == self.x.shape[0]:
+        if self.node_idx.shape[0] and self.node_idx.shape[0] != self.x.shape[0]:
             raise RuntimeError("Number of node indices {} must match number of node attr {}".format(
                 self.node_idx.shape[0], self.x.shape[0]
             ))
-        if not self.edge_idx.shape[0] == self.e.shape[0]:
+        if self.edge_idx.shape[0] and self.edge_idx.shape[0] != self.e.shape[0]:
             raise RuntimeError("Number of node indices {} must match number of node attr {}".format(
                 self.edge_idx.shape[0], self.e.shape[0]
             ))
