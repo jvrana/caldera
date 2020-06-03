@@ -247,6 +247,10 @@ class TestGraphDataModifiers:
         with pytest.raises(RuntimeError):
             data.append_edges(e, edges)
 
+    def test_differentiable__mask_connectivity(self):
+        """Tests changing the connectivity of the batch"""
+        data = random_data(5, 4, 3)
+        print(data.size)
 
 
 
@@ -268,34 +272,6 @@ class TestGraphBatchModifiers:
         print(batch.node_idx.shape)
         print(batch.x.shape)
 
-
-    def test_change_connectivity(self):
-        """Tests changing the connectivity of the batch"""
-        datalist = [random_data(5, 3, 4) for _ in range(2000)]
-        batch = GraphBatch.from_data_list(datalist)
-
-        a = torch.randint(0, 2, (batch.e.shape[0],))
-
-        # begin tracking gradients
-        a.requires_grad = True
-
-        b = torch.where(a == 1)
-        e = batch.e
-        edge_idx = batch.edge_idx
-        edges = batch.edges
-
-        # mask connectivity
-        edges = edges.T[b].T
-        edge_idx = edge_idx[b]
-        e = e[b]
-
-        assert edges.shape[1] < batch.edges.shape[1]
-        assert e.shape[0] < batch.e.shape[0]
-        assert edge_idx.shape[0] < batch.edge_idx.shape[0]
-
-        new_batch = GraphBatch(batch.x, e, batch.g, edges, batch.node_idx, edge_idx)
-
-        assert new_batch.edges.shape[1] < batch.edges.shape[1]
 
     @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
     def test_is_differentiable__to_datalist(self, attr):
