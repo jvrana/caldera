@@ -2,7 +2,7 @@ from os.path import abspath
 from os.path import dirname
 from os.path import join
 
-from pyro_graph_nets.utils.tensorboard import new_writer as new_summary_writer
+from archived.pyro_graph_nets.utils.tensorboard import new_writer as new_summary_writer
 
 runs = join(abspath(dirname(__file__)), ".runs")
 
@@ -23,15 +23,15 @@ def new_writer():
     return make_new_writer
 
 
-from pyro_graph_nets.examples.shortest_path import generate_networkx_graphs
+from archived.pyro_graph_nets import generate_networkx_graphs
 import numpy as np
 
 import torch
-from pyro_graph_nets.flex import Flex
-from pyro_graph_nets.models import GraphEncoder, GraphNetwork
-from pyro_graph_nets.blocks import EdgeBlock, NodeBlock, GlobalBlock, MLP, Aggregator
-from pyro_graph_nets.utils.graph_tuple import cat_gt, to_graph_tuple
-from pyro_graph_nets.utils.data import GraphDataLoader, GraphDataset
+from archived.pyro_graph_nets import Flex
+from archived.pyro_graph_nets import GraphEncoder, GraphNetwork
+from archived.pyro_graph_nets import EdgeBlock, NodeBlock, GlobalBlock, MLP, Aggregator
+from archived.pyro_graph_nets.utils import cat_gt, to_graph_tuple
+from archived.pyro_graph_nets.utils import GraphDataLoader, GraphDataset
 
 
 class EncodeProcessDecode(torch.nn.Module):

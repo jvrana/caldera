@@ -56,7 +56,7 @@ Dimensions:
 To convert a list of netorkx graphs into GraphTuple
 
 ```python
-from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
+from archived.pyro_graph_nets.utils import to_graph_tuple
 
 # expect 'features' key on node_attributes
 # expect 'features' key on edge_attributes
@@ -79,7 +79,7 @@ The `Flex` API allows automatic setting of input dimensions.
 A simple example demonstrates this.
 
 ```python
-from pyro_graph_nets.flex import Flex
+from archived.pyro_graph_nets import Flex
 from torch import nn
 from torch import tensor
 
@@ -114,8 +114,8 @@ FlexBlock(
 `GraphDataLoader` and `GraphDataset` provides graph data for 
 
 ```python
-from pyro_graph_nets.utils.data import GraphDataLoader, GraphDataset
-from pyro_graph_nets.utils.graph_tuple import to_graph_tuple
+from archived.pyro_graph_nets.utils import GraphDataLoader, GraphDataset
+from archived.pyro_graph_nets.utils import to_graph_tuple
 
 dataset = GraphDataset(graphs)
 dataloader = GraphDataLoader(dataset, batch_size=10, shuffle=True)
