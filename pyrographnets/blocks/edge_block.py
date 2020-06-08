@@ -23,8 +23,16 @@ class AggregatingEdgeBlock(EdgeBlock):
         super().__init__(mlp)
         self._independent = False
 
-    def forward(self, edge_attr: torch.tensor, node_attr: torch.tensor, edges: torch.tensor):
-        out = torch.cat([node_attr[edges[0]], node_attr[edges[1]], edge_attr], 1)
+    def forward(self, edge_attr: torch.tensor, node_attr: torch.tensor, edges: torch.tensor,
+                global_attr: torch.Tensor = None,
+                edge_index: torch.Tensor = None):
+        to_agg = (node_attr[edges[0]], node_attr[edges[1]])
+        if global_attr is not None:
+            if edge_index is None:
+                raise RuntimeError("If `global_attr` provided must also provide `edge_index`")
+            to_agg += (global_attr[edge_index], )
+        out = torch.cat([*to_agg, edge_attr], 1)
+
         return self.block_dict['mlp'](out)
 
     def forward_from_data(self, data: GraphData):

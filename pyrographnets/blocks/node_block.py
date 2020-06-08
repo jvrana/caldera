@@ -28,10 +28,14 @@ class AggregatingNodeBlock(NodeBlock):
         self._independent = False
 
     # TODO: source_to_target, target_to_source
-    def forward(self, node_attr, edge_attr, edges):
+    def forward(self, node_attr, edge_attr, edges, global_attr: torch.Tensor = None, node_index: torch.Tensor = None):
         # source_to_dest or dest_to_source
-        aggregated = self.block_dict['edge_aggregator'](edge_attr, edges[1], dim=0, dim_size=node_attr.size(0))
-        out = torch.cat([node_attr, aggregated], dim=1)
+        aggregated = (self.block_dict['edge_aggregator'](edge_attr, edges[1], dim=0, dim_size=node_attr.size(0)), )
+        if global_attr is not None:
+            if node_index is None:
+                raise RuntimeError("Must provide `node_index` if providing `global_attr`")
+            aggregated += (global_attr[node_index], )
+        out = torch.cat([node_attr, *aggregated], dim=1)
         return self.block_dict['mlp'](out)
 
     def forward_from_data(self, data: GraphBatch):
