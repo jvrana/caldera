@@ -33,44 +33,44 @@ make lock
 
 ## Tour
 
-##### GraphTuple
+### GraphData, GraphBatch, GraphDataLoader
 
-The `GraphTuple` an object borrowed from deepminds/graph_nets 
-that represents MultiGraphs and MultiDiGraphs. The `GraphTuple` is a tuple of
-`tensor.tensor` objects represnting multigraphs (directed and undirected).
+The `GraphData` an object borrowed heavily from deepminds/graph_nets and 
+Pytorch Geometric that represents MultiGraphs and MultiDiGraphs. 
+The `GraphData` is a tuple of `tensor.tensor` objects represnting multigraphs 
+(directed and undirected).
 
 Dimensions:
 
-`gt.node_attr` - [n_nodes, num_node_features]
+`gt.x` - [n_nodes, num_node_features]
 
-`gt.edge_attr` - [n_edges, num_edge_features]
+`gt.e` - [n_edges, num_edge_features]
 
-`gt.global_attr` - [n_graphs, num_global_features]
+`gt.g` - [n_graphs, num_global_features]
 
 `gt.edges` - [n_edges, 2]
 
-`gt.node_indices` - [n_nodes]
+To support minbatch training, the `GraphBatch` represents a batch of
+GraphData instances and has the following additional tensors:
 
-`gt.edge_indices` - [n_edges]
 
-To convert a list of netorkx graphs into GraphTuple
+`gt.node_idx` - [n_nodes]
 
-```python
-from archived.pyro_graph_nets.utils import to_graph_tuple
+`gt.edge_idx` - [n_edges]
 
-# expect 'features' key on node_attributes
-# expect 'features' key on edge_attributes
-# expect 'features' key on `graph.data` attribute
+Conversion between GraphData lists and GraphBatch instances are supported
+as well as conversion between GraphData and GraphBatch to and from networkx objects.
 
-gt = to_graph_tuple(graphs, feature_key='features')
-```
-
-For input and target data, it is easy to keep different features on the same graph 
-and pull out the relevant data using a specified key:
+The `GraphDataLoader` class provides a data loader for returning `GraphBatch`
+instances from a list of `GraphData` objects.
 
 ```python
-input_gt = to_graph_tuple(graphs, feature_key='features')
-target_gt = to_graph_tuple(graphs, feature_key='target')
+from pyrographnets.data import GraphDataLoader
+
+loader = GraphDataLoader(data, batch_size=32, shuffle=True)
+
+for graph_batch in loader:
+    pass # training loop here
 ```
 
 ##### FlexAPI
@@ -142,6 +142,18 @@ TODO: show example where any layers can be added to a graph network.
 Custom types of aggregation layers
 
 Custom blocks
+
+### Simulating Chemical Reaction Networks
+
+
+Target: randomized non-cyclic circuits and steady-state
+
+
+* learning circuit behavior from steady-state data
+*  
+* ... with unexpected cross-talk of parts
+* ... with part specific toxicity simulated
+* simulating uncertainty
 
 ### Hyperparameter Optimization
 
