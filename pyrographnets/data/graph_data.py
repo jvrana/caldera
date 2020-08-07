@@ -126,6 +126,7 @@ class GraphData(object):
             *[getattr(self, field).clone() for field in self.__class__.__slots__]
         )
 
+    # TODO: docstrings
     @staticmethod
     def from_networkx(g: GraphType,
                       n_node_feat: Optional[int] = None,
@@ -133,6 +134,16 @@ class GraphData(object):
                       n_glob_feat: Optional[int] = None,
                       feature_key: str = 'features',
                       global_attr_key: str = 'data'):
+        """
+
+        :param g:
+        :param n_node_feat:
+        :param n_edge_feat:
+        :param n_glob_feat:
+        :param feature_key: The key to look for data in node, edge, and global data.
+        :param global_attr_key: Key to look for global data.
+        :return:
+        """
         if hasattr(g, global_attr_key):
             gdata = getattr(g, global_attr_key)
         else:
