@@ -164,6 +164,16 @@ class GraphBatch(GraphData):
         self.debug()
         return self
 
+    def to(self, device):
+        return self.__class__(
+            self.x.to(device),
+            self.e.to(device),
+            self.g.to(device),
+            self.edges.to(device),
+            self.node_idx.to(device),
+            self.edge_idx.to(device)
+        )
+
     # def append_edges
         # def collect_and_collate(x1, i1, x2, i2, collate_fn = torch.cat):
         #     i1, groups1 = scatter_group(x1, i1)
