@@ -6,8 +6,8 @@ from typing import Optional
 import numpy as np
 import networkx as nx
 from typing import Callable
-from typing import TypeVar, Type
-
+from typing import TypeVar, Type, Tuple, Any, Dict
+from pyrographnets.utils import same_storage
 
 GraphType = TypeVar('GraphType', nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
@@ -63,15 +63,49 @@ class GraphData(object):
                 "Edges must have 2 dimensions"
             )
 
-    def apply(self, func):
-        for f in self.__slots__:
-            func(getattr(self, f))
+    def _apply(self, func, new_inst: bool, args: Tuple[Any, ...] = tuple(), kwargs: Dict = None) \
+            -> 'GraphData':
+        """
+        Applies the function to the graph. Be mindful of what the function is doing.
 
-    def to(self, device: str):
-        self.apply(lambda x: x.to(device))
+        Ask the following before using this function:
+
+        1. Is it applying the function in place? copying it?
+        2. Is the function recorded in the computation graph? Will you need to detach it?
+
+        :param func: function to apply
+        :param new_inst: Whether to create a new GraphData instance. Values will be copied (and detached by default).
+        :param detatch_new_inst: Detaches copied vectors from the computation graph. This should almost always be left
+            `True`.
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        if kwargs is None:
+            kwargs = {}
+        init_args = ()
+        for f in self.__slots__:
+            old_val = getattr(self, f)
+            val = func(old_val, *args, **kwargs)
+            if new_inst:
+                init_args.append(val)
+        if new_inst:
+            return self.__class__(*init_args)
+
+    # TODO: finish clone, copy, apply, etc.
+    def apply(self, func, args, kwargs):
+        """Applies the function to the data, creating a new instance of GraphData"""
+        return self._apply(func, new_inst=True, args=args, kwargs=kwargs)
+
+    def apply_(self, func, args, kwargs):
+        """Applies the function in place to the data, wihout creating a new instance of GraphData"""
+        return self._apply(func, new_inst=False, args=args, kwargs=kwargs)
+
+    def to(self, device: str, *args, **kwargs):
+        return self.apply(lambda x: x.to(device, *args, **kwargs))
 
     def contiguous(self):
-        self.apply(lambda x: x.contiguous())
+        return self.apply(lambda x: x.contiguous())
 
     @property
     def num_graphs(self):
@@ -122,9 +156,14 @@ class GraphData(object):
         )
 
     def clone(self):
+        """Clones the data. Note that like the `clone()` method, this function will
+        be recorded in the computation graph."""
         return self.__class__(
             *[getattr(self, field).clone() for field in self.__class__.__slots__]
         )
+
+    def copy(self):
+        """Unlike clone, copies the data *without the computation graph*"""
 
     # TODO: docstrings
     @staticmethod

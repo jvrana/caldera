@@ -1,5 +1,6 @@
 import itertools
 from pyrographnets.utils.jit import scatter_group, stable_arg_sort_long, jit_scatter_group, unique_with_counts
+from pyrographnets.utils.torch_utils import same_storage
 from typing import TypeVar
 from typing import Callable
 from typing import List, Dict
