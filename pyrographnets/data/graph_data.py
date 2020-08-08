@@ -11,7 +11,7 @@ from pyrographnets.utils import same_storage
 
 GraphType = TypeVar('GraphType', nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
-
+# TODO: there should be a super class, TorchComposition, with apply methods etc.
 class GraphData(object):
     """Data representing a single graph"""
     __slots__ = ['x', 'e', 'g', 'edges']
@@ -83,7 +83,7 @@ class GraphData(object):
         """
         if kwargs is None:
             kwargs = {}
-        init_args = ()
+        init_args = []
         for f in self.__slots__:
             old_val = getattr(self, f)
             val = func(old_val, *args, **kwargs)
@@ -93,11 +93,11 @@ class GraphData(object):
             return self.__class__(*init_args)
 
     # TODO: finish clone, copy, apply, etc.
-    def apply(self, func, args, kwargs):
+    def apply(self, func, *args, **kwargs):
         """Applies the function to the data, creating a new instance of GraphData"""
         return self._apply(func, new_inst=True, args=args, kwargs=kwargs)
 
-    def apply_(self, func, args, kwargs):
+    def apply_(self, func, *args, **kwargs):
         """Applies the function in place to the data, wihout creating a new instance of GraphData"""
         return self._apply(func, new_inst=False, args=args, kwargs=kwargs)
 

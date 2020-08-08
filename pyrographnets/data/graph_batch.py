@@ -13,6 +13,7 @@ from pyrographnets.utils import stable_arg_sort_long
 class GraphBatch(GraphData):
     __slots__ = GraphData.__slots__ + ['node_idx', 'edge_idx']
 
+    # TODO: global_idx
     def __init__(self, node_attr, edge_attr, global_attr, edges, node_idx, edge_idx):
         super(GraphBatch, self).__init__(node_attr, edge_attr, global_attr, edges)
         self.node_idx = node_idx
