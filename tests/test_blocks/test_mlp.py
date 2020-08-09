@@ -2,13 +2,10 @@ from pyrographnets.blocks import MLP
 import torch
 import pytest
 
-@pytest.mark.parametrize('layers', [
-    (8, 32),
-    (16, 16, 32),
-    (64, 16, 8)
-])
-@pytest.mark.parametrize('dropout', [None, 0.0, 0.2, 0.5])
-@pytest.mark.parametrize('layer_norm', [False, True])
+
+@pytest.mark.parametrize("layers", [(8, 32), (16, 16, 32), (64, 16, 8)])
+@pytest.mark.parametrize("dropout", [None, 0.0, 0.2, 0.5])
+@pytest.mark.parametrize("layer_norm", [False, True])
 def test_mlp(layers, dropout, layer_norm):
     block = MLP(*layers, dropout=dropout, layer_norm=layer_norm)
     out = block(torch.randn(10, layers[0]))

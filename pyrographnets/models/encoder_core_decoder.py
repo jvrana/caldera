@@ -14,6 +14,7 @@ from pyrographnets.blocks import Flex
 from pyrographnets.blocks import MLP
 from functools import partial
 
+
 class Network(torch.nn.Module):
     def __init__(
         self,
@@ -48,7 +49,9 @@ class Network(torch.nn.Module):
         }
 
         def mlp(*layer_sizes):
-            return Flex(MLP)(Flex.d(), *layer_sizes, layer_norm=layer_norm, dropout=dropout)
+            return Flex(MLP)(
+                Flex.d(), *layer_sizes, layer_norm=layer_norm, dropout=dropout
+            )
 
         self.encoder = GraphEncoder(
             EdgeBlock(mlp(latent_sizes[0])),
@@ -67,12 +70,9 @@ class Network(torch.nn.Module):
         ]["core_global_block_depth"]
 
         self.core = GraphCore(
-            AggregatingEdgeBlock(
-                mlp(*edge_layers)
-            ),
+            AggregatingEdgeBlock(mlp(*edge_layers)),
             AggregatingNodeBlock(
-                mlp(*node_layers),
-                Aggregator(self.config["node_block_aggregator"]),
+                mlp(*node_layers), Aggregator(self.config["node_block_aggregator"]),
             ),
             AggregatingGlobalBlock(
                 mlp(*global_layers),

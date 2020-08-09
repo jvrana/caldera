@@ -5,18 +5,18 @@ import pytest
 view_methods = {
     "slice": lambda x: x[:10],
     "cpu": lambda x: x.cpu(),
-    "contiguous": lambda x: x.contiguous()
+    "contiguous": lambda x: x.contiguous(),
 }
 
 copy_methods = {
     "clone": lambda x: x.clone(),
     "torch.tensor": lambda x: torch.tensor(x),
-    "to(torch.float)": lambda x: x.to(torch.float)
+    "to(torch.float)": lambda x: x.to(torch.float),
 }
 
 if torch.cuda.is_available():
-    device = 'cuda:' + str(torch.cuda.current_device())
-    copy_methods['to(' + device + ')'] = lambda x: x.to(device)
+    device = "cuda:" + str(torch.cuda.current_device())
+    copy_methods["to(" + device + ")"] = lambda x: x.to(device)
 
 
 def parameterize(n, d):
@@ -25,9 +25,7 @@ def parameterize(n, d):
     for k, v in d.items():
         args.append(v)
         ids.append(k)
-    return pytest.mark.parametrize(
-        n, args, ids=ids
-    )
+    return pytest.mark.parametrize(n, args, ids=ids)
 
 
 @parameterize("f", view_methods)

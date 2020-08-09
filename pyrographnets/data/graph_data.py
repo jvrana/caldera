@@ -109,7 +109,9 @@ class GraphData(object):
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
 
-    def share_storage(self, other: GraphData, return_dict: Optional[bool] = False) -> Union[Dict[str, bool], bool]:
+    def share_storage(
+        self, other: GraphData, return_dict: Optional[bool] = False
+    ) -> Union[Dict[str, bool], bool]:
         """
         Check if this data shares storage with another data.
 
