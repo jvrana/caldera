@@ -40,9 +40,8 @@ def unique_with_counts(arr: torch.Tensor, grouped: Dict[int, int]):
 
 
 @torch.jit.script
-def jit_scatter_group(
-    x: torch.Tensor, idx: torch.Tensor, d: Dict[int, int]
-) -> Tuple[torch.Tensor, List[torch.Tensor]]:
+def jit_scatter_group(x: torch.Tensor, idx: torch.Tensor, d: Dict[int, int]) -> Tuple[
+    torch.Tensor, List[torch.Tensor]]:
     """
     Assume idx is a sorted index
 
@@ -57,14 +56,12 @@ def jit_scatter_group(
     i_a = 0
     arr_list = []
     for i_b in b:
-        arr_list.append(x[i_a : i_a + i_b.item()])
+        arr_list.append(x[i_a:i_a + i_b.item()])
         i_a += i_b.item()
     return groups, arr_list
 
 
-def scatter_group(
-    x: torch.Tensor, idx: torch.Tensor
-) -> Tuple[torch.Tensor, List[torch.Tensor]]:
+def scatter_group(x: torch.Tensor, idx: torch.Tensor) -> Tuple[torch.Tensor, List[torch.Tensor]]:
     """
     Group a tensor by indices. This is equivalent to successive applications of `x[torch.where(x == index)]`
     for all provided sorted indices

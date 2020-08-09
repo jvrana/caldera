@@ -35,11 +35,8 @@ class FlexBlock(torch.nn.Module):
             if isinstance(a, FlexDim):
                 rargs.append(a.resolve(input_args, input_kwargs))
             elif a is FlexDim:
-                raise ValueError(
-                    "Found {}. Initialize FlexDim to use flexible dimensions, `Flex.d()` or `FlexDim()`".format(
-                        a
-                    )
-                )
+                raise ValueError("Found {}. Initialize FlexDim to use flexible dimensions, `Flex.d()` or `FlexDim()`".format(
+                a))
             else:
                 rargs.append(a)
         return rargs
