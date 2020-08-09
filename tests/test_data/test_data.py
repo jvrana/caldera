@@ -2,21 +2,21 @@ from pyrographnets.data import GraphData, GraphBatch
 import torch
 import pytest
 import networkx as nx
-from pyrographnets.data.utils import random_data
 from flaky import flaky
 
+random_graph_data = GraphData.random
 
 def test_random_data():
-    random_data(5, 4, 3)
+    random_graph_data(5, 4, 3)
 
 
 @pytest.fixture
 def random_data_example(request):
     if request.param[0] is GraphData:
-        graph_data = random_data(*request.param[1])
+        graph_data = random_graph_data(*request.param[1])
         return graph_data
     elif request.param[0] is GraphBatch:
-        datalist = [random_data(*request.param[1]) for _ in range(10)]
+        datalist = [random_graph_data(*request.param[1]) for _ in range(10)]
         batch = GraphBatch.from_data_list(datalist)
         return batch
     else:
@@ -355,14 +355,14 @@ class TestGraphDataModifiers:
 
     def test_differentiable__mask_connectivity(self):
         """Tests changing the connectivity of the batch"""
-        data = random_data(5, 4, 3)
+        data = random_graph_data(5, 4, 3)
         print(data.size)
 
 
 class TestGraphBatchModifiers:
     def test_batch_append_nodes(self):
 
-        datalist = [random_data(5, 6, 7) for _ in range(10)]
+        datalist = [random_graph_data(5, 6, 7) for _ in range(10)]
         batch = GraphBatch.from_data_list(datalist)
 
         x = torch.randn(3, 5)
@@ -378,7 +378,7 @@ class TestGraphBatchModifiers:
 
     @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__to_datalist(self, attr):
-        datalist = [random_data(5, 3, 4) for _ in range(300)]
+        datalist = [random_graph_data(5, 3, 4) for _ in range(300)]
 
         batch = GraphBatch.from_data_list(datalist)
 
@@ -390,7 +390,7 @@ class TestGraphBatchModifiers:
 
     @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__from_datalist(self, attr):
-        datalist = [random_data(5, 3, 4) for _ in range(300)]
+        datalist = [random_graph_data(5, 3, 4) for _ in range(300)]
         for data in datalist:
             getattr(data, attr).requires_grad = True
         batch = GraphBatch.from_data_list(datalist)
@@ -398,7 +398,7 @@ class TestGraphBatchModifiers:
 
     @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__append_nodes(self, attr):
-        datalist = [random_data(5, 3, 4) for _ in range(300)]
+        datalist = [random_graph_data(5, 3, 4) for _ in range(300)]
         for data in datalist:
             getattr(data, attr).requires_grad = True
         batch = GraphBatch.from_data_list(datalist)
@@ -412,7 +412,7 @@ class TestGraphBatchModifiers:
 
     @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__append_edges(self, attr):
-        datalist = [random_data(5, 3, 4) for _ in range(300)]
+        datalist = [random_graph_data(5, 3, 4) for _ in range(300)]
         for data in datalist:
             getattr(data, attr).requires_grad = True
         batch = GraphBatch.from_data_list(datalist)
@@ -603,7 +603,7 @@ class TestGraphBatch:
 
     @pytest.mark.parametrize("n", [3, 10, 1000])
     def test_from_data_list(self, n):
-        datalist = [random_data(5, 3, 4) for _ in range(n)]
+        datalist = [random_graph_data(5, 3, 4) for _ in range(n)]
         batch = GraphBatch.from_data_list(datalist)
         assert batch.x.shape[0] > n
         assert batch.e.shape[0] > n
@@ -613,7 +613,7 @@ class TestGraphBatch:
         assert batch.g.shape[1] == 4
 
     def test_to_datalist(self):
-        datalist = [random_data(5, 6, 7) for _ in range(1000)]
+        datalist = [random_graph_data(5, 6, 7) for _ in range(1000)]
         batch = GraphBatch.from_data_list(datalist)
         print(batch.shape)
         print(batch.size)
@@ -638,8 +638,18 @@ class TestGraphBatch:
     )
     def test_to_networkx_list(self, fkey_gkey):
         fkey, gkey = fkey_gkey
-        datalist = [random_data(5, 5, 5) for _ in range(3)]
+        datalist = [random_graph_data(5, 5, 5) for _ in range(3)]
         batch = GraphBatch.from_data_list(datalist)
         graphs = batch.to_networkx_list(feature_key=fkey, global_attr_key=gkey)
         for data, graph in zip(datalist, graphs):
             Comparator.data_to_nx(data, graph, fkey, gkey)
+
+
+def test_graph_data_random():
+    assert GraphData.random(5, 5, 5)
+
+
+def test_graph_batch_random_batch():
+    batch = GraphBatch.random_batch(10, 5, 5, 5)
+    print(batch.size)
+    print(batch.shape)

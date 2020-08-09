@@ -13,6 +13,7 @@ from typing import Union
 
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
+
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
 class GraphData(object):
     """Data representing a single graph"""
@@ -180,15 +181,24 @@ class GraphData(object):
             d = {k: ~v for k, v in d.items()}
         return self.__class__(*self._mask_fields(d))
 
+    # TODO: clone tests
     def clone(self):
         """Clones the data. Note that like the `clone()` method, this function will
         be recorded in the computation graph."""
-        return self.__class__(
-            *[getattr(self, field).clone() for field in self.__class__.__slots__]
-        )
+        return self.apply(lambda x: x.clone())
 
-    def copy(self):
+    # TODO: copy tests
+    def copy(self, non_blocking: bool = False, *emtpy_like_args, **emtpy_like_kwargs):
+
+        """
+        non_blocking (bool) – if True and this copy is between CPU and GPU,
+            the copy may occur asynchronously with respect to the host.
+            For other cases, this argument has no effect.
+        :return:
+        """
         """Unlike clone, copies the data *without the computation graph*"""
+        return self.apply(lambda x: torch.empty_like(x, *emtpy_like_args,
+            **emtpy_like_kwargs).copy_(x, non_blocking=non_blocking))
 
     # TODO: docstrings
     @staticmethod
@@ -328,3 +338,18 @@ class GraphData(object):
             return torch.allclose(a, b, **kwargs)
 
         return self._eq_helper(other, comparator=_allclose)
+
+    @classmethod
+    def random(cls, n_feat: int, e_feat: int, g_feat: int) -> GraphData:
+        n_nodes = torch.randint(1, 10, torch.Size([])).item()
+        n_edges = torch.randint(1, 20, torch.Size([])).item()
+        return cls(
+            torch.randn(n_nodes, n_feat),
+            torch.randn(n_edges, e_feat),
+            torch.randn(1, g_feat),
+            torch.randint(0, n_nodes, torch.Size([2, n_edges])),
+        )
+
+    # TODO: view
+    def view(self, x_slice, e_slice, g_slice) -> GraphData:
+        pass

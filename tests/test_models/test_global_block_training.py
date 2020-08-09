@@ -5,7 +5,7 @@ from pyrographnets.blocks import (
     Flex,
     MLP,
 )
-from pyrographnets.data.utils import random_data
+from pyrographnets.data.utils import random_graph_data
 from pyrographnets.data import GraphDataLoader
 import torch
 
@@ -16,7 +16,7 @@ def test_train(new_writer):
     writer = new_writer("runs/global_block")
 
     # initialize random data
-    test_data = [random_data(5, 4, 3) for _ in range(1000)]
+    test_data = [random_graph_data(5, 4, 3) for _ in range(1000)]
     test_loader = GraphDataLoader(test_data, batch_size=32, shuffle=True)
     test_mask = (
         torch.tensor([True, True, True, True, False]),
@@ -49,7 +49,7 @@ def test_train(new_writer):
     loss_fn = torch.nn.MSELoss()
 
     # training
-    for epoch in range(10p):
+    for epoch in range(10):
 
         running_loss = 0.0
         for batch_idx, batch in enumerate(test_loader):

@@ -86,14 +86,3 @@ def graph_data_to_nx(data: GraphData):
         g.add_edge(e[0], e[1], **{"features": data.e[i]})
     g.data = {"features": data.g}
     return g
-
-
-def random_data(n_features, e_features, g_features):
-    n_nodes = torch.randint(1, 10, torch.Size([])).item()
-    n_edges = torch.randint(1, 20, torch.Size([])).item()
-    return GraphData(
-        torch.randn(n_nodes, n_features),
-        torch.randn(n_edges, e_features),
-        torch.randn(1, g_features),
-        torch.randint(0, n_nodes, torch.Size([2, n_edges])),
-    )
