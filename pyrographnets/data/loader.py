@@ -1,6 +1,8 @@
 from torch.utils.data import DataLoader
 
 from pyrographnets.data import GraphData, GraphBatch
+from itertools import tee
+from pyrographnets.utils import _first
 
 
 def collate(data_list):
@@ -21,3 +23,6 @@ def collate(data_list):
 class GraphDataLoader(DataLoader):
     def __init__(self, dataset, batch_size=1, shuffle=False, **kwargs):
         super().__init__(dataset, batch_size, shuffle, collate_fn=collate, **kwargs)
+
+    def first(self):
+        return _first(tee(self)[0])

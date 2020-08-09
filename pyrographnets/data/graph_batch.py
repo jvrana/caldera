@@ -311,3 +311,24 @@ class GraphBatch(GraphData):
 
     def __eq__(self, *args, **kwargs):
         raise NotImplementedError("Cannot compare batches")
+
+    def view(self, x_slice: Optional[slice] = None,
+             e_slice: Optional[slice] = None,
+             g_slice: Optional[slice] = None,
+             edges_slice: Optional[slice] = None) -> GraphData:
+        if x_slice is None:
+            x_slice = slice(None, None, None)
+        if e_slice is None:
+            e_slice = slice(None, None, None)
+        if g_slice is None:
+            g_slice = slice(None, None, None)
+        if edges_slice is None:
+            edges_slice = slice(None, None, None)
+        return self.__class__(
+            self.x[:, x_slice],
+            self.e[:, e_slice],
+            self.g[:, g_slice],
+            self.edges[:, edges_slice],
+            self.node_idx[:],
+            self.edge_idx[e_slice]
+        )

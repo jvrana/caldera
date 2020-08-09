@@ -684,3 +684,13 @@ class TestCloneCopy():
         data2 = data.clone()
         assert id(data) != id(data2)
         assert not data.share_storage(data2)
+
+
+class TestView():
+
+    def test_view_graph_data(self):
+        data = GraphData.random(5, 5, 5)
+        assert data.shape == (5, 5, 5)
+        data_view = data.view(None, slice(None, 3), None)
+        assert data_view.shape == (5, 3, 5)
+        assert data_view.share_storage(data)
