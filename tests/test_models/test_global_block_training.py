@@ -9,8 +9,6 @@ from pyrographnets.data.utils import random_data
 from pyrographnets.data import GraphDataLoader
 import torch
 
-from tqdm.auto import tqdm
-
 
 def test_train(new_writer):
 
@@ -51,7 +49,7 @@ def test_train(new_writer):
     loss_fn = torch.nn.MSELoss()
 
     # training
-    for epoch in tqdm(range(10)):
+    for epoch in range(10p):
 
         running_loss = 0.0
         for batch_idx, batch in enumerate(test_loader):
