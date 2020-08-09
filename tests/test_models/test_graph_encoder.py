@@ -7,8 +7,7 @@ from pyrographnets.blocks import (
 )
 from pyrographnets.blocks import Aggregator
 from pyrographnets.blocks import MLP, Flex
-from pyrographnets.data.utils import random_graph_data
-from pyrographnets.data import GraphBatch
+from pyrographnets.data import GraphData, GraphBatch
 
 
 def test_graph_encoder_forward():
@@ -16,7 +15,7 @@ def test_graph_encoder_forward():
         EdgeBlock(MLP(16, 16)), NodeBlock(MLP(16, 16)), GlobalBlock(MLP(2, 2))
     )
 
-    data = random_graph_data(16, 16, 2)
+    data = GraphData.random(16, 16, 2)
     batch = GraphBatch.from_data_list([data, data])
     model(batch)
 

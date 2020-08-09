@@ -39,3 +39,41 @@ def test_flex_block_custom_position(x):
     model = Flex(FooBlock)(Flex.d(1), 16)
     data = torch.randn((10, x))
     model("arg0", data)
+
+
+@pytest.mark.parametrize('dtype', [None, torch.float64])
+@pytest.mark.parametrize('dtype2', [None, torch.float32])
+def test_flex_block_to_playback(dtype, dtype2):
+    class Network(torch.nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.layers = Flex(torch.nn.Linear)(Flex.d(), 5)
+
+        def forward(self, x):
+            return self.layers(x)
+
+    net = Network()
+    if dtype:
+        net.to(torch.float64)
+
+    print("Before")
+    print(list(net.state_dict()))
+
+    if not dtype:
+        data = torch.randn(5, 8)
+    else:
+        data = torch.randn(5, 8, dtype=dtype)
+    net(data)
+
+    print("After")
+    print(list(net.state_dict()))
+    for p in net.parameters():
+        if dtype:
+            assert p.dtype is dtype
+
+    if dtype2:
+        net.to(dtype2)
+    for p in net.parameters():
+        if dtype2:
+            assert p.dtype is dtype2
