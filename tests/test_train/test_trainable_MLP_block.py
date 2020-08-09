@@ -8,21 +8,22 @@ from pyrographnets.blocks import Flex, MLP
 from pyrographnets.data import GraphData, GraphDataLoader
 from typing import Dict, Any, Callable, TypeVar, Hashable, Tuple
 
-networks = {
-    'mlp': lambda: torch.nn.Sequential(
-        Flex(MLP)(Flex.d(), 16, layer_norm=False),
-        torch.nn.Linear(16, 1)
-    ),
-    'linear': lambda: torch.nn.Sequential(
-        torch.nn.Linear(5, 16),
-        torch.nn.ReLU(),
-        torch.nn.Linear(16, 1)
-    )
-}
-
 
 def parametrize_dict(name, d: Dict[Hashable, Any], **kwargs) -> Callable:
     return pytest.mark.parametrize(name, list(d.values()), ids=list(d.keys()), **kwargs)
+
+
+networks = {
+    'mlp': lambda: torch.nn.Sequential(
+        Flex(MLP)(Flex.d(), 25, 25, 25, 25, layer_norm=False),
+        torch.nn.Linear(25, 1)
+    ),
+    # 'linear': lambda: torch.nn.Sequential(
+    #     torch.nn.Linear(5, 16),
+    #     torch.nn.ReLU(),
+    #     torch.nn.Linear(16, 1)
+    # )
+}
 
 
 @pytest.fixture
@@ -30,11 +31,13 @@ def network(request, device):
     net = request.param()
     return net.to(device)
 
+
 def to(x, device):
     if device is None:
         return x
     else:
         return x.to(device)
+
 
 def train(net, loader, epochs, optimizer,
           criterion, batch_to_input, batch_to_target, device: None):
@@ -51,7 +54,7 @@ def train(net, loader, epochs, optimizer,
             optimizer.zero_grad()  # zero the gradient buffers
             output = net(input)
             loss = criterion(output, target)
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
 
             running_loss += loss.item()
@@ -61,7 +64,7 @@ def train(net, loader, epochs, optimizer,
 
 class DataModifier(object):
 
-    def __init__(self, modify, to_input, to_output):
+    def __init__(self, modify, to_input, to_output, notes: str = ''):
         self.modify = modify
         self.to_input = to_input
         self.to_output = to_output
@@ -81,21 +84,24 @@ modifiers = {
         functools.partial(DataModifier._func, attr='x',
                           f=lambda x: x.sum(axis=1, keepdims=True)),
         lambda batch: batch.view(slice(None, -1), None, None).x,
-        lambda batch: batch.view(slice(-1, None), None, None).x
+        lambda batch: batch.view(slice(-1, None), None, None).x,
+        notes='sums node attributes'
     ),
     'node_prod': DataModifier(
         functools.partial(DataModifier._func, attr='x',
                           f=lambda x: x.prod(axis=1, keepdims=True)),
         lambda batch: batch.view(slice(None, -1), None, None).x,
-        lambda batch: batch.view(slice(-1, None), None, None).x
+        lambda batch: batch.view(slice(-1, None), None, None).x,
+        notes='multiplies node attributes'
     )
 }
+
 
 @parametrize_dict('network', networks, indirect=True)
 @parametrize_dict('modifier', modifiers)
 def test_train_mlp(network, modifier, device):
     """Trains a MLP for the very simple function of addition"""
-    epochs = 25
+    epochs = 20
     datalist = [GraphData.random(5, 5, 5, requires_grad=True) for _ in range(1000)]
 
     # modify datalist
@@ -104,14 +110,16 @@ def test_train_mlp(network, modifier, device):
     # create loader
     loader = GraphDataLoader(datalist, batch_size=100)
 
+
+    # TODO: you need to provide the network with an example (if Flex) before you can send it to a device! Method to check for flex dims.
     # provide example
     example = to(modifier.to_input(loader.first()), device)
     network(example)
 
-    optimizer = optim.AdamW(network.parameters(), lr=1e-1)
+    optimizer = optim.AdamW(network.parameters(), lr=1e-2)
     criterion = torch.nn.MSELoss()
 
     losses = train(network, loader, epochs, optimizer, criterion, modifier.to_input,
                    modifier.to_output, device)
     print(losses)
-    assert 0.01 * losses[-1] < losses[0]
+    assert losses[-1].item() < losses[0].item()

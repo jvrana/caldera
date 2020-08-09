@@ -25,3 +25,10 @@ def test_init_agg_node_block_requires_grad():
 
     for p in node_model.parameters():
         assert p.requires_grad
+
+
+def test_number_of_parameters():
+    node_model = AggregatingNodeBlock(MLP(5, 16, 10, layer_norm=True, dropout=0.2), Aggregator("mean"))
+    params = list(node_model.parameters())
+    print(len(params))
+    print(node_model.state_dict())
