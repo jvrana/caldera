@@ -61,6 +61,6 @@ def test_train(new_writer):
 
         writer.add_scalar('test loss', running_loss, epoch)
 
-        if epoch % 1 == 0:
-            k = 'block_dict.mlp.resolved_module.blocks.0.blocks.0.weight'
-            writer.add_histogram(k, model.state_dict()[k])
+        # if epoch % 1 == 0:
+        #     k = 'block_dict.mlp.resolved_module.blocks.0.blocks.0.weight'
+        #     writer.add_histogram(k, model.state_dict()[k])

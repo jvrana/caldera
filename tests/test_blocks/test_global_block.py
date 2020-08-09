@@ -17,7 +17,7 @@ def test_init_global_block():
         assert p.requires_grad
 
 
-def test_init_agg_global_block():
+def test_init_agg_global_block_requires_grad():
     # test AggregatingGlobalBlock
     global_attr = torch.randn(10, 3)
     edge_attr = torch.randn(20, 3)

@@ -7,8 +7,10 @@ import pytest
     (16, 16, 32),
     (64, 16, 8)
 ])
-def test_mlp(layers):
-    block = MLP(*layers)
+@pytest.mark.parametrize('dropout', [None, 0.0, 0.2, 0.5])
+@pytest.mark.parametrize('layer_norm', [False, True])
+def test_mlp(layers, dropout, layer_norm):
+    block = MLP(*layers, dropout=dropout, layer_norm=layer_norm)
     out = block(torch.randn(10, layers[0]))
     assert out.shape[1] == layers[-1]
     print(list(block.modules()))

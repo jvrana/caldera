@@ -6,6 +6,32 @@ from pyrographnets.data.utils import random_data
 from flaky import flaky
 
 
+def test_random_data():
+    random_data(5, 4, 3)
+
+
+@pytest.fixture
+def random_data_example(request):
+    if request.param[0] is GraphData:
+        graph_data = random_data(*request.param[1])
+        return graph_data
+    elif request.param[0] is GraphBatch:
+        datalist = [random_data(*request.param[1]) for _ in range(10)]
+        batch = GraphBatch.from_data_list(datalist)
+        return batch
+    else:
+        raise Exception("Parameter not acceptable: {}".format(request.param))
+
+
+def rndm_data(a=(5,6,7), b=(5, 6, 7)):
+    return pytest.mark.parametrize('random_data_example', [(GraphData, a), (GraphBatch, b)], indirect=True, ids=lambda x: str(x))
+
+
+@rndm_data()
+def test_random_data_example(random_data_example):
+    print(random_data_example)
+
+
 class Comparator:
 
     @staticmethod
@@ -208,6 +234,127 @@ class TestGraphData:
 
         Comparator.data_to_nx(data, g, fkey, gkey)
 
+@rndm_data()
+class TestApply:
+
+    def test_apply_(self, random_data_example):
+        data = random_data_example
+        data2 = data.apply_(lambda x: x.contiguous)
+        assert id(data2) == id(data), "`apply` should return the same instance"
+
+    def test_to_cpu_does_share(self, random_data_example):
+        data = random_data_example
+        data2 = data.apply(lambda x: x.cpu())
+        assert id(data) != id(data2), "`apply` should return a new instance"
+        assert data.share_storage(data2), "apply `cpu()` should share the same storage"
+
+    def test_to_gpu_does_not_share(self, random_data_example):
+        data = random_data_example
+        if torch.cuda.is_available():
+            device = 'cuda:' + str(torch.cuda.current_device())
+            data2 = data.apply(lambda x: x.to(device))
+            assert not data.share_storage(data2), "apply `gpu()` should not share the same storage"
+            assert not data2.share_storage(data), "apply `gpu()` should not share the same storage"
+            for k in data.__slots__:
+                v = getattr(data, k)
+                assert v.device.type == 'cpu'
+            for k in data2.__slots__:
+                v = getattr(data2, k)
+                assert v.device.type == 'cuda'
+
+    def test_to_cuda(self, random_data_example):
+        data = random_data_example
+        if torch.cuda.is_available():
+            device = 'cuda:' + str(torch.cuda.current_device())
+            data2 = data.to(device)
+            assert id(data2) != id(data)
+            assert not data.share_storage(data2)
+            assert not data2.share_storage(data)
+            for k in data.__slots__:
+                v = getattr(data, k)
+                assert v.device.type == 'cpu'
+            for k in data2.__slots__:
+                v = getattr(data2, k)
+                assert v.device.type == 'cuda'
+
+# TODO: TestComparison
+class TestComparison:
+
+    def test_eq(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3]))
+        )
+        args2 = (
+            args1[0][:],
+            args1[1][:],
+            args1[2][:],
+            args1[3][:]
+        )
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert data1 == data2
+        assert not id(data1) == id(data2)
+
+    def test_not_eq(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3]))
+        )
+        args2 = (
+            args1[0][:10],
+            args1[1][:],
+            args1[2][:],
+            args1[3][:]
+        )
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert not data1 == data2
+        assert not id(data1) == id(data2)
+
+
+    def test_does_share_storage(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3]))
+        )
+        args2 = (
+            args1[0][:10],
+            args1[1][:],
+            args1[2][:],
+            args1[3][:]
+        )
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert data1.share_storage(data2)
+        assert data2.share_storage(data1)
+
+    def test_does_not_share_storage(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3]))
+        )
+        args2 = (
+            args1[0][:10],
+            args1[1][:],
+            args1[2][:],
+            args1[3][:]
+        )
+        args2 = (torch.tensor(x) for x in args2)
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert not data1.share_storage(data2)
+        assert not data2.share_storage(data1)
+
+
 class TestGraphDataModifiers:
 
     def test_append_nodes(self):
@@ -332,9 +479,10 @@ class TestGraphBatchModifiers:
 
 
 class TestInvalidGraphData:
-    def test_invalid_number_of_edges(self):
+
+    def test_invalid_number_of_edges(self, cls):
         with pytest.raises(RuntimeError):
-            GraphData(
+            cls(
                 torch.randn(10, 5),
                 torch.randn(5, 4),
                 torch.randn(1, 3),
@@ -394,10 +542,6 @@ class TestInvalidGraphData:
                 torch.randn(1),
                 torch.randint(0, 10, torch.Size([2, 5]))
             )
-
-
-def test_random_data():
-    random_data(5, 4, 3)
 
 
 class TestGraphBatch:

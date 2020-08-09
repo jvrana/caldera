@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Dict
 
 import torch
@@ -8,6 +9,7 @@ import networkx as nx
 from typing import Callable
 from typing import TypeVar, Type, Tuple, Any, Dict
 from pyrographnets.utils import same_storage
+from typing import Union
 
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
@@ -93,6 +95,7 @@ class GraphData(object):
                 init_args.append(val)
         if new_inst:
             return self.__class__(*init_args)
+        return self
 
     # TODO: finish clone, copy, apply, etc.
     def apply(self, func, *args, **kwargs):
@@ -105,6 +108,26 @@ class GraphData(object):
 
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
+
+    def share_storage(self, other: GraphData, return_dict: Optional[bool] = False) -> Union[Dict[str, bool], bool]:
+        """
+        Check if this data shares storage with another data.
+
+        :param other: The other GraphData object.
+        :param return_dict: if true, return dictionary of which tensors share the same storage. Else returns true if
+            any tensors share the same storage.
+        :return:
+        """
+        d = {}
+        for k in self.__slots__:
+            a = getattr(self, k)
+            b = getattr(other, k)
+            c = same_storage(a, b)
+            if return_dict:
+                d[k] = c
+            elif c:
+                return True
+        return d
 
     def contiguous(self):
         return self.apply(lambda x: x.contiguous())

@@ -1,12 +1,10 @@
 import torch
 
 from pyrographnets.data.graph_data import GraphData, GraphType
-from pyrographnets.utils import scatter_group, dict_collate
+from pyrographnets.utils import scatter_group
 from typing import List
 import networkx as nx
 from typing import Type
-import functools
-import operator
 from pyrographnets.utils import stable_arg_sort_long
 
 

@@ -11,7 +11,7 @@ def test_init_node_block():
     for p in node_encoder.parameters():
         assert p.requires_grad
 
-def test_init_agg_node_block():
+def test_init_agg_node_block_requires_grad():
     # test AggregatingNodeBlock
 
     node_model = AggregatingNodeBlock(MLP(5, 16, 10), Aggregator('mean'))
