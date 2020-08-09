@@ -2,6 +2,7 @@ from pyrographnets.utils import scatter_group
 import torch
 from flaky import flaky
 
+
 def test_scatter_group_0():
 
     idx = torch.tensor([0, 0, 0, 1, 1, 1, 2, 2, 2])
@@ -13,6 +14,7 @@ def test_scatter_group_0():
     assert torch.all(torch.eq(out[1][0], torch.tensor([0, 1, 2])))
     assert torch.all(torch.eq(out[1][1], torch.tensor([3, 4, 5])))
     assert torch.all(torch.eq(out[1][2], torch.tensor([6, 7, 8])))
+
 
 def test_scatter_group_1():
 

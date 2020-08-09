@@ -1,17 +1,15 @@
 import torch
 
 from pyrographnets.data.graph_data import GraphData, GraphType
-from pyrographnets.utils import scatter_group, dict_collate
+from pyrographnets.utils import scatter_group
 from typing import List
 import networkx as nx
 from typing import Type
-import functools
-import operator
 from pyrographnets.utils import stable_arg_sort_long
 
 
 class GraphBatch(GraphData):
-    __slots__ = GraphData.__slots__ + ['node_idx', 'edge_idx']
+    __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
 
     # TODO: global_idx
     def __init__(self, node_attr, edge_attr, global_attr, edges, node_idx, edge_idx):
@@ -28,22 +26,38 @@ class GraphBatch(GraphData):
         super().debug()
         if not self.node_idx.dtype == torch.long:
             raise RuntimeError(
-                "Wrong tensor type. `node_idx` must be dtype={} not {}".format(self.node_idx.dtype, torch.long))
+                "Wrong tensor type. `node_idx` must be dtype={} not {}".format(
+                    self.node_idx.dtype, torch.long
+                )
+            )
         if not self.edge_idx.dtype == torch.long:
             raise RuntimeError(
-                "Wrong tensor type. `edge_idx` must be dtype={} not {}".format(self.edge_idx.dtype, torch.long))
-        if self.node_idx.shape[0] and self.edge_idx.shape[0] and self.node_idx.max() != self.edge_idx.max():
-            raise RuntimeError("Number of graphs in node_idx {} and edge_idx {} mismatch".format(
-                self.node_idx.max(), self.edge_idx.max()
-            ))
+                "Wrong tensor type. `edge_idx` must be dtype={} not {}".format(
+                    self.edge_idx.dtype, torch.long
+                )
+            )
+        if (
+            self.node_idx.shape[0]
+            and self.edge_idx.shape[0]
+            and self.node_idx.max() != self.edge_idx.max()
+        ):
+            raise RuntimeError(
+                "Number of graphs in node_idx {} and edge_idx {} mismatch".format(
+                    self.node_idx.max(), self.edge_idx.max()
+                )
+            )
         if self.node_idx.shape[0] and self.node_idx.shape[0] != self.x.shape[0]:
-            raise RuntimeError("Number of node indices {} must match number of node attr {}".format(
-                self.node_idx.shape[0], self.x.shape[0]
-            ))
+            raise RuntimeError(
+                "Number of node indices {} must match number of node attr {}".format(
+                    self.node_idx.shape[0], self.x.shape[0]
+                )
+            )
         if self.edge_idx.shape[0] and self.edge_idx.shape[0] != self.e.shape[0]:
-            raise RuntimeError("Number of node indices {} must match number of node attr {}".format(
-                self.edge_idx.shape[0], self.e.shape[0]
-            ))
+            raise RuntimeError(
+                "Number of node indices {} must match number of node attr {}".format(
+                    self.edge_idx.shape[0], self.e.shape[0]
+                )
+            )
         # if not self.node_idx.min() == 0:
         #     raise RuntimeError(
         #         "Minimum graph index (node_idx.min()) must start at 0, not {}".format(self.node_idx.min()))
@@ -70,14 +84,20 @@ class GraphBatch(GraphData):
 
         node_repeats = torch.tensor([data.x.shape[0] for data in data_list])
         edge_repeats = torch.tensor([data.e.shape[0] for data in data_list])
-        node_idx = torch.repeat_interleave(torch.arange(0, node_repeats.shape[0], dtype=torch.long), node_repeats)
-        edge_idx = torch.repeat_interleave(torch.arange(0, edge_repeats.shape[0], dtype=torch.long), edge_repeats)
+        node_idx = torch.repeat_interleave(
+            torch.arange(0, node_repeats.shape[0], dtype=torch.long), node_repeats
+        )
+        edge_idx = torch.repeat_interleave(
+            torch.arange(0, edge_repeats.shape[0], dtype=torch.long), edge_repeats
+        )
 
         # concatenate edges
         edges = torch.cat([data.edges for data in data_list], dim=1)
 
         # cumulated shapes
-        c = torch.cumsum(torch.tensor([0] + [data.x.shape[0] for data in data_list[:-1]]), dim=0)
+        c = torch.cumsum(
+            torch.tensor([0] + [data.x.shape[0] for data in data_list[:-1]]), dim=0
+        )
         delta = torch.repeat_interleave(c, edge_repeats).repeat(2, 1)
 
         # shift concatenated edges
@@ -89,7 +109,7 @@ class GraphBatch(GraphData):
             global_attr=torch.cat([data.g for data in data_list]),
             edges=edges,
             node_idx=node_idx,
-            edge_idx=edge_idx
+            edge_idx=edge_idx,
         )
 
     def to_data_list(self) -> List[GraphData]:
@@ -120,15 +140,23 @@ class GraphBatch(GraphData):
     def from_networkx(self, *args, **kwargs):
         raise NotImplementedError
 
-    def to_networkx_list(self, feature_key: str = 'features', global_attr_key: str = 'data',
-                         graph_type: Type[GraphType] = nx.OrderedMultiDiGraph) -> List[GraphType]:
+    def to_networkx_list(
+        self,
+        feature_key: str = "features",
+        global_attr_key: str = "data",
+        graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
+    ) -> List[GraphType]:
         graphs = []
         for data in self.to_data_list():
-            graphs.append(data.to_networkx(feature_key, global_attr_key=global_attr_key, graph_type=graph_type))
+            graphs.append(
+                data.to_networkx(
+                    feature_key, global_attr_key=global_attr_key, graph_type=graph_type
+                )
+            )
         return graphs
 
     @staticmethod
-    def from_networkx_list(graphs: List[GraphType], *args, **kwargs) -> 'GraphBatch':
+    def from_networkx_list(graphs: List[GraphType], *args, **kwargs) -> "GraphBatch":
         data_list = [GraphData.from_networkx(g, *args, **kwargs) for g in graphs]
         return GraphBatch.from_data_list(data_list)
 
@@ -146,7 +174,9 @@ class GraphBatch(GraphData):
         self.debug()
         return self
 
-    def append_edges(self, edge_attr: torch.Tensor, edges: torch.Tensor, edge_idx: torch.Tensor):
+    def append_edges(
+        self, edge_attr: torch.Tensor, edges: torch.Tensor, edge_idx: torch.Tensor
+    ):
         """
         Append edges to the graph batch at the specified edge_idx (assumed to be sorted).
 
@@ -167,75 +197,75 @@ class GraphBatch(GraphData):
         return self
 
     # def append_edges
-        # def collect_and_collate(x1, i1, x2, i2, collate_fn = torch.cat):
-        #     i1, groups1 = scatter_group(x1, i1)
-        #     i2, groups2 = scatter_group(x2, i2)
-        #     d1 = {k.item(): v for k, v in zip(i1, groups1)}
-        #     d2 = {k.item(): v for k, v in zip(i2, groups2)}
-        #     return dict_collate(d1, d2, torch.cat)
-        #
-        #
-        # i = stable_arg_sort_long(edge_idx)
-        # edge_attr = edge_attr[i]
-        # edges = edges[:, i]
-        #
-        # d = collect_and_collate(edge_attr, edge_idx, self.e, self.edge_idx)
-        # keys = sorted(d)
-        # e = torch.cat([d[k] for k in keys])
-        #
-        # d = collect_and_collate(edges.T, edge_idx, self.edges.T, self.edge_idx)
-        # keys = sorted(d)
-        # edges = torch.cat([d[k] for k in keys], dim=0)
-        #
-        # d = collect_and_collate(edge_idx, edge_idx, self.edge_idx, self.edge_idx)
-        # keys = sorted(d)
-        # edge_idx = torch.cat([d[k] for k in keys], dim=0)
-        #
-        # self.e = e
-        # self.edges = edges.T
-        # self.edge_idx = edge_idx
-        # self.debug()
-        # return self
-        # e = torch.cat([d[k] for k in keys])
+    # def collect_and_collate(x1, i1, x2, i2, collate_fn = torch.cat):
+    #     i1, groups1 = scatter_group(x1, i1)
+    #     i2, groups2 = scatter_group(x2, i2)
+    #     d1 = {k.item(): v for k, v in zip(i1, groups1)}
+    #     d2 = {k.item(): v for k, v in zip(i2, groups2)}
+    #     return dict_collate(d1, d2, torch.cat)
+    #
+    #
+    # i = stable_arg_sort_long(edge_idx)
+    # edge_attr = edge_attr[i]
+    # edges = edges[:, i]
+    #
+    # d = collect_and_collate(edge_attr, edge_idx, self.e, self.edge_idx)
+    # keys = sorted(d)
+    # e = torch.cat([d[k] for k in keys])
+    #
+    # d = collect_and_collate(edges.T, edge_idx, self.edges.T, self.edge_idx)
+    # keys = sorted(d)
+    # edges = torch.cat([d[k] for k in keys], dim=0)
+    #
+    # d = collect_and_collate(edge_idx, edge_idx, self.edge_idx, self.edge_idx)
+    # keys = sorted(d)
+    # edge_idx = torch.cat([d[k] for k in keys], dim=0)
+    #
+    # self.e = e
+    # self.edges = edges.T
+    # self.edge_idx = edge_idx
+    # self.debug()
+    # return self
+    # e = torch.cat([d[k] for k in keys])
 
-        #
-        # def collate_shape(x):
-        #     return [[i] * _x.shape[0] for i, _x in enumerate(x)]
-        #
-        # d = dict_collate(d1, d2, collate_shape)
-        # u = [torch.Tensor(functools.reduce(operator.add, v)) for v in d.values()]
-        # edge_idx = torch.cumsum(torch.cat(u), 0)
-        #
-        # self.e = e
-        # self.edge_idx = edge_idx
-        # self.debug()
-        # return self
+    #
+    # def collate_shape(x):
+    #     return [[i] * _x.shape[0] for i, _x in enumerate(x)]
+    #
+    # d = dict_collate(d1, d2, collate_shape)
+    # u = [torch.Tensor(functools.reduce(operator.add, v)) for v in d.values()]
+    # edge_idx = torch.cumsum(torch.cat(u), 0)
+    #
+    # self.e = e
+    # self.edge_idx = edge_idx
+    # self.debug()
+    # return self
 
-        # i1, g1 = scatter_group(self.x, self.node_idx)
-        # i2, g2 = scatter_group(node_attr, node_idx)
-        # d1 = {k.item(): v for k, v in zip(i1, g1)}
-        # d2 = {k.item(): v for k, v in zip(i2, g2)}
-        #
-        # # collate
-        # d = dict_collate(d1, d2, torch.cat)
-        # keys = sorted(d.keys())
-        # x = torch.cat([d[k] for k in keys])
-        #
-        # # collect node indices
-        # node_idx = []
-        # for k in keys:
-        #     node_idx += [k] * d[k].shape[0]
-        #
-        # # correct edges
-        # def get_shape(x):
-        #     return [[i] * _x.shape[0] for i, _x in enumerate(x)]
-        #
-        # u = [torch.Tensor(functools.reduce(operator.add, v)) for v in dict_collate(d1, d2, get_shape).values()]
-        # delta_edges = torch.cumsum(torch.cat(u), 0)
-        # self.edges += delta_edges
-        # self.x = x
-        # self.node_idx = torch.tensor(node_idx, dtype=torch.long)
-        # self.debug()
+    # i1, g1 = scatter_group(self.x, self.node_idx)
+    # i2, g2 = scatter_group(node_attr, node_idx)
+    # d1 = {k.item(): v for k, v in zip(i1, g1)}
+    # d2 = {k.item(): v for k, v in zip(i2, g2)}
+    #
+    # # collate
+    # d = dict_collate(d1, d2, torch.cat)
+    # keys = sorted(d.keys())
+    # x = torch.cat([d[k] for k in keys])
+    #
+    # # collect node indices
+    # node_idx = []
+    # for k in keys:
+    #     node_idx += [k] * d[k].shape[0]
+    #
+    # # correct edges
+    # def get_shape(x):
+    #     return [[i] * _x.shape[0] for i, _x in enumerate(x)]
+    #
+    # u = [torch.Tensor(functools.reduce(operator.add, v)) for v in dict_collate(d1, d2, get_shape).values()]
+    # delta_edges = torch.cumsum(torch.cat(u), 0)
+    # self.edges += delta_edges
+    # self.x = x
+    # self.node_idx = torch.tensor(node_idx, dtype=torch.long)
+    # self.debug()
     #
     # def append_nodes(self, edge_attr: torch.Tensor, edge_idx: torch.Tensor):
     #     i1, g1 = scatter_group(self.x, self.node_idx)
@@ -256,7 +286,6 @@ class GraphBatch(GraphData):
     #     self.x = x
     #     self.node_idx = torch.tensor(node_idx, dtype=torch.long)
     #     self.debug()
-
 
     def _eq_helper(self, *args, **kwargs):
         raise NotImplementedError("Cannot compare batches")

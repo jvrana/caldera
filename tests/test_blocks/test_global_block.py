@@ -17,7 +17,7 @@ def test_init_global_block():
         assert p.requires_grad
 
 
-def test_init_agg_global_block():
+def test_init_agg_global_block_requires_grad():
     # test AggregatingGlobalBlock
     global_attr = torch.randn(10, 3)
     edge_attr = torch.randn(20, 3)
@@ -26,7 +26,9 @@ def test_init_agg_global_block():
     node_idx = torch.randint(0, 3, torch.Size([40]))
     edge_idx = torch.randint(0, 3, torch.Size([20]))
 
-    global_model = AggregatingGlobalBlock(MLP(8, 16, 10), Aggregator('mean'), Aggregator('mean'))
+    global_model = AggregatingGlobalBlock(
+        MLP(8, 16, 10), Aggregator("mean"), Aggregator("mean")
+    )
     out = global_model(global_attr, node_attr, edge_attr, edges, node_idx, edge_idx)
 
     for p in global_model.parameters():

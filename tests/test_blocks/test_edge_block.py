@@ -1,6 +1,7 @@
 from pyrographnets.blocks import MLP, EdgeBlock, AggregatingEdgeBlock
 import torch
 
+
 def test_init_edge_block():
     edge_encoder = EdgeBlock(MLP(3, 10, 16))
 
@@ -12,7 +13,7 @@ def test_init_edge_block():
         assert p.requires_grad
 
 
-def test_init_agg_edge_block():
+def test_init_agg_edge_block_requires_grad():
     edge_model = AggregatingEdgeBlock(MLP(7, 10, 16))
 
     x = torch.randn(20, 3)

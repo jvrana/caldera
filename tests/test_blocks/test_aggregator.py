@@ -3,7 +3,7 @@ import torch
 import pytest
 
 
-@pytest.mark.parametrize('method', ['mean', 'max', 'min', 'add'])
+@pytest.mark.parametrize("method", ["mean", "max", "min", "add"])
 def test_aggregators(method):
     block = Aggregator(method)
     idx = torch.tensor([0, 0, 0, 1, 1, 1, 1])
@@ -14,4 +14,4 @@ def test_aggregators(method):
 
 def test_invalid_method():
     with pytest.raises(ValueError):
-        block = Aggregator('not a method')
+        block = Aggregator("not a method")

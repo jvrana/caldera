@@ -6,16 +6,46 @@ from pyrographnets.data.utils import random_data
 from flaky import flaky
 
 
-class Comparator:
+def test_random_data():
+    random_data(5, 4, 3)
 
+
+@pytest.fixture
+def random_data_example(request):
+    if request.param[0] is GraphData:
+        graph_data = random_data(*request.param[1])
+        return graph_data
+    elif request.param[0] is GraphBatch:
+        datalist = [random_data(*request.param[1]) for _ in range(10)]
+        batch = GraphBatch.from_data_list(datalist)
+        return batch
+    else:
+        raise Exception("Parameter not acceptable: {}".format(request.param))
+
+
+def rndm_data(a=(5, 6, 7), b=(5, 6, 7)):
+    return pytest.mark.parametrize(
+        "random_data_example",
+        [(GraphData, a), (GraphBatch, b)],
+        indirect=True,
+        ids=lambda x: str(x),
+    )
+
+
+@rndm_data()
+def test_random_data_example(random_data_example):
+    print(random_data_example)
+
+
+class Comparator:
     @staticmethod
     def data_to_nx(data, g, fkey, gkey):
         """Compare `GraphData` to `nx.DiGraph` instance."""
-        assert data.x.shape[0] == g.number_of_nodes(), 'Check number of nodes'
+        assert data.x.shape[0] == g.number_of_nodes(), "Check number of nodes"
 
-        assert data.e.shape[0] == g.number_of_edges(), 'Check number of edges'
+        assert data.e.shape[0] == g.number_of_edges(), "Check number of edges"
 
-        assert data.edges.shape[1] == g.number_of_edges(), 'Check edges vs edge attr'
+        assert data.edges.shape[1] == g.number_of_edges(), "Check edges vs edge attr"
 
         # ensure feature key is in node data
         for _, ndata in g.nodes(data=True):
@@ -61,13 +91,12 @@ class Comparator:
 
 
 class TestGraphData:
-
     def test_graph_data_init_0(self):
         data = GraphData(
             torch.randn(10, 5),
             torch.randn(3, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 3]))
+            torch.randint(0, 10, torch.Size([2, 3])),
         )
         assert data.x.shape == torch.Size([10, 5])
         assert data.e.shape == torch.Size([3, 4])
@@ -79,7 +108,7 @@ class TestGraphData:
             torch.randn(10, 5),
             torch.randn(5, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 5]))
+            torch.randint(0, 10, torch.Size([2, 5])),
         )
         assert data.x.shape == torch.Size([10, 5])
         assert data.e.shape == torch.Size([5, 4])
@@ -87,35 +116,25 @@ class TestGraphData:
         assert data.g.shape == torch.Size([1, 3])
 
     @pytest.mark.parametrize(
-        'keys', [
-            (None, None),
-            ('myfeatures', 'mydata'),
-            ('features', 'data')
-        ]
+        "keys", [(None, None), ("myfeatures", "mydata"), ("features", "data")]
     )
     def test_to_networkx(self, keys):
-        kwargs = {
-            'feature_key': 'features',
-            'global_attr_key': 'data'
-        }
+        kwargs = {"feature_key": "features", "global_attr_key": "data"}
         feature_key, global_attr_key = keys
         if feature_key is not None:
-            kwargs['feature_key'] = feature_key
+            kwargs["feature_key"] = feature_key
         else:
-            del kwargs['feature_key']
+            del kwargs["feature_key"]
         if global_attr_key is not None:
-            kwargs['global_attr_key'] = global_attr_key
+            kwargs["global_attr_key"] = global_attr_key
         else:
-            del kwargs['global_attr_key']
+            del kwargs["global_attr_key"]
 
         data = GraphData(
             torch.randn(10, 5),
             torch.randn(5, 4),
             torch.randn(1, 3),
-            torch.tensor([
-                [0, 1, 2, 3, 4],
-                [4, 3, 2, 1, 0]
-            ])
+            torch.tensor([[0, 1, 2, 3, 4], [4, 3, 2, 1, 0]]),
         )
 
         g = data.to_networkx(**kwargs)
@@ -123,43 +142,34 @@ class TestGraphData:
         assert g.number_of_nodes() == 10
         assert g.number_of_edges() == 5
 
-        fkey = kwargs.get('feature_key', 'features')
-        gkey = kwargs.get('global_attr_key', 'data')
+        fkey = kwargs.get("feature_key", "features")
+        gkey = kwargs.get("global_attr_key", "data")
 
         Comparator.data_to_nx(data, g, fkey, gkey)
 
     @pytest.mark.parametrize(
-        'keys', [
-            (None, None),
-            ('myfeatures', 'mydata'),
-            ('features', 'data')
-        ]
+        "keys", [(None, None), ("myfeatures", "mydata"), ("features", "data")]
     )
     def test_from_networkx(self, keys):
-        kwargs = {
-            'feature_key': 'features',
-            'global_attr_key': 'data'
-        }
+        kwargs = {"feature_key": "features", "global_attr_key": "data"}
         feature_key, global_attr_key = keys
         if feature_key is not None:
-            kwargs['feature_key'] = feature_key
+            kwargs["feature_key"] = feature_key
         else:
-            del kwargs['feature_key']
+            del kwargs["feature_key"]
         if global_attr_key is not None:
-            kwargs['global_attr_key'] = global_attr_key
+            kwargs["global_attr_key"] = global_attr_key
         else:
-            del kwargs['global_attr_key']
+            del kwargs["global_attr_key"]
 
-        fkey = kwargs.get('feature_key', 'features')
-        gkey = kwargs.get('global_attr_key', 'data')
+        fkey = kwargs.get("feature_key", "features")
+        gkey = kwargs.get("global_attr_key", "data")
 
         g = nx.OrderedMultiDiGraph()
-        g.add_node('node1', **{fkey: torch.randn(5)})
-        g.add_node('node2', **{fkey: torch.randn(5)})
-        g.add_edge('node1', 'node2', **{fkey: torch.randn(4)})
-        g.ordered_edges = [
-            ('node1', 'node2', 0)
-        ]
+        g.add_node("node1", **{fkey: torch.randn(5)})
+        g.add_node("node2", **{fkey: torch.randn(5)})
+        g.add_edge("node1", "node2", **{fkey: torch.randn(4)})
+        g.ordered_edges = [("node1", "node2", 0)]
         setattr(g, gkey, {fkey: torch.randn(3)})
 
         data = GraphData.from_networkx(g, **kwargs)
@@ -172,33 +182,26 @@ class TestGraphData:
         GraphData.from_networkx(g)
 
     @pytest.mark.parametrize(
-        'keys', [
-            (None, None),
-            ('myfeatures', 'mydata'),
-            ('features', 'data')
-        ]
+        "keys", [(None, None), ("myfeatures", "mydata"), ("features", "data")]
     )
     def test_from_networkx_no_edge(self, keys):
-        kwargs = {
-            'feature_key': 'features',
-            'global_attr_key': 'data'
-        }
+        kwargs = {"feature_key": "features", "global_attr_key": "data"}
         feature_key, global_attr_key = keys
         if feature_key is not None:
-            kwargs['feature_key'] = feature_key
+            kwargs["feature_key"] = feature_key
         else:
-            del kwargs['feature_key']
+            del kwargs["feature_key"]
         if global_attr_key is not None:
-            kwargs['global_attr_key'] = global_attr_key
+            kwargs["global_attr_key"] = global_attr_key
         else:
-            del kwargs['global_attr_key']
+            del kwargs["global_attr_key"]
 
-        fkey = kwargs.get('feature_key', 'features')
-        gkey = kwargs.get('global_attr_key', 'data')
+        fkey = kwargs.get("feature_key", "features")
+        gkey = kwargs.get("global_attr_key", "data")
 
         g = nx.OrderedMultiDiGraph()
-        g.add_node('node1', **{fkey: torch.randn(5)})
-        g.add_node('node2', **{fkey: torch.randn(5)})
+        g.add_node("node1", **{fkey: torch.randn(5)})
+        g.add_node("node2", **{fkey: torch.randn(5)})
         g.ordered_edges = []
         # g.add_edge('node1', 'node2', **{fkey: torch.randn(4)})
 
@@ -208,14 +211,117 @@ class TestGraphData:
 
         Comparator.data_to_nx(data, g, fkey, gkey)
 
-class TestGraphDataModifiers:
 
+@rndm_data()
+class TestApply:
+    def test_apply_(self, random_data_example):
+        data = random_data_example
+        data2 = data.apply_(lambda x: x.contiguous)
+        assert id(data2) == id(data), "`apply` should return the same instance"
+
+    def test_to_cpu_does_share(self, random_data_example):
+        data = random_data_example
+        data2 = data.apply(lambda x: x.cpu())
+        assert id(data) != id(data2), "`apply` should return a new instance"
+        assert data.share_storage(data2), "apply `cpu()` should share the same storage"
+
+    def test_to_gpu_does_not_share(self, random_data_example):
+        data = random_data_example
+        if torch.cuda.is_available():
+            device = "cuda:" + str(torch.cuda.current_device())
+            data2 = data.apply(lambda x: x.to(device))
+            assert not data.share_storage(
+                data2
+            ), "apply `gpu()` should not share the same storage"
+            assert not data2.share_storage(
+                data
+            ), "apply `gpu()` should not share the same storage"
+            for k in data.__slots__:
+                v = getattr(data, k)
+                assert v.device.type == "cpu"
+            for k in data2.__slots__:
+                v = getattr(data2, k)
+                assert v.device.type == "cuda"
+
+    def test_to_cuda(self, random_data_example):
+        data = random_data_example
+        if torch.cuda.is_available():
+            device = "cuda:" + str(torch.cuda.current_device())
+            data2 = data.to(device)
+            assert id(data2) != id(data)
+            assert not data.share_storage(data2)
+            assert not data2.share_storage(data)
+            for k in data.__slots__:
+                v = getattr(data, k)
+                assert v.device.type == "cpu"
+            for k in data2.__slots__:
+                v = getattr(data2, k)
+                assert v.device.type == "cuda"
+
+
+# TODO: TestComparison
+class TestComparison:
+    def test_eq(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3])),
+        )
+        args2 = (args1[0][:], args1[1][:], args1[2][:], args1[3][:])
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert data1 == data2
+        assert not id(data1) == id(data2)
+
+    def test_not_eq(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3])),
+        )
+        args2 = (args1[0][:10], args1[1][:], args1[2][:], args1[3][:])
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert not data1 == data2
+        assert not id(data1) == id(data2)
+
+    def test_does_share_storage(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3])),
+        )
+        args2 = (args1[0][:10], args1[1][:], args1[2][:], args1[3][:])
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert data1.share_storage(data2)
+        assert data2.share_storage(data1)
+
+    def test_does_not_share_storage(self):
+        args1 = (
+            torch.randn(20, 5),
+            torch.randn(3, 4),
+            torch.randn(1, 3),
+            torch.randint(0, 10, torch.Size([2, 3])),
+        )
+        args2 = (args1[0][:10], args1[1][:], args1[2][:], args1[3][:])
+        args2 = (torch.tensor(x) for x in args2)
+        data1 = GraphData(*args1)
+        data2 = GraphData(*args2)
+        assert not data1.share_storage(data2)
+        assert not data2.share_storage(data1)
+
+
+class TestGraphDataModifiers:
     def test_append_nodes(self):
         data = GraphData(
             torch.randn(10, 5),
             torch.randn(5, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 5]))
+            torch.randint(0, 10, torch.Size([2, 5])),
         )
 
         assert data.x.shape[0] == 10
@@ -227,7 +333,7 @@ class TestGraphDataModifiers:
             torch.randn(10, 5),
             torch.randn(5, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 5]))
+            torch.randint(0, 10, torch.Size([2, 5])),
         )
 
         e = torch.randn(3, 4)
@@ -239,7 +345,7 @@ class TestGraphDataModifiers:
             torch.randn(10, 5),
             torch.randn(5, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 5]))
+            torch.randint(0, 10, torch.Size([2, 5])),
         )
 
         e = torch.randn(3, 4)
@@ -253,9 +359,7 @@ class TestGraphDataModifiers:
         print(data.size)
 
 
-
 class TestGraphBatchModifiers:
-
     def test_batch_append_nodes(self):
 
         datalist = [random_data(5, 6, 7) for _ in range(10)]
@@ -272,8 +376,7 @@ class TestGraphBatchModifiers:
         print(batch.node_idx.shape)
         print(batch.x.shape)
 
-
-    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__to_datalist(self, attr):
         datalist = [random_data(5, 3, 4) for _ in range(300)]
 
@@ -285,7 +388,7 @@ class TestGraphBatchModifiers:
         for data in datalist:
             assert getattr(data, attr).requires_grad
 
-    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__from_datalist(self, attr):
         datalist = [random_data(5, 3, 4) for _ in range(300)]
         for data in datalist:
@@ -293,7 +396,7 @@ class TestGraphBatchModifiers:
         batch = GraphBatch.from_data_list(datalist)
         assert getattr(batch, attr).requires_grad
 
-    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__append_nodes(self, attr):
         datalist = [random_data(5, 3, 4) for _ in range(300)]
         for data in datalist:
@@ -307,8 +410,7 @@ class TestGraphBatchModifiers:
         assert batch.x.shape[0] == n_nodes + 10
         assert getattr(batch, attr).requires_grad
 
-
-    @pytest.mark.parametrize('attr', ['x', 'e', 'g'])
+    @pytest.mark.parametrize("attr", ["x", "e", "g"])
     def test_is_differentiable__append_edges(self, attr):
         datalist = [random_data(5, 3, 4) for _ in range(300)]
         for data in datalist:
@@ -329,16 +431,14 @@ class TestGraphBatchModifiers:
         assert getattr(batch, attr).requires_grad
 
 
-
-
 class TestInvalidGraphData:
-    def test_invalid_number_of_edges(self):
+    def test_invalid_number_of_edges(self, cls):
         with pytest.raises(RuntimeError):
-            GraphData(
+            cls(
                 torch.randn(10, 5),
                 torch.randn(5, 4),
                 torch.randn(1, 3),
-                torch.randint(0, 10, torch.Size([2, 6]))
+                torch.randint(0, 10, torch.Size([2, 6])),
             )
 
     def test_invalid_number_of_nodes(self):
@@ -347,7 +447,7 @@ class TestInvalidGraphData:
                 torch.randn(10, 5),
                 torch.randn(5, 4),
                 torch.randn(1, 3),
-                torch.randint(11, 12, torch.Size([2, 6]))
+                torch.randint(11, 12, torch.Size([2, 6])),
             )
 
     def test_invalid_number_of_edges(self):
@@ -356,7 +456,7 @@ class TestInvalidGraphData:
                 torch.randn(10),
                 torch.randn(5, 4),
                 torch.randn(1, 3),
-                torch.randint(0, 10, torch.Size([2, 5]))
+                torch.randint(0, 10, torch.Size([2, 5])),
             )
 
     def test_invalid_global_shape(self):
@@ -365,7 +465,7 @@ class TestInvalidGraphData:
                 torch.randn(10, 5),
                 torch.randn(5, 4),
                 torch.randn(3),
-                torch.randint(11, 12, torch.Size([2, 6]))
+                torch.randint(11, 12, torch.Size([2, 6])),
             )
 
     def test_invalid_n_edges(self):
@@ -374,7 +474,7 @@ class TestInvalidGraphData:
                 torch.randn(10, 5),
                 torch.randn(5, 4),
                 torch.randn(1, 3),
-                torch.randint(0, 10, torch.Size([3, 5]))
+                torch.randint(0, 10, torch.Size([3, 5])),
             )
 
     def test_invalid_edge_ndims(self):
@@ -383,7 +483,7 @@ class TestInvalidGraphData:
                 torch.randn(10, 5),
                 torch.randn(5),
                 torch.randn(1, 3),
-                torch.randint(0, 10, torch.Size([2, 5]))
+                torch.randint(0, 10, torch.Size([2, 5])),
             )
 
     def test_invalid_global_ndims(self):
@@ -392,29 +492,24 @@ class TestInvalidGraphData:
                 torch.randn(10, 5),
                 torch.randn(5, 4),
                 torch.randn(1),
-                torch.randint(0, 10, torch.Size([2, 5]))
+                torch.randint(0, 10, torch.Size([2, 5])),
             )
 
 
-def test_random_data():
-    random_data(5, 4, 3)
-
-
 class TestGraphBatch:
-
     def test_basic_batch(self):
         data1 = GraphData(
             torch.randn(10, 10),
             torch.randn(3, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 3]))
+            torch.randint(0, 10, torch.Size([2, 3])),
         )
 
         data2 = GraphData(
             torch.randn(12, 10),
             torch.randn(4, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 4]))
+            torch.randint(0, 10, torch.Size([2, 4])),
         )
 
         batch = GraphBatch.from_data_list([data1, data2])
@@ -425,47 +520,20 @@ class TestGraphBatch:
         assert torch.all(torch.eq(batch.node_idx, torch.tensor([0] * 10 + [1] * 12)))
         assert torch.all(torch.eq(batch.edge_idx, torch.tensor([0] * 3 + [1] * 4)))
 
-
     def test_basic_batch2(self):
 
         data1 = GraphData(
-            torch.tensor([
-                [0],
-                [0]
-            ]),
-            torch.tensor([
-                [0],
-                [0]
-            ]),
-            torch.tensor([
-                [0]
-            ]),
-            torch.tensor([
-                [0, 1],
-                [1, 0]
-            ])
+            torch.tensor([[0], [0]]),
+            torch.tensor([[0], [0]]),
+            torch.tensor([[0]]),
+            torch.tensor([[0, 1], [1, 0]]),
         )
 
         data2 = GraphData(
-            torch.tensor([
-                [0],
-                [0],
-                [0],
-                [0],
-                [0]
-            ]),
-            torch.tensor([
-                [0],
-                [0],
-                [0]
-            ]),
-            torch.tensor([
-                [0]
-            ]),
-            torch.tensor([
-                [1, 2, 1],
-                [4, 2, 1]
-            ])
+            torch.tensor([[0], [0], [0], [0], [0]]),
+            torch.tensor([[0], [0], [0]]),
+            torch.tensor([[0]]),
+            torch.tensor([[1, 2, 1], [4, 2, 1]]),
         )
 
         batch = GraphBatch.from_data_list([data1, data2])
@@ -475,22 +543,20 @@ class TestGraphBatch:
         print(datalist2[0].edges)
         print(datalist2[1].edges)
 
-
-
     @flaky(max_runs=20, min_passes=20)
     def test_to_and_from_datalist(self):
         data1 = GraphData(
             torch.randn(4, 2),
             torch.randn(3, 4),
             torch.randn(1, 3),
-            torch.randint(0, 4, torch.Size([2, 3]))
+            torch.randint(0, 4, torch.Size([2, 3])),
         )
 
         data2 = GraphData(
             torch.randn(2, 2),
             torch.randn(4, 4),
             torch.randn(1, 3),
-            torch.randint(0, 2, torch.Size([2, 4]))
+            torch.randint(0, 2, torch.Size([2, 4])),
         )
 
         batch = GraphBatch.from_data_list([data1, data2])
@@ -516,30 +582,26 @@ class TestGraphBatch:
             assert torch.all(torch.eq(d1.edges, d2.edges))
             assert d1.allclose(d2)
 
-    @pytest.mark.parametrize('offsets', [
-        (1, 0, 0),
-        (0, 1, 0),
-        (0, 0, 1)
-    ])
+    @pytest.mark.parametrize("offsets", [(1, 0, 0), (0, 1, 0), (0, 0, 1)])
     def test_invalid_batch(self, offsets):
         data1 = GraphData(
             torch.randn(10, 10),
             torch.randn(3, 4),
             torch.randn(1, 3),
-            torch.randint(0, 10, torch.Size([2, 3]))
+            torch.randint(0, 10, torch.Size([2, 3])),
         )
 
         data2 = GraphData(
             torch.randn(12, 10 + offsets[0]),
             torch.randn(4, 4 + offsets[1]),
             torch.randn(1, 3 + offsets[2]),
-            torch.randint(0, 10, torch.Size([2, 4]))
+            torch.randint(0, 10, torch.Size([2, 4])),
         )
 
         with pytest.raises(RuntimeError):
             GraphBatch.from_data_list([data1, data2])
 
-    @pytest.mark.parametrize('n', [3, 10, 1000])
+    @pytest.mark.parametrize("n", [3, 10, 1000])
     def test_from_data_list(self, n):
         datalist = [random_data(5, 3, 4) for _ in range(n)]
         batch = GraphBatch.from_data_list(datalist)
@@ -572,10 +634,7 @@ class TestGraphBatch:
             assert d1.allclose(d2)
 
     @pytest.mark.parametrize(
-        'fkey_gkey', [
-            ('features', 'data'),
-            ('myfeatures', 'mydata')
-        ]
+        "fkey_gkey", [("features", "data"), ("myfeatures", "mydata")]
     )
     def test_to_networkx_list(self, fkey_gkey):
         fkey, gkey = fkey_gkey

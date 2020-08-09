@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Dict
 
 import torch
@@ -8,13 +9,15 @@ import networkx as nx
 from typing import Callable
 from typing import TypeVar, Type, Tuple, Any, Dict
 from pyrographnets.utils import same_storage
+from typing import Union
 
-GraphType = TypeVar('GraphType', nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
+GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
 class GraphData(object):
     """Data representing a single graph"""
-    __slots__ = ['x', 'e', 'g', 'edges']
+
+    __slots__ = ["x", "e", "g", "edges"]
 
     def __init__(self, node_attr, edge_attr, global_attr, edges):
         self.x = node_attr
@@ -24,47 +27,48 @@ class GraphData(object):
         GraphData.debug(self)
 
     def debug(self):
-        if self.edges.shape[0] and self.edges.shape[1] and self.edges.max() >= self.x.shape[0]:
+        if (
+            self.edges.shape[0]
+            and self.edges.shape[1]
+            and self.edges.max() >= self.x.shape[0]
+        ):
             raise RuntimeError(
-                "Edge coordinate {} is greater than number of nodes {}".format(self.edges.max(), self.x.shape[0
-                ]))
+                "Edge coordinate {} is greater than number of nodes {}".format(
+                    self.edges.max(), self.x.shape[0]
+                )
+            )
         if not self.edges.shape[1] == self.e.shape[0]:
-            raise RuntimeError("Number of edges {} must match number of edge attributes {}".format(
-                self.edges.shape[1],
-                self.e.shape[0]
-            ))
+            raise RuntimeError(
+                "Number of edges {} must match number of edge attributes {}".format(
+                    self.edges.shape[1], self.e.shape[0]
+                )
+            )
 
         if not self.edges.dtype == torch.long:
             raise RuntimeError(
-                "Wrong tensor type. `edges` must be dtype={} not {}".format(self.edges.dtype, torch.long))
+                "Wrong tensor type. `edges` must be dtype={} not {}".format(
+                    self.edges.dtype, torch.long
+                )
+            )
 
         if not self.edges.shape[0] == 2:
-            raise RuntimeError(
-                "Edges must be a tensor of shape `[2, num_edges]`"
-            )
+            raise RuntimeError("Edges must be a tensor of shape `[2, num_edges]`")
 
         if not self.x.ndim == 2:
-            raise RuntimeError(
-                "Node attr must have 2 dimensions"
-            )
+            raise RuntimeError("Node attr must have 2 dimensions")
 
         if not self.g.ndim == 2:
-            raise RuntimeError(
-                "Global attr must have 2 dimensions"
-            )
+            raise RuntimeError("Global attr must have 2 dimensions")
 
         if not self.e.ndim == 2:
-            raise RuntimeError(
-                "Edge attr must have 2 dimensions"
-            )
+            raise RuntimeError("Edge attr must have 2 dimensions")
 
         if not self.edges.ndim == 2:
-            raise RuntimeError(
-                "Edges must have 2 dimensions"
-            )
+            raise RuntimeError("Edges must have 2 dimensions")
 
-    def _apply(self, func, new_inst: bool, args: Tuple[Any, ...] = tuple(), kwargs: Dict = None) \
-            -> 'GraphData':
+    def _apply(
+        self, func, new_inst: bool, args: Tuple[Any, ...] = tuple(), kwargs: Dict = None
+    ) -> "GraphData":
         """
         Applies the function to the graph. Be mindful of what the function is doing.
 
@@ -91,6 +95,7 @@ class GraphData(object):
                 init_args.append(val)
         if new_inst:
             return self.__class__(*init_args)
+        return self
 
     # TODO: finish clone, copy, apply, etc.
     def apply(self, func, *args, **kwargs):
@@ -103,6 +108,28 @@ class GraphData(object):
 
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
+
+    def share_storage(
+        self, other: GraphData, return_dict: Optional[bool] = False
+    ) -> Union[Dict[str, bool], bool]:
+        """
+        Check if this data shares storage with another data.
+
+        :param other: The other GraphData object.
+        :param return_dict: if true, return dictionary of which tensors share the same storage. Else returns true if
+            any tensors share the same storage.
+        :return:
+        """
+        d = {}
+        for k in self.__slots__:
+            a = getattr(self, k)
+            b = getattr(other, k)
+            c = same_storage(a, b)
+            if return_dict:
+                d[k] = c
+            elif c:
+                return True
+        return d
 
     def contiguous(self):
         return self.apply(lambda x: x.contiguous())
@@ -148,12 +175,10 @@ class GraphData(object):
         return masked_fields
 
     def mask(self, node_mask, edge_mask, global_mask, invert: bool = False):
-        d = {'x': node_mask, 'e': edge_mask, 'g': global_mask}
+        d = {"x": node_mask, "e": edge_mask, "g": global_mask}
         if invert:
             d = {k: ~v for k, v in d.items()}
-        return self.__class__(
-            *self._mask_fields(d)
-        )
+        return self.__class__(*self._mask_fields(d))
 
     def clone(self):
         """Clones the data. Note that like the `clone()` method, this function will
@@ -167,12 +192,14 @@ class GraphData(object):
 
     # TODO: docstrings
     @staticmethod
-    def from_networkx(g: GraphType,
-                      n_node_feat: Optional[int] = None,
-                      n_edge_feat: Optional[int] = None,
-                      n_glob_feat: Optional[int] = None,
-                      feature_key: str = 'features',
-                      global_attr_key: str = 'data'):
+    def from_networkx(
+        g: GraphType,
+        n_node_feat: Optional[int] = None,
+        n_edge_feat: Optional[int] = None,
+        n_glob_feat: Optional[int] = None,
+        feature_key: str = "features",
+        global_attr_key: str = "data",
+    ):
         """
 
         :param g:
@@ -228,14 +255,19 @@ class GraphData(object):
         if feature_key in gdata:
             glob_attr[0] = gdata[feature_key]
 
-        return GraphData(torch.tensor(node_attr, dtype=torch.float),
-                         torch.tensor(edge_attr, dtype=torch.float),
-                         torch.tensor(glob_attr, dtype=torch.float),
-                         torch.tensor(edges, dtype=torch.long))
+        return GraphData(
+            torch.tensor(node_attr, dtype=torch.float),
+            torch.tensor(edge_attr, dtype=torch.float),
+            torch.tensor(glob_attr, dtype=torch.float),
+            torch.tensor(edges, dtype=torch.long),
+        )
 
-    def to_networkx(self, feature_key: str = 'features',
-                    global_attr_key: str = 'data',
-                    graph_type: Type[GraphType] = nx.OrderedMultiDiGraph ) -> GraphType:
+    def to_networkx(
+        self,
+        feature_key: str = "features",
+        global_attr_key: str = "data",
+        graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
+    ) -> GraphType:
         g = graph_type()
         for n, ndata in enumerate(self.x):
             g.add_node(n, **{feature_key: ndata})
@@ -251,24 +283,29 @@ class GraphData(object):
             cls=self.__class__.__name__,
             n_graphs=self.num_graphs,
             size=self.x.shape[:1] + self.e.shape[:1] + self.g.shape[:1],
-            shape=self.shape
+            shape=self.shape,
         )
 
-    def _eq_helper(self, other: 'GraphData', comparator: Callable[[torch.Tensor, torch.Tensor], bool]) -> bool:
+    def _eq_helper(
+        self,
+        other: "GraphData",
+        comparator: Callable[[torch.Tensor, torch.Tensor], bool],
+    ) -> bool:
         if not torch.all(torch.eq(self.edges, other.edges)):
             return False
-        for attr in ['x', 'e', 'g']:
+        for attr in ["x", "e", "g"]:
             a = getattr(self, attr)
             b = getattr(other, attr)
             if not comparator(a, b):
                 return False
         return True
 
-    def __eq__(self, other: 'GraphData') -> bool:
+    def __eq__(self, other: "GraphData") -> bool:
         def is_eq(a, b):
             if a.shape != b.shape:
                 return False
             return torch.all(torch.eq(a, b))
+
         return self._eq_helper(other, comparator=is_eq)
 
     # TODO: implement this for batch?
@@ -286,7 +323,8 @@ class GraphData(object):
         self.e = torch.cat([self.e, edge_attr])
         self.debug()
 
-    def allclose(self, other: 'GraphData', **kwargs) -> bool:
+    def allclose(self, other: "GraphData", **kwargs) -> bool:
         def _allclose(a, b):
             return torch.allclose(a, b, **kwargs)
+
         return self._eq_helper(other, comparator=_allclose)

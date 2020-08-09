@@ -11,13 +11,14 @@ def test_flex_block():
     model(x)
     print(model)
 
-@pytest.mark.parametrize('x', [16, 32, 44])
+
+@pytest.mark.parametrize("x", [16, 32, 44])
 def test_flex_block_chain(x):
 
     model = torch.nn.Sequential(
         Flex(torch.nn.Linear)(Flex.d(), 16),
         Flex(torch.nn.Linear)(Flex.d(), 32),
-        Flex(torch.nn.Linear)(Flex.d(), 64)
+        Flex(torch.nn.Linear)(Flex.d(), 64),
     )
 
     data = torch.randn((10, x))
@@ -25,10 +26,9 @@ def test_flex_block_chain(x):
     assert out.shape[1] == 64
 
 
-@pytest.mark.parametrize('x', [16, 32, 44])
+@pytest.mark.parametrize("x", [16, 32, 44])
 def test_flex_block_custom_position(x):
     class FooBlock(torch.nn.Module):
-
         def __init__(self, a, b):
             super().__init__()
             self.block = torch.nn.Linear(a, b)
@@ -38,4 +38,4 @@ def test_flex_block_custom_position(x):
 
     model = Flex(FooBlock)(Flex.d(1), 16)
     data = torch.randn((10, x))
-    model('arg0', data)
+    model("arg0", data)
