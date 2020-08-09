@@ -19,13 +19,17 @@ class GraphData(object):
     """Data representing a single graph"""
 
     __slots__ = ["x", "e", "g", "edges"]
+    _differentiable = ['x', 'e', 'g']
 
-    def __init__(self, node_attr, edge_attr, global_attr, edges):
+    def __init__(self, node_attr, edge_attr, global_attr, edges,
+                 requires_grad: Optional[bool] = None):
         self.x = node_attr
         self.e = edge_attr
         self.g = global_attr
         self.edges = edges
         GraphData.debug(self)
+        if requires_grad is not None:
+            self.requires_grad = requires_grad
 
     def debug(self):
         if (
@@ -68,7 +72,8 @@ class GraphData(object):
             raise RuntimeError("Edges must have 2 dimensions")
 
     def _apply(
-        self, func, new_inst: bool, args: Tuple[Any, ...] = tuple(), kwargs: Dict = None
+        self, func, new_inst: bool, args: Tuple[Any, ...] = tuple(), kwargs: Dict = None,
+            keys: Optional[Tuple[str]] = None,
     ) -> "GraphData":
         """
         Applies the function to the graph. Be mindful of what the function is doing.
@@ -86,10 +91,12 @@ class GraphData(object):
         :param kwargs:
         :return:
         """
+        if keys is None:
+            keys = self.__slots__
         if kwargs is None:
             kwargs = {}
         init_args = []
-        for f in self.__slots__:
+        for f in keys:
             old_val = getattr(self, f)
             val = func(old_val, *args, **kwargs)
             if new_inst:
@@ -99,13 +106,13 @@ class GraphData(object):
         return self
 
     # TODO: finish clone, copy, apply, etc.
-    def apply(self, func, *args, **kwargs):
+    def apply(self, func, *args, keys: Optional[Tuple[str]] = None, **kwargs):
         """Applies the function to the data, creating a new instance of GraphData"""
-        return self._apply(func, new_inst=True, args=args, kwargs=kwargs)
+        return self._apply(func, new_inst=True, args=args, kwargs=kwargs, keys=keys, )
 
-    def apply_(self, func, *args, **kwargs):
+    def apply_(self, func, *args, keys: Optional[Tuple[str]] = None, **kwargs):
         """Applies the function in place to the data, wihout creating a new instance of GraphData"""
-        return self._apply(func, new_inst=False, args=args, kwargs=kwargs)
+        return self._apply(func, new_inst=False, args=args, kwargs=kwargs, keys=keys, )
 
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
@@ -180,6 +187,17 @@ class GraphData(object):
         if invert:
             d = {k: ~v for k, v in d.items()}
         return self.__class__(*self._mask_fields(d))
+
+    @property
+    def requires_grad(self):
+        g = [getattr(self, k).requires_grad for k in self._differentiable]
+        return all(g)
+
+    @requires_grad.setter
+    def requires_grad(self, v):
+        def set_requires_grad(x):
+            x.requires_grad = v
+        self.apply_(set_requires_grad, keys=self._differentiable)
 
     # TODO: clone tests
     def clone(self):
@@ -340,7 +358,8 @@ class GraphData(object):
         return self._eq_helper(other, comparator=_allclose)
 
     @classmethod
-    def random(cls, n_feat: int, e_feat: int, g_feat: int) -> GraphData:
+    def random(cls, n_feat: int, e_feat: int, g_feat: int,
+               requires_grad: Optional[bool] = None) -> GraphData:
         n_nodes = torch.randint(1, 10, torch.Size([])).item()
         n_edges = torch.randint(1, 20, torch.Size([])).item()
         return cls(
@@ -348,6 +367,7 @@ class GraphData(object):
             torch.randn(n_edges, e_feat),
             torch.randn(1, g_feat),
             torch.randint(0, n_nodes, torch.Size([2, n_edges])),
+            requires_grad=requires_grad
         )
 
     # TODO: view

@@ -6,6 +6,7 @@ from flaky import flaky
 
 random_graph_data = GraphData.random
 
+
 def test_random_data():
     random_graph_data(5, 4, 3)
 
@@ -258,6 +259,20 @@ class TestApply:
                 v = getattr(data2, k)
                 assert v.device.type == "cuda"
 
+    @pytest.mark.parametrize(
+        'req', [True, False]
+    )
+    def tests_seq_requires_grad(self, random_data_example, req):
+        data = random_data_example
+
+        req1, req2 = req, (not req)
+
+        for req in [req1, req2]:
+            data.requires_grad = req
+            assert data.requires_grad is req
+            for k in data._differentiable:
+                v = getattr(data, k)
+                assert v.requires_grad is req
 
 # TODO: TestComparison
 class TestComparison:
@@ -653,3 +668,19 @@ def test_graph_batch_random_batch():
     batch = GraphBatch.random_batch(10, 5, 5, 5)
     print(batch.size)
     print(batch.shape)
+
+
+@rndm_data()
+class TestCloneCopy():
+
+    def test_copy(self, random_data_example):
+        data = random_data_example
+        data2 = data.copy()
+        assert id(data) != id(data2)
+        assert not data.share_storage(data2)
+
+    def test_clone(self, random_data_example):
+        data = random_data_example
+        data2 = data.clone()
+        assert id(data) != id(data2)
+        assert not data.share_storage(data2)

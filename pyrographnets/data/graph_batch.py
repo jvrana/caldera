@@ -5,7 +5,7 @@ from pyrographnets.data.graph_data import GraphData, GraphType
 from pyrographnets.utils import scatter_group
 from typing import List
 import networkx as nx
-from typing import Type, Generator
+from typing import Type, Generator, Optional
 from pyrographnets.utils import stable_arg_sort_long
 
 
@@ -299,11 +299,15 @@ class GraphBatch(GraphData):
         raise NotImplementedError("Not implemented for {}".format(cls))
 
     @classmethod
-    def random_batch(cls, size: int, n_feat: int, e_feat: int, g_feat: int) -> GraphBatch:
+    def random_batch(cls, size: int, n_feat: int, e_feat: int, g_feat: int,
+                     requires_grad: Optional[bool] = None) -> GraphBatch:
         datalist = []
         for _ in range(size):
             datalist.append(GraphData.random(n_feat, e_feat, g_feat))
-        return cls.from_data_list(datalist)
+        batch = cls.from_data_list(datalist)
+        if requires_grad is not None:
+            batch.requires_grad = requires_grad
+        return batch
 
     def __eq__(self, *args, **kwargs):
         raise NotImplementedError("Cannot compare batches")

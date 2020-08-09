@@ -2,10 +2,13 @@ from pyrographnets.blocks import Flex, MLP
 from pyrographnets.data import GraphData, GraphDataLoader
 import torch.optim as optim
 
-def test_train_edge_block():
+
+def test_network():
     epochs = 10
     network = Flex(MLP)(Flex.d(), 16, 1, layer_norm=False)
     input_datalist = [GraphData.random(5, 5, 5) for _ in range(1000)]
+
+
 
     #
     # target_datalist = [GraphData.random(5, 1, 5) for _ in range(1000)]
