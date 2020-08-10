@@ -1,40 +1,65 @@
+from typing import Union, Callable, Tuple, Any, Dict
+
 import pytest
-from pyrographnets.blocks import NodeBlock, EdgeBlock, GlobalBlock, Flex, MLP
 import torch
-from pyrographnets.utils import deterministic_seed
-from pyrographnets.data import GraphData, GraphBatch, GraphDataLoader
-from typing import Union, List, Optional, Callable, Tuple, Any, Dict
 from torch import optim
+
+from pyrographnets.blocks import NodeBlock, EdgeBlock, GlobalBlock, Flex, MLP
+from pyrographnets.data import GraphData, GraphBatch, GraphDataLoader
+from pyrographnets.utils import deterministic_seed
+from flaky import flaky
 
 SEED = 0
 
-def to(x, device):
-    if device is None:
-        return x
-    else:
-        return x.to(device)
+
+def name_module(n, m):
+    m.name = n
+    return m
 
 
-def filter_dict(d, keys):
-    return {k: v for k, v in d.items() if k in keys}
-
-
-class Networks:
+class Networks(object):
     """Networks that will be used in the tests"""
-    linear = torch.nn.Sequential(
-        Flex(MLP)(Flex.d(), 25, 25, layer_norm=False),
-        Flex(torch.nn.Linear)(Flex.d(), 1)
+
+    n = name_module
+
+    linear_block = n(
+        'linear',
+        torch.nn.Sequential(
+            torch.nn.Linear(5, 16),
+            torch.nn.ReLU(),
+            torch.nn.Linear(16, 1)
+        )
     )
 
-    node_block = torch.nn.Sequential(
-        NodeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
-        Flex(torch.nn.Linear)(Flex.d(), 1)
+
+    mlp_block = n(
+        'mlp',
+        torch.nn.Sequential(
+            Flex(MLP)(Flex.d(), 16),
+            Flex(torch.nn.Linear)(Flex.d(), 1)
+        )
     )
 
-    edge_block = torch.nn.Sequential(
-        EdgeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
-        Flex(torch.nn.Linear)(Flex.d(), 1)
-    )
+    node_block = n(
+        'node_block',
+        torch.nn.Sequential(
+            NodeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
+            Flex(torch.nn.Linear)(Flex.d(), 1)
+        ))
+
+    edge_block = n(
+        'edge_block',
+        torch.nn.Sequential(
+            EdgeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
+            Flex(torch.nn.Linear)(Flex.d(), 1)
+        ))
+
+    global_block = n(
+        'global_block',
+        torch.nn.Sequential(
+            GlobalBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
+            Flex(torch.nn.Linear)(Flex.d(), 1)
+        ))
 
     @staticmethod
     def reset(net: torch.nn.Module):
@@ -42,6 +67,7 @@ class Networks:
             for layer in model.children():
                 if hasattr(layer, 'reset_parameters'):
                     layer.reset_parameters()
+
         net.apply(weight_reset)
 
 
@@ -68,6 +94,16 @@ class DataModifier(object):
         batch.e = torch.cat([
             batch.e,
             batch.e.sum(axis=1, keepdim=True)
+        ], axis=1)
+        return batch
+
+    @staticmethod
+    def global_sum(batch: GraphBatch, copy=True):
+        if copy:
+            batch = batch.copy()
+        batch.g = torch.cat([
+            batch.g,
+            batch.g.sum(axis=1, keepdim=True)
         ], axis=1)
         return batch
 
@@ -98,30 +134,40 @@ class DataGetter(object):
     """Methods to collect input, output from the loader"""
 
     @classmethod
-    def node(cls, batch: GraphBatch) -> T:
+    def get_node(cls, batch: GraphBatch) -> T:
         args = (
             batch.x[:, :-1],
         )
         kwargs = {}
-        out = batch.x[:, -1]
+        out = batch.x[:, -1:]
         return ((args, kwargs), out)
 
     @classmethod
-    def edge(cls, batch: GraphBatch) -> T:
+    def get_edge(cls, batch: GraphBatch) -> T:
         args = (
             batch.e[:, :-1],
         )
         kwargs = {}
-        out = batch.e[:, -1]
+        out = batch.e[:, -1:]
+        return ((args, kwargs), out)
+
+    @classmethod
+    def get_global(cls, batch: GraphBatch) -> T:
+        args = (
+            batch.g[:, :-1],
+        )
+        kwargs = {}
+        out = batch.g[:, -1:]
         return ((args, kwargs), out)
 
 
-class ValidationError(Exception):
+class NetworkTestCaseValidationError(Exception):
     pass
 
 
 class NetworkTestCase(object):
     """A network test case."""
+
     def __init__(self, network, modifier: Union[Callable, str],
                  convert, optimizer=None, criterion=None,
                  epochs: int = 20, batch_size: int = 100, data_size: int = 1000):
@@ -147,13 +193,14 @@ class NetworkTestCase(object):
         deterministic_seed(SEED)
 
     def reset(self, seed: int = SEED):
-        self.seed()
+        # self.seed()
         Networks.reset(self.network)
         self.to(self.network)
 
     def create_loader(self):
-        self.seed()
-        datalist = [GraphData.random(5, 5, 5, requires_grad=True) for _ in range(self.data_size)]
+        # self.seed()
+        datalist = [GraphData.random(5, 5, 5, requires_grad=True) for _ in
+                    range(self.data_size)]
         return GraphDataLoader(datalist, self.batch_size)
 
     def provide_example(self):
@@ -188,6 +235,8 @@ class NetworkTestCase(object):
         if criterion is None:
             criterion = torch.nn.MSELoss()
 
+        self.pre_train_validate()
+
         loss_arr = torch.zeros(epochs)
         for epoch in range(epochs):
             net.train()
@@ -210,9 +259,16 @@ class NetworkTestCase(object):
         self.losses = loss_arr
         return loss_arr
 
-    def validate(self):
-        if self.losses[-1] > self.losses[0]:
-            raise ValidationError("")
+    def pre_train_validate(self):
+        for p in self.network.parameters():
+            assert p.requires_grad is True
+
+
+    def post_train_validate(self, threshold=0.1):
+        if self.losses[-1] > self.losses[0] * threshold:
+            raise NetworkTestCaseValidationError("Model did not train properly :(."
+                                  "\n\tlosses: {} -> {}".format(
+                self.losses[0], self.losses[-1]))
 
     def __str__(self):
         pass
@@ -220,33 +276,38 @@ class NetworkTestCase(object):
 
 @pytest.fixture(params=[
     dict(
-        network=Networks.linear,
+        network=Networks.linear_block,
         modifier=DataModifier.node_sum,
-        convert=DataGetter.node
+        convert=DataGetter.get_node
+    ),
+    dict(
+        network=Networks.mlp_block,
+        modifier=DataModifier.node_sum,
+        convert=DataGetter.get_node
     ),
     dict(
         network=Networks.node_block,
         modifier=DataModifier.node_sum,
-        convert=DataGetter.node,
+        convert=DataGetter.get_node,
     ),
     dict(
         network=Networks.edge_block,
         modifier=DataModifier.edge_sum,
-        convert=DataGetter.edge,
+        convert=DataGetter.get_edge,
+    ),
+    dict(
+        network=Networks.global_block,
+        modifier=DataModifier.global_sum,
+        convert=DataGetter.get_global,
     )
-])
+], ids=lambda x: x['network'].name)
 def network_case(request):
-    """"""
     return NetworkTestCase(**request.param)
 
-
-
-
-def test_training_casses(network_case, device):
+def test_training_cases(network_case, device):
     network_case.device = device
     losses = network_case.train()
-
+    print(losses)
     for p in network_case.network.parameters():
         assert device == str(p.device)
-
-    network_case.validate()
+    network_case.post_train_validate()

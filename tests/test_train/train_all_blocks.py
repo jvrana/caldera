@@ -72,6 +72,8 @@ def train(net, loader, epochs, optimizer,
             optimizer.zero_grad()  # zero the gradient buffers
             output = net(input)
             loss = criterion(output, target)
+            print(loss.grad)
+            print(input.grad)
             loss.backward(retain_graph=True)
             optimizer.step()
 

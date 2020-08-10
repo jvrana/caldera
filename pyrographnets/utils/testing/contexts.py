@@ -45,6 +45,7 @@ class ContextContainer(AbstractContextManager):
         self.popped = None
         if mask:
             self.apply(mask)
+        self.collected_exceptions = []
 
     def context_dict(self):
         return {c.name: c for c in self.contexts}
@@ -71,7 +72,14 @@ class ContextContainer(AbstractContextManager):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.popped is None:
             return
-        return self.popped.__exit__(exc_type, exc_val, exc_tb)
+        res = self.popped.__exit__(exc_type, exc_val, exc_tb)
+        if not res:
+            self.collected_exceptions.append(exc_val)
+
+    def raise_all(self):
+        if self.collected_exceptions:
+            s = '\n'.join([str(e) for e in self.collected_exceptions])
+            raise Exception(s)
 
     @staticmethod
     def get_name(contexts):
@@ -132,8 +140,16 @@ def _context_manager_test_cases(request):
     """Create new context managers for test cases"""
     return ContextContainer(*request.param)
 
+choices = [
+    'accumulate',
+    'expand'
+]
 
-def pytest_contexts(n, case_names: Union[List[str], Tuple[str, ...]], ids=None, exceptions: Optional[Tuple[Type[Exception], ...]] = None):
+def pytest_contexts(n,
+                    case_names: Union[List[str], Tuple[str, ...]],
+                    ids=None,
+                    exceptions: Optional[Tuple[Type[Exception], ...]] = None,
+                    mode: str = choices[0]):
     """
     Decorator to provide pytest with test cases.
 
@@ -165,8 +181,12 @@ def pytest_contexts(n, case_names: Union[List[str], Tuple[str, ...]], ids=None, 
     :param ids:
     :return:
     """
+    assert mode in choices
     context_list = tuple([IgnoreContextManager(n, exceptions=exceptions) for n in case_names])
-    masks = list(itertools.product([True, False], repeat=len(context_list)))
+    if mode == 'expand':
+        masks = list(itertools.product([True, False], repeat=len(context_list)))
+    else:
+        masks = [True] * len(context_list)
     values = list(itertools.product(
         [context_list] * len(case_names),
         masks
@@ -181,8 +201,17 @@ def pytest_contexts(n, case_names: Union[List[str], Tuple[str, ...]], ids=None, 
         _context_manager_test_cases.__name__, values, ids=ids, indirect=True
     )
 
+    def conclude(f):
+        @wraps(f)
+        def _wrapped(*args, **kwargs):
+            result = f(*args, **kwargs)
+            for v in list(kwargs.values()) + list(args):
+                if hasattr(v, 'raise_all'):
+                    v.raise_all()
+            return result
+        return _wrapped
+
     def new_wrapper(f):
-        return wrapper(signature_swap(n, _context_manager_test_cases.__name__)(f))
+        return wrapper(conclude(signature_swap(n, _context_manager_test_cases.__name__)(f)))
 
     return new_wrapper
-
