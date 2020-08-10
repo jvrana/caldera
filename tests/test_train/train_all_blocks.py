@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.optim as optim
 
-from pyrographnets.blocks import Flex, MLP
+from pyrographnets.blocks import Flex, MLP, NodeBlock, EdgeBlock
 from pyrographnets.data import GraphData, GraphDataLoader
 from typing import Dict, Any, Callable, TypeVar, Hashable, Tuple
 
@@ -15,15 +15,33 @@ def parametrize_dict(name, d: Dict[Hashable, Any], **kwargs) -> Callable:
 
 networks = {
     'mlp': lambda: torch.nn.Sequential(
-        Flex(MLP)(Flex.d(), 25, 25, 25, 25, layer_norm=False),
+        Flex(MLP)(Flex.d(), 25, 25, layer_norm=False),
         torch.nn.Linear(25, 1)
     ),
-    # 'linear': lambda: torch.nn.Sequential(
-    #     torch.nn.Linear(5, 16),
-    #     torch.nn.ReLU(),
-    #     torch.nn.Linear(16, 1)
-    # )
+    'linear': lambda: torch.nn.Sequential(
+        torch.nn.Linear(5, 16),
+        torch.nn.ReLU(),
+        torch.nn.Linear(16, 1)
+    ),
+    'node_block': lambda: torch.nn.Sequential(
+        torch.nn.Sequential(
+            NodeBlock(
+                Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)
+            ),
+            torch.nn.Linear(25, 1)
+        )
+    ),
+    'edge_block': lambda: torch.nn.Sequential(
+        torch.nn.Sequential(
+            EdgeBlock(
+                Flex(MLP)(Flex.d(), 16, 16, layer_norm=False)
+            )
+        )
+    )
 }
+
+def filter_dict(d, keys):
+    return {k: v for k, v in d.items() if k in keys}
 
 
 @pytest.fixture
@@ -93,14 +111,17 @@ modifiers = {
         lambda batch: batch.view(slice(None, -1), None, None).x,
         lambda batch: batch.view(slice(-1, None), None, None).x,
         notes='multiplies node attributes'
+    ),
+    'edge_sum': DataModifier(
+        functools.partial(DataModifier._func, attr='e',
+                          f=lambda x: x.sum(axis=1, keepdims=True)),
+        lambda batch: (batch.view(None, slice(None, -1), None).x, batch.view(None, slice(None, -1), None).e),
+        lambda batch: batch.view(None, slice(-1, None), None).e,
+        notes='sums node attributes'
     )
 }
 
-
-@parametrize_dict('network', networks, indirect=True)
-@parametrize_dict('modifier', modifiers)
-def test_train_mlp(network, modifier, device):
-    """Trains a MLP for the very simple function of addition"""
+def call_test(network, modifier, device):
     epochs = 20
     datalist = [GraphData.random(5, 5, 5, requires_grad=True) for _ in range(1000)]
 
@@ -109,7 +130,6 @@ def test_train_mlp(network, modifier, device):
 
     # create loader
     loader = GraphDataLoader(datalist, batch_size=100)
-
 
     # TODO: you need to provide the network with an example (if Flex) before you can send it to a device! Method to check for flex dims.
     # provide example
@@ -123,3 +143,14 @@ def test_train_mlp(network, modifier, device):
                    modifier.to_output, device)
     print(losses)
     assert losses[-1].item() < losses[0].item()
+
+@parametrize_dict('network', filter_dict(networks, ['mlp', 'linear', 'node_block']), indirect=True)
+@parametrize_dict('modifier', filter_dict(modifiers, ['node_sum']))
+def test_train_mlp(network, modifier, device):
+    call_test(network, modifier, device)
+
+
+@parametrize_dict('network', filter_dict(networks, ['edge_block']), indirect=True)
+@parametrize_dict('modifier', filter_dict(modifiers, ['edge_sum']))
+def test_train_edge(network, modifier, device):
+    call_test(network, modifier, device)
