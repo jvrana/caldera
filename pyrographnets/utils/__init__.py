@@ -5,11 +5,10 @@ from pyrographnets.utils.jit import (
     jit_scatter_group,
     unique_with_counts,
 )
-from pyrographnets.utils.torch_utils import same_storage
+from pyrographnets.utils.torch_utils import same_storage, deterministic_seed
 from typing import TypeVar
 from typing import Callable
 from typing import List, Dict
-
 
 T = TypeVar("T")
 K = TypeVar("K")

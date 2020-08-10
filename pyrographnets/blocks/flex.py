@@ -24,6 +24,13 @@ class FlexDim:
             raise ValueError("Dimension cannot be less than zero.")
         return d
 
+    def __repr__(self):
+        return "{}({}, {})".format(
+            self.__class__.__name__,
+            self.pos,
+            self.dim
+        )
+
 
 class FlexBlock(torch.nn.Module):
     """Flexible Block that is resolve upon calling of `forward` with an example."""
@@ -120,6 +127,24 @@ class FlexBlock(torch.nn.Module):
             self._record_apply(args, kwargs)
         else:
             super()._apply(*args, **kwargs)
+
+    # def _get_name(self):
+    #     return "{}({})".format(
+    #         self.__class__.__name__,
+    #         self.module.__name__
+    #     )
+
+    def __repr__(self):
+        if self.is_resolved:
+            return super().__repr__()
+        else:
+            s = "{c}(\n\t(unresolved_module): {m}({args}, {kwargs}\n)".format(
+                c=self._get_name(),
+                m=self.module.__name__,
+                args=', '.join([str(a) for a in self.args]),
+                kwargs=','.join(str(k) + "=" + str(v) for k, v in self.kwargs.items())
+            )
+            return s
 
 
 class Flex(object):

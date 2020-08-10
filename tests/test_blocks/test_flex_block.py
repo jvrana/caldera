@@ -6,11 +6,12 @@ import pytest
 def test_flex_block():
     flex_linear = Flex(torch.nn.Linear)
     model = flex_linear(Flex.d(), 11)
-    print(model)
+    print(model.__str__())
+    print(model.__repr__())
     x = torch.randn((30, 55))
     model(x)
-    print(model)
-
+    print(model.__str__())
+    print(model.__repr__())
 
 @pytest.mark.parametrize("x", [16, 32, 44])
 def test_flex_block_chain(x):

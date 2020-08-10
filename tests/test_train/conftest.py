@@ -6,8 +6,15 @@ import pytest
 import torch
 
 
-@pytest.fixture
-def device():
+def get_cuda_device():
     if torch.cuda.is_available():
         return 'cuda:' + str(torch.cuda.current_device())
-    return None
+
+devices = ['cpu']
+if get_cuda_device():
+    devices.append(get_cuda_device())
+
+
+@pytest.fixture(params=devices)
+def device(request):
+    return request.param
