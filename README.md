@@ -1,13 +1,6 @@
 # Pyro-GraphNets
 
-Pytorch/Pyro implementation of DeepMind's graphnets library.
-
-Original TensorFlow1 non-Bayesian implementation can be found at [Relational inductive biases, deep learning, and graph networks](https://arxiv.org/abs/1806.01261) and at [DeepMind's github repository](https://github.com/deepmind/graph_nets).
-
-Goals of this library are to:
-
-* provide a simple API for training deep neural networks on graph data
-* implement bayesian neural networks on graph data
+Deep learning for graphical models.
 
 ## Installation
 
