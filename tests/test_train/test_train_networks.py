@@ -1,13 +1,17 @@
-from typing import Union, Callable, Tuple, Any, Dict
+from typing import Union, Callable, Tuple, Any, Dict, Optional, Type
 
 import pytest
 import torch
 from torch import optim
 
 from pyrographnets.blocks import NodeBlock, EdgeBlock, GlobalBlock, Flex, MLP
+from pyrographnets.models import GraphEncoder
 from pyrographnets.data import GraphData, GraphBatch, GraphDataLoader
 from pyrographnets.utils import deterministic_seed
-from flaky import flaky
+import networkx as nx
+from pyrographnets.utils.torch_utils import to_one_hot
+import numpy as np
+
 
 SEED = 0
 
@@ -30,7 +34,6 @@ class Networks(object):
             torch.nn.Linear(16, 1)
         )
     )
-
 
     mlp_block = n(
         'mlp',
@@ -60,6 +63,29 @@ class Networks(object):
             GlobalBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
             Flex(torch.nn.Linear)(Flex.d(), 1)
         ))
+    graph_encoder = n(
+        'graph_encoder',
+        GraphEncoder(
+            EdgeBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1)
+                )
+            ),
+            NodeBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1)
+                )
+            ),
+            GlobalBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1)
+                )
+            ),
+        )
+    )
 
     @staticmethod
     def reset(net: torch.nn.Module):
@@ -127,6 +153,45 @@ class DataModifier(object):
         return False
 
 
+class DataLoaders(object):
+
+    @staticmethod
+    def random_loader(data_size, batch_size):
+        datalist = [GraphData.random(5, 5, 5, requires_grad=True) for _ in
+                    range(data_size)]
+        return GraphDataLoader(datalist, batch_size)
+
+    @staticmethod
+    def random_graph_red_black_nodes(data_size, batch_size):
+        input_data = []
+        output_data = []
+        s = 2
+        for _ in range(data_size):
+            g = nx.to_directed(nx.random_tree(10))
+            for n, ndata in g.nodes(data=True):
+                i = np.random.randint(0, 1, (1,))
+                ndata['features'] = to_one_hot(i, s)
+                if i % 2 == 0:
+                    target = np.array([0.5, 0.5])
+                else:
+                    target = np.zeros(2)
+                ndata['target'] = target
+
+            for _, _, edata in g.edges(data=True):
+                edata['features'] = np.zeros((1,))
+                edata['target'] = np.zeros((1,))
+            g.data = {'features': np.zeros((1,)), 'target': np.zeros((1,))}
+            input_data.append(GraphData.from_networkx(g, feature_key='features', requires_grad=True))
+            output_data.append(GraphData.from_networkx(g, feature_key='target', requires_grad=True))
+
+        return GraphDataLoader(list(zip(input_data, output_data)), batch_size=batch_size)
+
+
+data_loaders = {
+    'random': DataLoaders.random_loader
+}
+
+
 T = Tuple[Tuple[Tuple[Any, ...], Dict], torch.Tensor]
 
 
@@ -160,6 +225,16 @@ class DataGetter(object):
         out = batch.g[:, -1:]
         return ((args, kwargs), out)
 
+    @classmethod
+    def get_batch(cls, batch_tuple: Tuple[GraphBatch, GraphBatch]) -> T:
+        args = (
+            batch_tuple[0],
+        )
+        kwargs = {}
+        out = batch_tuple[1]
+        return ((args, kwargs), (out.e, out.x, out.g))
+
+
 
 class NetworkTestCaseValidationError(Exception):
     pass
@@ -168,40 +243,52 @@ class NetworkTestCaseValidationError(Exception):
 class NetworkTestCase(object):
     """A network test case."""
 
-    def __init__(self, network, modifier: Union[Callable, str],
-                 convert, optimizer=None, criterion=None,
-                 epochs: int = 20, batch_size: int = 100, data_size: int = 1000):
-        self.modifier = DataModifier.resolve(modifier)
+    def __init__(self,
+                 network: torch.nn.Module,
+                 modifier: Optional[Callable[[GraphBatch], Any]] = None,
+                 getter: Optional[Callable[[GraphBatch], Any]] = None,
+                 optimizer: Type[torch.optim.Optimizer] = None,
+                 criterion=None,
+                 epochs: int = 20,
+                 batch_size: int = 100,
+                 data_size: int = 1000,
+                 loader: Optional[Callable[[int, int], GraphDataLoader]] = None):
+        if modifier is None:
+            self.modifier = lambda x: x
+        else:
+            self.modifier = modifier
+        if getter is None:
+            self.getter = lambda x: x
+        else:
+            self.getter = getter
         self.network = network
         self.epochs = epochs
         self.batch_size = batch_size
         self.data_size = data_size
         self.device = None
-        self.loader = self.create_loader()
+        if loader is None:
+            loader = DataLoaders.random_loader
+        self.loader = loader(data_size, batch_size)
         self.criterion = criterion
         self.optimizer = optimizer
-        self.getter = convert
         self.losses = None
 
     def to(self, x, device=None):
         device = device or self.device
         if device is not None:
-            return x.to(device)
+            if isinstance(x, tuple):
+                return tuple([self.to(_x) for _x in x])
+            else:
+                return x.to(device)
         return x
 
     def seed(self, seed: int = SEED):
-        deterministic_seed(SEED)
+        deterministic_seed(seed)
 
     def reset(self, seed: int = SEED):
-        # self.seed()
+        self.seed(seed)
         Networks.reset(self.network)
         self.to(self.network)
-
-    def create_loader(self):
-        # self.seed()
-        datalist = [GraphData.random(5, 5, 5, requires_grad=True) for _ in
-                    range(self.data_size)]
-        return GraphDataLoader(datalist, self.batch_size)
 
     def provide_example(self):
         batch = self.loader.first()
@@ -243,8 +330,7 @@ class NetworkTestCase(object):
             running_loss = 0.
             for batch in loader:
 
-                if device:
-                    batch = batch.to(device)
+                batch = self.to(batch)
                 batch = modifier(batch)
                 input, target = getter(batch)
 
@@ -263,7 +349,6 @@ class NetworkTestCase(object):
         for p in self.network.parameters():
             assert p.requires_grad is True
 
-
     def post_train_validate(self, threshold=0.1):
         if self.losses[-1] > self.losses[0] * threshold:
             raise NetworkTestCaseValidationError("Model did not train properly :(."
@@ -274,35 +359,61 @@ class NetworkTestCase(object):
         pass
 
 
+@pytest.mark.parametrize('loader_func', [
+    DataLoaders.random_loader,
+    DataLoaders.random_graph_red_black_nodes
+])
+def test_loaders(loader_func):
+    loader = loader_func(100, 20)
+    for x in loader:
+        assert x
+
+
+def mse_tuple(a, b):
+    loss = torch.tensor(0.)
+    assert len(a) == len(b)
+    for _a, _b in zip(a, b):
+        assert _a.shape == _b.shape
+        l = torch.nn.MSELoss(_a, _b)
+        loss += l
+    return loss
+
 @pytest.fixture(params=[
     dict(
         network=Networks.linear_block,
         modifier=DataModifier.node_sum,
-        convert=DataGetter.get_node
+        getter=DataGetter.get_node
     ),
     dict(
         network=Networks.mlp_block,
         modifier=DataModifier.node_sum,
-        convert=DataGetter.get_node
+        getter=DataGetter.get_node
     ),
     dict(
         network=Networks.node_block,
         modifier=DataModifier.node_sum,
-        convert=DataGetter.get_node,
+        getter=DataGetter.get_node,
     ),
     dict(
         network=Networks.edge_block,
         modifier=DataModifier.edge_sum,
-        convert=DataGetter.get_edge,
+        getter=DataGetter.get_edge,
     ),
     dict(
         network=Networks.global_block,
         modifier=DataModifier.global_sum,
-        convert=DataGetter.get_global,
+        getter=DataGetter.get_global,
+    ),
+    dict(
+        network=Networks.graph_encoder,
+        loader=DataLoaders.random_graph_red_black_nodes,
+        getter=DataGetter.get_batch,
+        criterion=mse_tuple
     )
 ], ids=lambda x: x['network'].name)
 def network_case(request):
     return NetworkTestCase(**request.param)
+
 
 def test_training_cases(network_case, device):
     network_case.device = device
@@ -311,3 +422,4 @@ def test_training_cases(network_case, device):
     for p in network_case.network.parameters():
         assert device == str(p.device)
     network_case.post_train_validate()
+

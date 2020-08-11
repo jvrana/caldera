@@ -2,6 +2,7 @@ from pyrographnets.data import GraphData, GraphBatch
 import torch
 import pytest
 import networkx as nx
+import numpy as np
 from flaky import flaky
 
 random_graph_data = GraphData.random
@@ -58,7 +59,7 @@ class Comparator:
 
         # ensure feature key is in global data
         assert hasattr(g, gkey)
-        gdata = getattr(g, gkey)[fkey]
+        gdata = torch.tensor(getattr(g, gkey)[fkey], dtype=torch.float)
         assert gdata is not None
 
         # check edges
@@ -83,14 +84,20 @@ class Comparator:
         # check node data
         nodes = list(g.nodes(data=True))
         for i in range(len(nodes)):
-            assert torch.all(torch.eq(nodes[i][1][fkey], data.x[i]))
+            expected_node = torch.tensor(
+                nodes[i][1][fkey], dtype=torch.float
+            )
+            assert torch.all(torch.eq(expected_node, data.x[i]))
 
         # check edge data
         for i, (n1, n2, ne) in enumerate(g.ordered_edges):
             edata = g[n1][n2][ne]
-            assert torch.all(torch.eq(edata[fkey], data.e[i]))
+            expected_edge = torch.tensor(
+                edata[fkey], dtype=torch.float
+            )
+            assert torch.all(torch.eq(expected_edge, data.e[i]))
 
-
+# TODO: test data for numpy or torch
 class TestGraphData:
     def test_graph_data_init_0(self):
         data = GraphData(
@@ -167,11 +174,11 @@ class TestGraphData:
         gkey = kwargs.get("global_attr_key", "data")
 
         g = nx.OrderedMultiDiGraph()
-        g.add_node("node1", **{fkey: torch.randn(5)})
-        g.add_node("node2", **{fkey: torch.randn(5)})
-        g.add_edge("node1", "node2", **{fkey: torch.randn(4)})
+        g.add_node("node1", **{fkey: np.random.randn(5)})
+        g.add_node("node2", **{fkey: np.random.randn(5)})
+        g.add_edge("node1", "node2", **{fkey: np.random.randn(4)})
         g.ordered_edges = [("node1", "node2", 0)]
-        setattr(g, gkey, {fkey: torch.randn(3)})
+        setattr(g, gkey, {fkey: np.random.randn(3)})
 
         data = GraphData.from_networkx(g, **kwargs)
 
@@ -201,12 +208,12 @@ class TestGraphData:
         gkey = kwargs.get("global_attr_key", "data")
 
         g = nx.OrderedMultiDiGraph()
-        g.add_node("node1", **{fkey: torch.randn(5)})
-        g.add_node("node2", **{fkey: torch.randn(5)})
+        g.add_node("node1", **{fkey: np.random.randn(5)})
+        g.add_node("node2", **{fkey: np.random.randn(5)})
         g.ordered_edges = []
         # g.add_edge('node1', 'node2', **{fkey: torch.randn(4)})
 
-        setattr(g, gkey, {fkey: torch.randn(3)})
+        setattr(g, gkey, {fkey: np.random.randn(3)})
 
         data = GraphData.from_networkx(g, **kwargs)
 

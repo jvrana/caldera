@@ -1,6 +1,7 @@
 import torch
 import random
 import numpy
+from typing import overload
 
 
 def same_storage(x: torch.Tensor, y: torch.Tensor) -> bool:
@@ -21,5 +22,20 @@ def deterministic_seed(seed: int, cudnn_deterministic: bool = False):
     if cudnn_deterministic:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+
+
+def to_one_hot(arr: numpy.ndarray, mx: int) -> numpy.ndarray:
+    ...
+
+
+def to_one_hot(arr: torch.tensor, mx: int) -> torch.tensor:
+    if torch.is_tensor(arr):
+
+        oh = torch.zeros((arr.shape[0], mx))
+    else:
+        oh = numpy.zeros((arr.shape[0], mx))
+    for i, a in enumerate(arr):
+        oh[i, a] = 1.0
+    return oh
 
 

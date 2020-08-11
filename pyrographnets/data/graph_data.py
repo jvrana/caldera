@@ -10,16 +10,22 @@ from typing import Callable
 from typing import TypeVar, Type, Tuple, Any, Dict
 from pyrographnets.utils import same_storage
 from typing import Union
+import functools
+
 
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
 
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
+# TODO: support n dim tensors
+# TODO: implicit support for torch.Tensor
+# TODO: handle empty features and targets
 class GraphData(object):
     """Data representing a single graph"""
 
     __slots__ = ["x", "e", "g", "edges"]
     _differentiable = ['x', 'e', 'g']
+
 
     def __init__(self, node_attr, edge_attr, global_attr, edges,
                  requires_grad: Optional[bool] = None):
@@ -52,7 +58,7 @@ class GraphData(object):
         if not self.edges.dtype == torch.long:
             raise RuntimeError(
                 "Wrong tensor type. `edges` must be dtype={} not {}".format(
-                    self.edges.dtype, torch.long
+                    torch.long, self.edges.dtype
                 )
             )
 
@@ -219,14 +225,18 @@ class GraphData(object):
             **emtpy_like_kwargs).copy_(x, non_blocking=non_blocking))
 
     # TODO: docstrings
-    @staticmethod
+    # TODO: handle undirected and hypergraphs
+    # TODO: check that features are NUMPY rather than TORCH
+    @classmethod
     def from_networkx(
+        cls,
         g: GraphType,
         n_node_feat: Optional[int] = None,
         n_edge_feat: Optional[int] = None,
         n_glob_feat: Optional[int] = None,
         feature_key: str = "features",
         global_attr_key: str = "data",
+        requires_grad: Optional[bool] = None
     ):
         """
 
@@ -246,20 +256,29 @@ class GraphData(object):
         if n_node_feat is None:
             try:
                 _, ndata = _first(g.nodes(data=True))
-                n_node_feat = ndata[feature_key].shape[0]
+                if feature_key not in ndata:
+                    n_node_feat = 0
+                else:
+                    n_node_feat = ndata[feature_key].size
             except StopIteration:
                 n_node_feat = 0
 
         if n_edge_feat is None:
             try:
                 _, _, edata = _first(g.edges(data=True))
-                n_edge_feat = edata[feature_key].shape[0]
+                if feature_key not in edata:
+                    n_edge_feat = 0
+                else:
+                    n_edge_feat = edata[feature_key].size
             except StopIteration:
                 n_edge_feat = 0
 
         if n_glob_feat is None:
             if feature_key in gdata:
-                n_glob_feat = gdata[feature_key].shape[0]
+                if feature_key not in gdata:
+                    n_glob_feat = 0
+                else:
+                    n_glob_feat = gdata[feature_key].size
             else:
                 n_glob_feat = 0
 
@@ -271,23 +290,30 @@ class GraphData(object):
 
         nodes = sorted(list(g.nodes(data=True)))
         ndict = {}
+        # TODO: support n dim tensors (but they get flattened anyways...)
         for i, (n, ndata) in enumerate(nodes):
-            node_attr[i] = ndata[feature_key]
+            node_attr[i] = ndata[feature_key].flatten()
             ndict[n] = i
 
-        edges = np.empty((2, n_edges))
+        # TODO: method to change dtype?
+        edges = np.empty((2, n_edges), dtype=np.float)
         for i, (n1, n2, edata) in enumerate(g.edges(data=True)):
             edges[:, i] = np.array([ndict[n1], ndict[n2]])
-            edge_attr[i] = edata[feature_key]
+            edge_attr[i] = edata[feature_key].flatten()
 
         if feature_key in gdata:
             glob_attr[0] = gdata[feature_key]
 
+        if requires_grad is not None:
+            tensor = functools.partial(torch.tensor, requires_grad=requires_grad)
+        else:
+            tensor = torch.tensor
+
         return GraphData(
-            torch.tensor(node_attr, dtype=torch.float),
-            torch.tensor(edge_attr, dtype=torch.float),
-            torch.tensor(glob_attr, dtype=torch.float),
-            torch.tensor(edges, dtype=torch.long),
+            tensor(node_attr, dtype=torch.float),
+            tensor(edge_attr, dtype=torch.float),
+            tensor(glob_attr, dtype=torch.float),
+            tensor(edges, dtype=torch.long),
         )
 
     def to_networkx(
