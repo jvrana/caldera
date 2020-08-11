@@ -25,19 +25,24 @@ import functools
 SEED = 0
 
 
-def name_module(n, m):
-    m.name = n
-    return m
+class NamedNetwork(object):
+
+    def __init__(self, name, network_func):
+        self.name = name
+        self.f = network_func
+
+    def __call__(self):
+        return self.f()
 
 
 class Networks(object):
     """Networks that will be used in the tests"""
 
-    n = name_module
+    n = NamedNetwork
 
     linear_block = n(
         'linear',
-        torch.nn.Sequential(
+        lambda: torch.nn.Sequential(
             torch.nn.Linear(5, 16),
             torch.nn.ReLU(),
             torch.nn.Linear(16, 1)
@@ -46,7 +51,7 @@ class Networks(object):
 
     mlp_block = n(
         'mlp',
-        torch.nn.Sequential(
+        lambda: torch.nn.Sequential(
             Flex(MLP)(Flex.d(), 16),
             Flex(torch.nn.Linear)(Flex.d(), 1)
         )
@@ -54,27 +59,28 @@ class Networks(object):
 
     node_block = n(
         'node_block',
-        torch.nn.Sequential(
+        lambda: torch.nn.Sequential(
             NodeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
             Flex(torch.nn.Linear)(Flex.d(), 1)
         ))
 
     edge_block = n(
         'edge_block',
-        torch.nn.Sequential(
+        lambda: torch.nn.Sequential(
             EdgeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
             Flex(torch.nn.Linear)(Flex.d(), 1)
         ))
 
     global_block = n(
         'global_block',
-        torch.nn.Sequential(
+        lambda: torch.nn.Sequential(
             GlobalBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
             Flex(torch.nn.Linear)(Flex.d(), 1)
         ))
+    
     graph_encoder = n(
         'graph_encoder',
-        GraphEncoder(
+        lambda: GraphEncoder(
             EdgeBlock(
                 torch.nn.Sequential(
                     Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
@@ -102,7 +108,6 @@ class Networks(object):
             for layer in model.children():
                 if hasattr(layer, 'reset_parameters'):
                     layer.reset_parameters()
-
         net.apply(weight_reset)
 
 
@@ -219,7 +224,7 @@ class DataLoaders(object):
                 if i % 2 == 0:
                     target = np.array([0.5])
                 else:
-                    target = np.zeros(1)
+                    target = np.zeros((1,))
                 edata['target'] = target
 
             input_data.append(GraphData.from_networkx(g, feature_key='features'))
@@ -376,7 +381,6 @@ class NetworkTestCase(object):
             net.train()
             running_loss = 0.
             for batch in loader:
-
                 batch = self.to(batch)
                 batch = modifier(batch)
                 input, target = getter(batch)
@@ -439,6 +443,8 @@ def mse_tuple(criterion, device, a, b):
 
 def get_id(case):
     tokens = [case['network'].name]
+    if 'id' in case:
+        tokens = [case['id']] + tokens
     loader = case.get('loader', None)
     if loader is not None:
         loader = loader.__name__
@@ -451,7 +457,7 @@ def get_id(case):
     dict(
         network=Networks.linear_block,
         modifier=DataModifier.node_sum,
-        getter=DataGetter.get_node
+        getter=DataGetter.get_node,
     ),
     dict(
         network=Networks.mlp_block,
@@ -477,24 +483,33 @@ def get_id(case):
         network=Networks.graph_encoder,
         loader=DataLoaders.random_graph_red_black_nodes,
         getter=DataGetter.get_batch,
-        loss_func=mse_tuple
-    ),
+        loss_func=mse_tuple,
+    ),  # randomly creates an input value, assigns 'red' or 'black' to nodes
     dict(
         network=Networks.graph_encoder,
         loader=DataLoaders.random_graph_red_black_edges,
         getter=DataGetter.get_batch,
         loss_func=mse_tuple
-    )
+    ),  # randomly creates an input value, assigns 'red' or 'black' to edges
 ], ids=get_id)
 def network_case(request):
-    return NetworkTestCase(**request.param)
+    params = dict(request.param)
+    params['network'] = params['network']()
+    return NetworkTestCase(**params)
+# in degree
+# average in degree
+# a function of number of nodes, in degree
 
 
-def test_training_cases(network_case, device):
+def run_test_case(network_case, device):
     network_case.device = device
     losses = network_case.train()
     print(losses)
     for p in network_case.network.parameters():
         assert device == str(p.device)
     network_case.post_train_validate()
+
+
+def test_training_cases(network_case, device):
+    run_test_case(network_case, device)
 

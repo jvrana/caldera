@@ -12,7 +12,6 @@ from pyrographnets.utils import same_storage
 from typing import Union
 import functools
 
-
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
 

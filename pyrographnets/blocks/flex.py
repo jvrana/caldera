@@ -146,6 +146,11 @@ class FlexBlock(torch.nn.Module):
             )
             return s
 
+    # def reset_parameters(self):
+    #     for child in self.children():
+    #         if hasattr(child, 'reset_parameters'):
+    #             child.reset_parameters()
+
 
 class Flex(object):
 

@@ -1,6 +1,7 @@
 import torch
 from pyrographnets.data import GraphBatch
-from pyrographnets.models import GraphEncoder, GraphCore
+from pyrographnets.models.graph_core import GraphCore
+from pyrographnets.models.graph_encoder import GraphEncoder
 from pyrographnets.blocks import (
     EdgeBlock,
     NodeBlock,
@@ -15,7 +16,7 @@ from pyrographnets.blocks import MLP
 from functools import partial
 
 
-class Network(torch.nn.Module):
+class EncodeCoreDecode(torch.nn.Module):
     def __init__(
         self,
         latent_sizes=(128, 128, 1),

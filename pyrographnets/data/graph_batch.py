@@ -175,6 +175,9 @@ class GraphBatch(GraphData):
         self.debug()
         return self
 
+    def to_tuple(self) -> graph_batch_tuple:
+        return graph_batch_tuple(self.e, self.x, self.g, self.edges, self.node_idx, self.edge_idx)
+
     def append_edges(
         self, edge_attr: torch.Tensor, edges: torch.Tensor, edge_idx: torch.Tensor
     ):

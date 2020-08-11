@@ -41,6 +41,17 @@ def test_flex_block_custom_position(x):
     data = torch.randn((10, x))
     model("arg0", data)
 
+def test_flex_block_children():
+    model = Flex(torch.nn.Linear)(Flex.d(), 1)
+    model.reset_parameters()
+    # for child in model.children():
+    #     print(child)
+    #
+    # model(torch.randn((10, 3)))
+    #
+    # for child in model.children():
+    #     print(hasattr(child, 'reset_parameters'))
+
 
 @pytest.mark.parametrize('dtype', [None, torch.float64])
 @pytest.mark.parametrize('dtype2', [None, torch.float32])
