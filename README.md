@@ -1,6 +1,6 @@
 # Pyro-GraphNets
 
-Deep learning for graphical models.
+Deep learning package for learning on graphical data.
 
 ## Installation
 
