@@ -38,8 +38,8 @@ class NamedNetwork(object):
         self.name = name
         self.f = network_func
 
-    def __call__(self):
-        return self.f()
+    def __call__(self, *args, **kwargs):
+        return self.f(*args, **kwargs)
 
 
 class Networks(object):
@@ -109,9 +109,8 @@ class Networks(object):
         ),
     )
 
-    graph_core = n(
-        "graph_core",
-        lambda: GraphCore(
+    def create_graph_core(pass_global_to_edge: bool, pass_global_to_node: bool):
+        return GraphCore(
             AggregatingEdgeBlock(
                 torch.nn.Sequential(
                     Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
@@ -133,8 +132,11 @@ class Networks(object):
                 edge_aggregator=Aggregator("add"),
                 node_aggregator=Aggregator("add"),
             ),
-        ),
-    )
+            pass_global_to_edge=pass_global_to_edge,
+            pass_global_to_node=pass_global_to_node,
+        )
+
+    graph_core = n("graph_core", create_graph_core)
 
     @staticmethod
     def reset(net: torch.nn.Module):
@@ -370,7 +372,7 @@ class NetworkTestCase(object):
         data_size: int = 1000,
         loader: Optional[Callable[[int, int], GraphDataLoader]] = None,
         expectation: Callable = None,
-        tags: Tuple[str, ...] = None
+        tags: Tuple[str, ...] = None,
     ):
         if expectation is None:
             expectation = does_not_raise()
@@ -545,79 +547,113 @@ def get_id(case):
 
 @pytest.fixture
 def network_case(request):
+    def pop(d, k, default):
+        if k in d:
+            res = d[k]
+            del d[k]
+            return res
+        return default
+
     params = dict(request.param)
-    params["network"] = params["network"]()
+    args = pop(params, "network_args", tuple())
+    kwargs = pop(params, "network_kwargs", {})
+    params["network"] = params["network"](*args, **kwargs)
     case = NetworkTestCase(**params)
     return case
 
 
 cases = [
-        dict(
-            network=Networks.linear_block,
-            modifier=DataModifier.node_sum,
-            getter=DataGetter.get_node,
-            tags=['block', 'basic']
-        ),
-        dict(
-            network=Networks.mlp_block,
-            modifier=DataModifier.node_sum,
-            getter=DataGetter.get_node,
-            tags=['block', 'basic']
-        ),
-        dict(
-            network=Networks.node_block,
-            modifier=DataModifier.node_sum,
-            getter=DataGetter.get_node,
-            tags=['block', 'basic', 'node']
-        ),
-        dict(
-            network=Networks.edge_block,
-            modifier=DataModifier.edge_sum,
-            getter=DataGetter.get_edge,
-            tags=['block', 'basic', 'edge']
-        ),
-        dict(
-            network=Networks.global_block,
-            modifier=DataModifier.global_sum,
-            getter=DataGetter.get_global,
-            tags=['block', 'basic', 'global']
-        ),
-        dict(
-            network=Networks.graph_encoder,
-            loader=DataLoaders.random_graph_red_black_nodes,
-            getter=DataGetter.get_batch,
-            loss_func=mse_tuple,
-            tags=['graph_encoder', 'node']
-        ),  # randomly creates an input value, assigns 'red' or 'black' to nodes
-        dict(
-            network=Networks.graph_encoder,
-            loader=DataLoaders.random_graph_red_black_edges,
-            getter=DataGetter.get_batch,
-            loss_func=mse_tuple,
-            tags=['graph_encoder', 'edge']
-        ),  # randomly creates an input value, assigns 'red' or 'black' to edges
-        dict(
-            network=Networks.graph_encoder,
-            loader=DataLoaders.random_graph_red_black_global,
-            getter=DataGetter.get_batch,
-            loss_func=mse_tuple,
-            tags=['graph_encoder', 'global']
-        ),  # randomly creates an input value, assigns 'red' or 'black' to global
-        dict(
-            network=Networks.graph_encoder,
-            loader=DataLoaders.est_density,
-            getter=DataGetter.get_batch,
-            loss_func=mse_tuple,
-            expectation=pytest.raises(NetworkTestCaseValidationError),
-            tags=['graph_encoder', 'fail']
-        ),  # network cannot learn the density without connections between nodes and edges,
-        dict(
-            network=Networks.graph_core,
-            loader=DataLoaders.est_density,
-            getter=DataGetter.get_batch,
-            loss_func=mse_tuple,
-            tags=['graph_core']
-        ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.linear_block,
+        modifier=DataModifier.node_sum,
+        getter=DataGetter.get_node,
+        tags=["block", "basic"],
+    ),
+    dict(
+        network=Networks.mlp_block,
+        modifier=DataModifier.node_sum,
+        getter=DataGetter.get_node,
+        tags=["block", "basic"],
+    ),
+    dict(
+        network=Networks.node_block,
+        modifier=DataModifier.node_sum,
+        getter=DataGetter.get_node,
+        tags=["block", "basic", "node"],
+    ),
+    dict(
+        network=Networks.edge_block,
+        modifier=DataModifier.edge_sum,
+        getter=DataGetter.get_edge,
+        tags=["block", "basic", "edge"],
+    ),
+    dict(
+        network=Networks.global_block,
+        modifier=DataModifier.global_sum,
+        getter=DataGetter.get_global,
+        tags=["block", "basic", "global"],
+    ),
+    dict(
+        network=Networks.graph_encoder,
+        loader=DataLoaders.random_graph_red_black_nodes,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_encoder", "node"],
+    ),  # randomly creates an input value, assigns 'red' or 'black' to nodes
+    dict(
+        network=Networks.graph_encoder,
+        loader=DataLoaders.random_graph_red_black_edges,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_encoder", "edge"],
+    ),  # randomly creates an input value, assigns 'red' or 'black' to edges
+    dict(
+        network=Networks.graph_encoder,
+        loader=DataLoaders.random_graph_red_black_global,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_encoder", "global"],
+    ),  # randomly creates an input value, assigns 'red' or 'black' to global
+    dict(
+        network=Networks.graph_encoder,
+        loader=DataLoaders.est_density,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        expectation=pytest.raises(NetworkTestCaseValidationError),
+        tags=["graph_encoder", "fail"],
+    ),  # network cannot learn the density without connections between nodes and edges,
+    dict(
+        network=Networks.graph_core,
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True,},
+        loader=DataLoaders.est_density,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_core", "global"],
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_core,
+        network_kwargs={"pass_global_to_edge": False, "pass_global_to_node": True,},
+        loader=DataLoaders.est_density,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_core", "global"],
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_core,
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": False,},
+        loader=DataLoaders.est_density,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_core", "global"],
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_core,
+        network_kwargs={"pass_global_to_edge": False, "pass_global_to_node": False,},
+        loader=DataLoaders.est_density,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_core", "global"],
+    ),  # estimate the graph density using GraphCore
 ]
 # in degree
 # average in degree
@@ -625,20 +661,21 @@ cases = [
 
 visited_cases = set()
 
+
 def parameterize_by_group(groups: Tuple[str, ...] = None) -> Callable:
     params = []
     for idx, p in enumerate(cases):
         if groups is None:
             params.append(p)
         else:
-            for tag in p.get('tags', []):
+            for tag in p.get("tags", []):
                 if tag in groups:
                     params.append(p)
                     visited_cases.add(idx)
                     break
     if not params:
         raise Exception("There are no cases with tags '{}'".format(groups))
-    return pytest.mark.parametrize('network_case', params, ids=get_id, indirect=True)
+    return pytest.mark.parametrize("network_case", params, ids=get_id, indirect=True)
 
 
 def run_test_case(network_case, device):
@@ -652,14 +689,14 @@ def run_test_case(network_case, device):
 
 
 class TestTraining(object):
-    @parameterize_by_group(['basic', 'block'])
+    @parameterize_by_group(["basic", "block"])
     def test_train_block(self, network_case, device):
         run_test_case(network_case, device)
 
-    @parameterize_by_group(['graph_encoder'])
+    @parameterize_by_group(["graph_encoder"])
     def test_train_encoder(self, network_case, device):
         run_test_case(network_case, device)
 
-    @parameterize_by_group(['graph_core'])
+    @parameterize_by_group(["graph_core"])
     def test_train_core(self, network_case, device):
         run_test_case(network_case, device)

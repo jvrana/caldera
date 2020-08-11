@@ -15,6 +15,7 @@ class GlobalBlock(Block):
         return self(data.g)
 
 
+# TODO: determine which aggregator to use during training (some function of attributes -> one-hot)
 class AggregatingGlobalBlock(GlobalBlock):
     def __init__(self, mlp, edge_aggregator=None, node_aggregator=None):
         super().__init__(mlp)
