@@ -6,7 +6,7 @@ Inststructions for creating a new test case.
 loader, getter, network
 """
 
-from typing import Union, Callable, Tuple, Any, Dict, Optional, Type
+from typing import Callable, Any, Dict, Optional, Type
 from typing import Tuple
 
 import pytest
@@ -29,7 +29,7 @@ from pyrographnets.utils.torch_utils import to_one_hot
 import numpy as np
 import functools
 from collections import OrderedDict
-
+from pyrographnets.utils import nx_utils
 SEED = 0
 
 
@@ -310,6 +310,118 @@ class DataLoaders(object):
             list(zip(input_data, output_data)), batch_size=batch_size
         )
 
+    @classmethod
+    def in_degree(cls, data_size, batch_size):
+        input_data = []
+        output_data = []
+        s = 2
+        for _ in range(data_size):
+            n_size = np.random.randint(2, 20)
+            g = nx.to_directed(nx.random_tree(n_size))
+            cls._default_g(g)
+
+            for n, ndata in g.nodes(data=True):
+                ndata['features'] = np.random.randn(1)
+                ndata['target'] = np.array([g.in_degree(n)])
+
+            input_data.append(GraphData.from_networkx(g, feature_key="features"))
+            output_data.append(GraphData.from_networkx(g, feature_key="target"))
+
+        return GraphDataLoader(
+            list(zip(input_data, output_data)), batch_size=batch_size
+        )
+
+    @classmethod
+    def boolean_network(cls, data_size, batch_size):
+
+        input_data = []
+        output_data = []
+        for _ in range(data_size):
+            n_size = np.random.randint(2, 20)
+            tree = nx.random_tree(n_size)
+
+            # randomize node directions
+            g = nx.DiGraph()
+            for n1, n2, edata in tree.edges(data=True):
+                i = np.random.randint(2)
+                if i % 2 == 0:
+                    g.add_edge(n1, n2)
+                else:
+                    g.add_edge(n2, n1)
+            cls._default_g(g)
+
+            for n in nx_utils.iter_roots(g):
+                ndata = g.nodes[n]
+                ndata['target'] = np.array([1.])
+
+            for n in nx.topological_sort(g):
+                ndata = g.nodes[n]
+                if 'target' not in ndata:
+                    incoming = []
+                    for p in g.predecessors(n):
+                        pdata = g.nodes[p]
+                        incoming.append(pdata['target'])
+                    incoming = np.concatenate(incoming)
+                    i = incoming.max()
+                    if i == 1:
+                        o = np.array([0.])
+                    else:
+                        o = np.array([1.])
+                    ndata['target'] = o
+
+            input_data.append(GraphData.from_networkx(g, feature_key="features"))
+            output_data.append(GraphData.from_networkx(g, feature_key="target"))
+
+        return GraphDataLoader(
+            list(zip(input_data, output_data)), batch_size=batch_size
+        )
+
+    @classmethod
+    def sigmoid_circuit(cls, data_size, batch_size):
+        import math
+
+        def func(x):
+            return 1 - 1. / ( 1 + math.exp(-x))
+
+        input_data = []
+        output_data = []
+        for _ in range(data_size):
+            n_size = np.random.randint(2, 20)
+            tree = nx.random_tree(n_size)
+
+            # randomize node directions
+            g = nx.DiGraph()
+            for n1, n2, edata in tree.edges(data=True):
+                i = np.random.randint(2)
+                if i % 2 == 0:
+                    g.add_edge(n1, n2)
+                else:
+                    g.add_edge(n2, n1)
+            cls._default_g(g)
+
+            for n in nx_utils.iter_roots(g):
+                ndata = g.nodes[n]
+                ndata['target'] = np.array(10.)
+
+            for n in nx.topological_sort(g):
+                ndata = g.nodes[n]
+                if 'target' not in ndata:
+                    incoming = []
+                    for p in g.predecessors(n):
+                        pdata = g.nodes[p]
+                        incoming.append(pdata['target'])
+                    incoming = np.concatenate(incoming)
+                    i = incoming.sum()
+                    o = func(i)
+                    ndata['target'] = o
+
+            input_data.append(GraphData.from_networkx(g, feature_key="features"))
+            output_data.append(GraphData.from_networkx(g, feature_key="target"))
+
+        return GraphDataLoader(
+            list(zip(input_data, output_data)), batch_size=batch_size
+        )
+
 
 T = Tuple[Tuple[Tuple[Any, ...], Dict], torch.Tensor]
 
@@ -373,6 +485,7 @@ class NetworkTestCase(object):
         loader: Optional[Callable[[int, int], GraphDataLoader]] = None,
         expectation: Callable = None,
         tags: Tuple[str, ...] = None,
+        device: str = None
     ):
         if expectation is None:
             expectation = does_not_raise()
@@ -390,12 +503,18 @@ class NetworkTestCase(object):
         self.epochs = epochs
         self.batch_size = batch_size
         self.data_size = data_size
-        self.device = None
+        self.device = device
         if loader is None:
             loader = DataLoaders.random_loader
-        self.loader = loader(data_size, batch_size)
-        self.criterion = criterion
+        self.loader_func = loader
+        self.loader = self.loader_func(data_size, batch_size)
         self.optimizer = optimizer
+        if criterion is None:
+            criterion = torch.nn.MSELoss()
+        if loss_func is not None:
+            loss_func = functools.partial(loss_func, criterion, self.device)
+        else:
+            loss_func = criterion
         self.loss_func = loss_func
         self.losses = None
 
@@ -427,14 +546,29 @@ class NetworkTestCase(object):
     #     for p in self.network.parameters():
     #         assert p.device == self.device
 
+    def eval(self, data_size):
+        self.network.eval()
+        with torch.no_grad():
+            running_loss = 0.
+            for batch in self.loader_func(data_size, data_size):
+                batch = self.to(batch)
+                batch = self.modifier(batch)
+                input, target = self.getter(batch)
+                output = self.network(*input[0], **input[1])
+                loss = self.loss_func(output, target)
+                running_loss += loss.item()
+            print("TARGET")
+            print(target)
+            print("OUTPUT")
+            print(output)
+        return running_loss
+
     def train(self):
         print("Training {}".format(self.network))
         self.reset()
         epochs = self.epochs
         net = self.network
-        device = self.device
         loader = self.loader
-        criterion = self.criterion
         optimizer = self.optimizer
         getter = self.getter
         modifier = self.modifier
@@ -445,12 +579,6 @@ class NetworkTestCase(object):
 
         if optimizer is None:
             optimizer = optim.AdamW(net.parameters(), lr=1e-2)
-        if criterion is None:
-            criterion = torch.nn.MSELoss()
-        if loss_func is not None:
-            loss_func = functools.partial(loss_func, criterion, device)
-        else:
-            loss_func = criterion
 
         self.pre_train_validate()
 
@@ -654,11 +782,53 @@ cases = [
         loss_func=mse_tuple,
         tags=["graph_core", "global"],
     ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_core,
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True, },
+        loader=DataLoaders.in_degree,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_core", "node"],
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_encoder,
+        loader=DataLoaders.in_degree,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["graph_core", "node"],
+        expectation=pytest.raises(NetworkTestCaseValidationError)
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_core,
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True, },
+        loader=DataLoaders.boolean_network,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["boolean_circuit"],
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_encoder,
+        loader=DataLoaders.boolean_network,
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["boolean_circuit"],
+        expectation=pytest.raises(NetworkTestCaseValidationError)
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_core,
+        loader=DataLoaders.sigmoid_circuit,
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True, },
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        tags=["sigmoid_circuit"]
+    ),  # estimate the graph density using GraphCore
 ]
 # in degree
 # average in degree
 # a function of number of nodes, in degree
-
+# boolean network that depends on multiple passes
+# sigmoid circuit
+# shortest path example
 visited_cases = set()
 
 
@@ -686,6 +856,8 @@ def run_test_case(network_case, device):
         for p in network_case.network.parameters():
             assert device == str(p.device)
         network_case.post_train_validate()
+    network_case.eval(20)
+    return network_case
 
 
 class TestTraining(object):
@@ -700,3 +872,12 @@ class TestTraining(object):
     @parameterize_by_group(["graph_core"])
     def test_train_core(self, network_case, device):
         run_test_case(network_case, device)
+
+    @parameterize_by_group(["boolean_circuit"])
+    def test_train_boolean_circuit(self, network_case, device):
+        run_test_case(network_case, device)
+
+    @parameterize_by_group(["sigmoid_circuit"])
+    def test_train_sigmoid_circuit(self, network_case, device):
+        run_test_case(network_case, device)
+
