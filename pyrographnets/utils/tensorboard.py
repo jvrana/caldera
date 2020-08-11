@@ -6,9 +6,13 @@ except ImportError as e:
     SummaryWriter = None
 
 if SummaryWriter is None:
+
     def new_writer(*args, **kwargs):
         raise e
+
+
 else:
+
     def new_writer(directory: str, suffix=""):
         i = 0
 

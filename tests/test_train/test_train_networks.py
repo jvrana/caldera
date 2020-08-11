@@ -11,22 +11,28 @@ from typing import Union, Callable, Tuple, Any, Dict, Optional, Type
 import pytest
 import torch
 from torch import optim
+from contextlib import contextmanager
 
 from pyrographnets.blocks import NodeBlock, EdgeBlock, GlobalBlock, Flex, MLP
-from pyrographnets.models import GraphEncoder
+from pyrographnets.blocks import (
+    AggregatingNodeBlock,
+    AggregatingEdgeBlock,
+    AggregatingGlobalBlock,
+    Aggregator,
+)
+from pyrographnets.models import GraphEncoder, GraphCore
 from pyrographnets.data import GraphData, GraphBatch, GraphDataLoader
 from pyrographnets.utils import deterministic_seed
 import networkx as nx
 from pyrographnets.utils.torch_utils import to_one_hot
 import numpy as np
 import functools
-
+from collections import OrderedDict
 
 SEED = 0
 
 
 class NamedNetwork(object):
-
     def __init__(self, name, network_func):
         self.name = name
         self.f = network_func
@@ -41,73 +47,101 @@ class Networks(object):
     n = NamedNetwork
 
     linear_block = n(
-        'linear',
+        "linear",
         lambda: torch.nn.Sequential(
-            torch.nn.Linear(5, 16),
-            torch.nn.ReLU(),
-            torch.nn.Linear(16, 1)
-        )
+            torch.nn.Linear(5, 16), torch.nn.ReLU(), torch.nn.Linear(16, 1)
+        ),
     )
 
     mlp_block = n(
-        'mlp',
+        "mlp",
         lambda: torch.nn.Sequential(
-            Flex(MLP)(Flex.d(), 16),
-            Flex(torch.nn.Linear)(Flex.d(), 1)
-        )
+            Flex(MLP)(Flex.d(), 16), Flex(torch.nn.Linear)(Flex.d(), 1)
+        ),
     )
 
     node_block = n(
-        'node_block',
+        "node_block",
         lambda: torch.nn.Sequential(
             NodeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
-            Flex(torch.nn.Linear)(Flex.d(), 1)
-        ))
+            Flex(torch.nn.Linear)(Flex.d(), 1),
+        ),
+    )
 
     edge_block = n(
-        'edge_block',
+        "edge_block",
         lambda: torch.nn.Sequential(
             EdgeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
-            Flex(torch.nn.Linear)(Flex.d(), 1)
-        ))
+            Flex(torch.nn.Linear)(Flex.d(), 1),
+        ),
+    )
 
     global_block = n(
-        'global_block',
+        "global_block",
         lambda: torch.nn.Sequential(
             GlobalBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
-            Flex(torch.nn.Linear)(Flex.d(), 1)
-        ))
-    
+            Flex(torch.nn.Linear)(Flex.d(), 1),
+        ),
+    )
+
     graph_encoder = n(
-        'graph_encoder',
+        "graph_encoder",
         lambda: GraphEncoder(
             EdgeBlock(
                 torch.nn.Sequential(
                     Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
-                    Flex(torch.nn.Linear)(Flex.d(), 1)
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
             NodeBlock(
                 torch.nn.Sequential(
                     Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
-                    Flex(torch.nn.Linear)(Flex.d(), 1)
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
             GlobalBlock(
                 torch.nn.Sequential(
                     Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
-                    Flex(torch.nn.Linear)(Flex.d(), 1)
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
-        )
+        ),
+    )
+
+    graph_core = n(
+        "graph_core",
+        lambda: GraphCore(
+            AggregatingEdgeBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                )
+            ),
+            AggregatingNodeBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                ),
+                edge_aggregator=Aggregator("add"),
+            ),
+            AggregatingGlobalBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                ),
+                edge_aggregator=Aggregator("add"),
+                node_aggregator=Aggregator("add"),
+            ),
+        ),
     )
 
     @staticmethod
     def reset(net: torch.nn.Module):
         def weight_reset(model):
             for layer in model.children():
-                if hasattr(layer, 'reset_parameters'):
+                if hasattr(layer, "reset_parameters"):
                     layer.reset_parameters()
+
         net.apply(weight_reset)
 
 
@@ -121,30 +155,21 @@ class DataModifier(object):
     def node_sum(batch: GraphBatch, copy=True):
         if copy:
             batch = batch.copy()
-        batch.x = torch.cat([
-            batch.x,
-            batch.x.sum(axis=1, keepdim=True)
-        ], axis=1)
+        batch.x = torch.cat([batch.x, batch.x.sum(axis=1, keepdim=True)], axis=1)
         return batch
 
     @staticmethod
     def edge_sum(batch: GraphBatch, copy=True):
         if copy:
             batch = batch.copy()
-        batch.e = torch.cat([
-            batch.e,
-            batch.e.sum(axis=1, keepdim=True)
-        ], axis=1)
+        batch.e = torch.cat([batch.e, batch.e.sum(axis=1, keepdim=True)], axis=1)
         return batch
 
     @staticmethod
     def global_sum(batch: GraphBatch, copy=True):
         if copy:
             batch = batch.copy()
-        batch.g = torch.cat([
-            batch.g,
-            batch.g.sum(axis=1, keepdim=True)
-        ], axis=1)
+        batch.g = torch.cat([batch.g, batch.g.sum(axis=1, keepdim=True)], axis=1)
         return batch
 
     def apply(self, f, *args, **kwargs):
@@ -168,24 +193,24 @@ class DataModifier(object):
 
 
 class DataLoaders(object):
+    """Data loaders for test."""
 
     @staticmethod
     def random_loader(data_size, batch_size):
-        datalist = [GraphData.random(5, 5, 5) for _ in
-                    range(data_size)]
+        datalist = [GraphData.random(5, 5, 5) for _ in range(data_size)]
         return GraphDataLoader(datalist, batch_size)
 
     @staticmethod
     def _default_g(g: nx.DiGraph):
         for _, data in g.nodes(data=True):
-            data['features'] = np.zeros((1,))
-            data['target'] = np.zeros((1,))
+            data["features"] = np.zeros((1,))
+            data["target"] = np.zeros((1,))
 
         for _, _, data in g.edges(data=True):
-            data['features'] = np.zeros((1,))
-            data['target'] = np.zeros((1,))
+            data["features"] = np.zeros((1,))
+            data["target"] = np.zeros((1,))
 
-        g.data = {'features': np.zeros((1,)), 'target': np.zeros((1,))}
+        g.data = {"features": np.zeros((1,)), "target": np.zeros((1,))}
         return g
 
     @classmethod
@@ -198,17 +223,19 @@ class DataLoaders(object):
             cls._default_g(g)
             for n, ndata in g.nodes(data=True):
                 i = np.random.randint(0, 1, (1,))
-                ndata['features'] = to_one_hot(i, s)
+                ndata["features"] = to_one_hot(i, s)
                 if i % 2 == 0:
                     target = np.array([0.5])
                 else:
                     target = np.zeros(1)
-                ndata['target'] = target
+                ndata["target"] = target
 
-            input_data.append(GraphData.from_networkx(g, feature_key='features'))
-            output_data.append(GraphData.from_networkx(g, feature_key='target'))
+            input_data.append(GraphData.from_networkx(g, feature_key="features"))
+            output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(list(zip(input_data, output_data)), batch_size=batch_size)
+        return GraphDataLoader(
+            list(zip(input_data, output_data)), batch_size=batch_size
+        )
 
     @classmethod
     def random_graph_red_black_edges(cls, data_size, batch_size):
@@ -220,22 +247,65 @@ class DataLoaders(object):
             cls._default_g(g)
             for _, _, edata in g.edges(data=True):
                 i = np.random.randint(0, 1, (1,))
-                edata['features'] = to_one_hot(i, s)
+                edata["features"] = to_one_hot(i, s)
                 if i % 2 == 0:
                     target = np.array([0.5])
                 else:
                     target = np.zeros((1,))
-                edata['target'] = target
+                edata["target"] = target
 
-            input_data.append(GraphData.from_networkx(g, feature_key='features'))
-            output_data.append(GraphData.from_networkx(g, feature_key='target'))
+            input_data.append(GraphData.from_networkx(g, feature_key="features"))
+            output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(list(zip(input_data, output_data)), batch_size=batch_size)
+        return GraphDataLoader(
+            list(zip(input_data, output_data)), batch_size=batch_size
+        )
 
+    @classmethod
+    def random_graph_red_black_global(cls, data_size, batch_size):
+        input_data = []
+        output_data = []
+        s = 2
+        for _ in range(data_size):
+            g = nx.to_directed(nx.random_tree(10))
+            cls._default_g(g)
 
-data_loaders = {
-    'random': DataLoaders.random_loader
-}
+            gdata = g.data
+            i = np.random.randint(0, 1, (1,))
+            gdata["features"] = to_one_hot(i, s)
+            if i % 2 == 0:
+                target = np.array([0.5])
+            else:
+                target = np.zeros((1,))
+            gdata["target"] = target
+
+            input_data.append(GraphData.from_networkx(g, feature_key="features"))
+            output_data.append(GraphData.from_networkx(g, feature_key="target"))
+
+        return GraphDataLoader(
+            list(zip(input_data, output_data)), batch_size=batch_size
+        )
+
+    @classmethod
+    def est_density(cls, data_size, batch_size):
+        input_data = []
+        output_data = []
+        s = 2
+        for _ in range(data_size):
+            n_size = np.random.randint(2, 20)
+            g = nx.to_directed(nx.random_tree(n_size))
+            cls._default_g(g)
+
+            gdata = g.data
+            gdata["features"] = np.random.randn(1)
+            gdata["target"] = np.array([nx.density(g)])
+
+            input_data.append(GraphData.from_networkx(g, feature_key="features"))
+            output_data.append(GraphData.from_networkx(g, feature_key="target"))
+
+        return GraphDataLoader(
+            list(zip(input_data, output_data)), batch_size=batch_size
+        )
 
 
 T = Tuple[Tuple[Tuple[Any, ...], Dict], torch.Tensor]
@@ -246,60 +316,63 @@ class DataGetter(object):
 
     @classmethod
     def get_node(cls, batch: GraphBatch) -> T:
-        args = (
-            batch.x[:, :-1],
-        )
+        args = (batch.x[:, :-1],)
         kwargs = {}
         out = batch.x[:, -1:]
         return ((args, kwargs), out)
 
     @classmethod
     def get_edge(cls, batch: GraphBatch) -> T:
-        args = (
-            batch.e[:, :-1],
-        )
+        args = (batch.e[:, :-1],)
         kwargs = {}
         out = batch.e[:, -1:]
         return ((args, kwargs), out)
 
     @classmethod
     def get_global(cls, batch: GraphBatch) -> T:
-        args = (
-            batch.g[:, :-1],
-        )
+        args = (batch.g[:, :-1],)
         kwargs = {}
         out = batch.g[:, -1:]
         return ((args, kwargs), out)
 
     @classmethod
     def get_batch(cls, batch_tuple: Tuple[GraphBatch, GraphBatch]) -> T:
-        args = (
-            batch_tuple[0],
-        )
+        args = (batch_tuple[0],)
         kwargs = {}
         out = batch_tuple[1]
         return ((args, kwargs), (out.e, out.x, out.g))
 
 
-
 class NetworkTestCaseValidationError(Exception):
     pass
+
+
+@contextmanager
+def does_not_raise():
+    yield
+
 
 # TODO: model reset is not working
 class NetworkTestCase(object):
     """A network test case."""
 
-    def __init__(self,
-                 network: torch.nn.Module,
-                 modifier: Optional[Callable[[GraphBatch], Any]] = None,
-                 getter: Optional[Callable[[GraphBatch], Any]] = None,
-                 optimizer: Type[torch.optim.Optimizer] = None,
-                 criterion=None,
-                 loss_func: Callable = None,
-                 epochs: int = 20,
-                 batch_size: int = 100,
-                 data_size: int = 1000,
-                 loader: Optional[Callable[[int, int], GraphDataLoader]] = None):
+    def __init__(
+        self,
+        network: torch.nn.Module,
+        modifier: Optional[Callable[[GraphBatch], Any]] = None,
+        getter: Optional[Callable[[GraphBatch], Any]] = None,
+        optimizer: Type[torch.optim.Optimizer] = None,
+        criterion=None,
+        loss_func: Callable = None,
+        epochs: int = 20,
+        batch_size: int = 100,
+        data_size: int = 1000,
+        loader: Optional[Callable[[int, int], GraphDataLoader]] = None,
+        expectation: Callable = None,
+    ):
+        if expectation is None:
+            expectation = does_not_raise()
+        self.expectation = expectation
         if modifier is None:
             self.modifier = lambda x: x
         else:
@@ -379,7 +452,7 @@ class NetworkTestCase(object):
         loss_arr = torch.zeros(epochs)
         for epoch in range(epochs):
             net.train()
-            running_loss = 0.
+            running_loss = 0.0
             for batch in loader:
                 batch = self.to(batch)
                 batch = modifier(batch)
@@ -388,7 +461,7 @@ class NetworkTestCase(object):
                 optimizer.zero_grad()  # zero the gradient buffers
                 output = net(*input[0], **input[1])
 
-                for x, o, t in zip(['edge', 'node', 'global'], output, target):
+                for x, o, t in zip(["edge", "node", "global"], output, target):
                     if o.shape != t.shape:
                         raise NetworkTestCaseValidationError(
                             "{x} output shape ({o}) has a different shape from {x} target shape ({t})".format(
@@ -412,19 +485,24 @@ class NetworkTestCase(object):
 
     def post_train_validate(self, threshold=0.1):
         if self.losses[-1] > self.losses[0] * threshold:
-            raise NetworkTestCaseValidationError("Model did not train properly :(."
-                                  "\n\tlosses: {} -> {}".format(
-                self.losses[0], self.losses[-1]))
+            raise NetworkTestCaseValidationError(
+                "Model did not train properly :(."
+                "\n\tlosses: {} -> {}".format(self.losses[0], self.losses[-1])
+            )
 
     def __str__(self):
         pass
 
 
-@pytest.mark.parametrize('loader_func', [
-    DataLoaders.random_loader,
-    DataLoaders.random_graph_red_black_nodes,
-    DataLoaders.random_graph_red_black_edges
-])
+@pytest.mark.parametrize(
+    "loader_func",
+    [
+        DataLoaders.random_loader,
+        DataLoaders.random_graph_red_black_nodes,
+        DataLoaders.random_graph_red_black_edges,
+        DataLoaders.est_density,
+    ],
+)
 def test_loaders(loader_func):
     loader = loader_func(100, 20)
     for x in loader:
@@ -432,7 +510,7 @@ def test_loaders(loader_func):
 
 
 def mse_tuple(criterion, device, a, b):
-    loss = torch.tensor(0., dtype=torch.float32, device=device)
+    loss = torch.tensor(0.0, dtype=torch.float32, device=device)
     assert len(a) == len(b)
     for i, (_a, _b) in enumerate(zip(a, b)):
         assert _a.shape == _b.shape
@@ -442,60 +520,94 @@ def mse_tuple(criterion, device, a, b):
 
 
 def get_id(case):
-    tokens = [case['network'].name]
-    if 'id' in case:
-        tokens = [case['id']] + tokens
-    loader = case.get('loader', None)
-    if loader is not None:
-        loader = loader.__name__
-        tokens.append(loader)
-    print(tokens)
-    return '-'.join(tokens)
+
+    tokens = OrderedDict(
+        {"id": None, "name": None, "loader": None, "expectation": None,}
+    )
+
+    tokens["name"] = case["network"].name
+    tokens["id"] = case.get("id", None)
+    try:
+        tokens["loader"] = case.get("loader", None).__name__
+    except AttributeError:
+        pass
+
+    try:
+        tokens["expectation"] = case.get("expectation", None)
+    except AttributeError:
+        pass
+
+    return "-".join([str(v) for v in tokens.values() if v is not None])
 
 
-@pytest.fixture(params=[
-    dict(
-        network=Networks.linear_block,
-        modifier=DataModifier.node_sum,
-        getter=DataGetter.get_node,
-    ),
-    dict(
-        network=Networks.mlp_block,
-        modifier=DataModifier.node_sum,
-        getter=DataGetter.get_node
-    ),
-    dict(
-        network=Networks.node_block,
-        modifier=DataModifier.node_sum,
-        getter=DataGetter.get_node,
-    ),
-    dict(
-        network=Networks.edge_block,
-        modifier=DataModifier.edge_sum,
-        getter=DataGetter.get_edge,
-    ),
-    dict(
-        network=Networks.global_block,
-        modifier=DataModifier.global_sum,
-        getter=DataGetter.get_global,
-    ),
-    dict(
-        network=Networks.graph_encoder,
-        loader=DataLoaders.random_graph_red_black_nodes,
-        getter=DataGetter.get_batch,
-        loss_func=mse_tuple,
-    ),  # randomly creates an input value, assigns 'red' or 'black' to nodes
-    dict(
-        network=Networks.graph_encoder,
-        loader=DataLoaders.random_graph_red_black_edges,
-        getter=DataGetter.get_batch,
-        loss_func=mse_tuple
-    ),  # randomly creates an input value, assigns 'red' or 'black' to edges
-], ids=get_id)
+@pytest.fixture(
+    params=[
+        # dict(
+        #     network=Networks.linear_block,
+        #     modifier=DataModifier.node_sum,
+        #     getter=DataGetter.get_node,
+        # ),
+        # dict(
+        #     network=Networks.mlp_block,
+        #     modifier=DataModifier.node_sum,
+        #     getter=DataGetter.get_node
+        # ),
+        # dict(
+        #     network=Networks.node_block,
+        #     modifier=DataModifier.node_sum,
+        #     getter=DataGetter.get_node,
+        # ),
+        # dict(
+        #     network=Networks.edge_block,
+        #     modifier=DataModifier.edge_sum,
+        #     getter=DataGetter.get_edge,
+        # ),
+        # dict(
+        #     network=Networks.global_block,
+        #     modifier=DataModifier.global_sum,
+        #     getter=DataGetter.get_global,
+        # ),
+        # dict(
+        #     network=Networks.graph_encoder,
+        #     loader=DataLoaders.random_graph_red_black_nodes,
+        #     getter=DataGetter.get_batch,
+        #     loss_func=mse_tuple,
+        # ),  # randomly creates an input value, assigns 'red' or 'black' to nodes
+        # dict(
+        #     network=Networks.graph_encoder,
+        #     loader=DataLoaders.random_graph_red_black_edges,
+        #     getter=DataGetter.get_batch,
+        #     loss_func=mse_tuple
+        # ),  # randomly creates an input value, assigns 'red' or 'black' to edges
+        dict(
+            network=Networks.graph_encoder,
+            loader=DataLoaders.random_graph_red_black_global,
+            getter=DataGetter.get_batch,
+            loss_func=mse_tuple,
+        ),  # randomly creates an input value, assigns 'red' or 'black' to global
+        dict(
+            network=Networks.graph_encoder,
+            loader=DataLoaders.est_density,
+            getter=DataGetter.get_batch,
+            loss_func=mse_tuple,
+            expectation=pytest.raises(NetworkTestCaseValidationError),
+        ),  # network cannot learn the density without connections between nodes and edges,
+        dict(
+            network=Networks.graph_core,
+            loader=DataLoaders.est_density,
+            getter=DataGetter.get_batch,
+            loss_func=mse_tuple,
+        ),
+    ],
+    ids=get_id,
+)
 def network_case(request):
     params = dict(request.param)
-    params['network'] = params['network']()
-    return NetworkTestCase(**params)
+    params["network"] = params["network"]()
+    case = NetworkTestCase(**params)
+    return case
+
+
 # in degree
 # average in degree
 # a function of number of nodes, in degree
@@ -503,13 +615,13 @@ def network_case(request):
 
 def run_test_case(network_case, device):
     network_case.device = device
-    losses = network_case.train()
-    print(losses)
-    for p in network_case.network.parameters():
-        assert device == str(p.device)
-    network_case.post_train_validate()
+    with network_case.expectation:
+        losses = network_case.train()
+        print(losses)
+        for p in network_case.network.parameters():
+            assert device == str(p.device)
+        network_case.post_train_validate()
 
 
 def test_training_cases(network_case, device):
     run_test_case(network_case, device)
-

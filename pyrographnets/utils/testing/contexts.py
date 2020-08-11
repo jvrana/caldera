@@ -12,7 +12,12 @@ class IgnoreContextManager(AbstractContextManager):
 
     default_exceptions = (AssertionError,)
 
-    def __init__(self, name, ignore: bool = False, exceptions: Tuple[Type[Exception], ...] = default_exceptions):
+    def __init__(
+        self,
+        name,
+        ignore: bool = False,
+        exceptions: Tuple[Type[Exception], ...] = default_exceptions,
+    ):
         if exceptions is None:
             exceptions = self.default_exceptions
         self.name = name
@@ -37,7 +42,12 @@ class ContextContainer(AbstractContextManager):
     Container for keeping a list of ContextManagers.
     """
 
-    def __init__(self, contexts: Iterable[IgnoreContextManager], mask: Tuple[bool, ...] = None, copy: bool = True):
+    def __init__(
+        self,
+        contexts: Iterable[IgnoreContextManager],
+        mask: Tuple[bool, ...] = None,
+        copy: bool = True,
+    ):
         if copy:
             self.contexts = tuple(do_copy(c) for c in contexts)
         else:
@@ -78,12 +88,16 @@ class ContextContainer(AbstractContextManager):
 
     def raise_all(self):
         if self.collected_exceptions:
-            s = '\n'.join([str(e) for e in self.collected_exceptions])
+            s = "\n".join([str(e) for e in self.collected_exceptions])
             raise Exception(s)
 
     @staticmethod
     def get_name(contexts):
-        return 'case(' + ','.join([str(c.name) for c in contexts if c.ignore is False]) + ")"
+        return (
+            "case("
+            + ",".join([str(c.name) for c in contexts if c.ignore is False])
+            + ")"
+        )
 
     def __repr__(self):
         return self.get_name(pytest_contexts)
@@ -112,6 +126,7 @@ def override_signature(from_key, to_key):
 
 def change_key(from_key: str, to_key: str) -> Callable:
     """Decorator to swap the kwargs key of a function."""
+
     def wrapped(f):
         @wraps(f)
         def _wrapped(*args, **kwargs):
@@ -129,8 +144,11 @@ def change_key(from_key: str, to_key: str) -> Callable:
 def signature_swap(function_key: str, fixture_key: str) -> Callable:
     """Perform a sneaky signature swap for a function so that indirect fixtures may be applied to the function
     with custom names."""
+
     def wrapped(f):
-        return override_signature(function_key, fixture_key)(change_key(fixture_key, function_key)(f))
+        return override_signature(function_key, fixture_key)(
+            change_key(fixture_key, function_key)(f)
+        )
 
     return wrapped
 
@@ -140,16 +158,17 @@ def _context_manager_test_cases(request):
     """Create new context managers for test cases"""
     return ContextContainer(*request.param)
 
-choices = [
-    'accumulate',
-    'expand'
-]
 
-def pytest_contexts(n,
-                    case_names: Union[List[str], Tuple[str, ...]],
-                    ids=None,
-                    exceptions: Optional[Tuple[Type[Exception], ...]] = None,
-                    mode: str = choices[0]):
+choices = ["accumulate", "expand"]
+
+
+def pytest_contexts(
+    n,
+    case_names: Union[List[str], Tuple[str, ...]],
+    ids=None,
+    exceptions: Optional[Tuple[Type[Exception], ...]] = None,
+    mode: str = choices[0],
+):
     """
     Decorator to provide pytest with test cases.
 
@@ -182,20 +201,26 @@ def pytest_contexts(n,
     :return:
     """
     assert mode in choices
-    context_list = tuple([IgnoreContextManager(n, exceptions=exceptions) for n in case_names])
-    if mode == 'expand':
+    context_list = tuple(
+        [IgnoreContextManager(n, exceptions=exceptions) for n in case_names]
+    )
+    if mode == "expand":
         masks = list(itertools.product([True, False], repeat=len(context_list)))
     else:
         masks = [True] * len(context_list)
-    values = list(itertools.product(
-        [context_list] * len(case_names),
-        masks
-    ))
+    values = list(itertools.product([context_list] * len(case_names), masks))
 
     if ids is None:
+
         def ids(args):
             context_list, mask = args
-            return 'case(' + ','.join([str(c.name) for c, m in zip(context_list, mask) if m is False]) + ")"
+            return (
+                "case("
+                + ",".join(
+                    [str(c.name) for c, m in zip(context_list, mask) if m is False]
+                )
+                + ")"
+            )
 
     wrapper = pytest.mark.parametrize(
         _context_manager_test_cases.__name__, values, ids=ids, indirect=True
@@ -206,12 +231,15 @@ def pytest_contexts(n,
         def _wrapped(*args, **kwargs):
             result = f(*args, **kwargs)
             for v in list(kwargs.values()) + list(args):
-                if hasattr(v, 'raise_all'):
+                if hasattr(v, "raise_all"):
                     v.raise_all()
             return result
+
         return _wrapped
 
     def new_wrapper(f):
-        return wrapper(conclude(signature_swap(n, _context_manager_test_cases.__name__)(f)))
+        return wrapper(
+            conclude(signature_swap(n, _context_manager_test_cases.__name__)(f))
+        )
 
     return new_wrapper

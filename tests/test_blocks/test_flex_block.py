@@ -13,6 +13,7 @@ def test_flex_block():
     print(model.__str__())
     print(model.__repr__())
 
+
 @pytest.mark.parametrize("x", [16, 32, 44])
 def test_flex_block_chain(x):
 
@@ -41,6 +42,7 @@ def test_flex_block_custom_position(x):
     data = torch.randn((10, x))
     model("arg0", data)
 
+
 def test_flex_block_children():
     model = Flex(torch.nn.Linear)(Flex.d(), 1)
     model.reset_parameters()
@@ -53,11 +55,10 @@ def test_flex_block_children():
     #     print(hasattr(child, 'reset_parameters'))
 
 
-@pytest.mark.parametrize('dtype', [None, torch.float64])
-@pytest.mark.parametrize('dtype2', [None, torch.float32])
+@pytest.mark.parametrize("dtype", [None, torch.float64])
+@pytest.mark.parametrize("dtype2", [None, torch.float32])
 def test_flex_block_to_playback(dtype, dtype2):
     class Network(torch.nn.Module):
-
         def __init__(self):
             super().__init__()
             self.layers = Flex(torch.nn.Linear)(Flex.d(), 5)

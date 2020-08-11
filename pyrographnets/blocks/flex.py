@@ -25,15 +25,12 @@ class FlexDim:
         return d
 
     def __repr__(self):
-        return "{}({}, {})".format(
-            self.__class__.__name__,
-            self.pos,
-            self.dim
-        )
+        return "{}({}, {})".format(self.__class__.__name__, self.pos, self.dim)
 
 
 class FlexBlock(torch.nn.Module):
     """Flexible Block that is resolve upon calling of `forward` with an example."""
+
     def __init__(self, module_fn: Type[torch.nn.Module], *args, **kwargs):
         """
         A Flexible torch.nn.Module whose dimensions are resolved when provided with
@@ -104,13 +101,12 @@ class FlexBlock(torch.nn.Module):
             for args, kwargs in self._apply_history:
                 super()._apply(*args, **kwargs)
         except Exception as e:
-            raise PyroGraphNetsException("An error occurred while trying to "
-                                         " replay `_apply` in a {}. Try resolving the module"
-                                         " by providing an example before using"
-                                         " methods that use `_apply` (such as `to()`)"
-                .format(
-                    self.__class__
-                )) from e
+            raise PyroGraphNetsException(
+                "An error occurred while trying to "
+                " replay `_apply` in a {}. Try resolving the module"
+                " by providing an example before using"
+                " methods that use `_apply` (such as `to()`)".format(self.__class__)
+            ) from e
         self._apply_history = None
 
     def _apply(self, *args, **kwargs) -> None:
@@ -141,8 +137,8 @@ class FlexBlock(torch.nn.Module):
             s = "{c}(\n\t(unresolved_module): {m}({args}, {kwargs}\n)".format(
                 c=self._get_name(),
                 m=self.module.__name__,
-                args=', '.join([str(a) for a in self.args]),
-                kwargs=','.join(str(k) + "=" + str(v) for k, v in self.kwargs.items())
+                args=", ".join([str(a) for a in self.args]),
+                kwargs=",".join(str(k) + "=" + str(v) for k, v in self.kwargs.items()),
             )
             return s
 

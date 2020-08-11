@@ -176,7 +176,9 @@ class GraphBatch(GraphData):
         return self
 
     def to_tuple(self) -> graph_batch_tuple:
-        return graph_batch_tuple(self.e, self.x, self.g, self.edges, self.node_idx, self.edge_idx)
+        return graph_batch_tuple(
+            self.e, self.x, self.g, self.edges, self.node_idx, self.edge_idx
+        )
 
     def append_edges(
         self, edge_attr: torch.Tensor, edges: torch.Tensor, edge_idx: torch.Tensor
@@ -302,8 +304,14 @@ class GraphBatch(GraphData):
         raise NotImplementedError("Not implemented for {}".format(cls))
 
     @classmethod
-    def random_batch(cls, size: int, n_feat: int, e_feat: int, g_feat: int,
-                     requires_grad: Optional[bool] = None) -> GraphBatch:
+    def random_batch(
+        cls,
+        size: int,
+        n_feat: int,
+        e_feat: int,
+        g_feat: int,
+        requires_grad: Optional[bool] = None,
+    ) -> GraphBatch:
         datalist = []
         for _ in range(size):
             datalist.append(GraphData.random(n_feat, e_feat, g_feat))
@@ -315,10 +323,13 @@ class GraphBatch(GraphData):
     def __eq__(self, *args, **kwargs):
         raise NotImplementedError("Cannot compare batches")
 
-    def view(self, x_slice: Optional[slice] = None,
-             e_slice: Optional[slice] = None,
-             g_slice: Optional[slice] = None,
-             edges_slice: Optional[slice] = None) -> GraphData:
+    def view(
+        self,
+        x_slice: Optional[slice] = None,
+        e_slice: Optional[slice] = None,
+        g_slice: Optional[slice] = None,
+        edges_slice: Optional[slice] = None,
+    ) -> GraphData:
         if x_slice is None:
             x_slice = slice(None, None, None)
         if e_slice is None:
@@ -333,5 +344,5 @@ class GraphBatch(GraphData):
             self.g[:, g_slice],
             self.edges[:, edges_slice],
             self.node_idx[:],
-            self.edge_idx[e_slice]
+            self.edge_idx[e_slice],
         )

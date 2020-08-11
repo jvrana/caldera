@@ -84,18 +84,15 @@ class Comparator:
         # check node data
         nodes = list(g.nodes(data=True))
         for i in range(len(nodes)):
-            expected_node = torch.tensor(
-                nodes[i][1][fkey], dtype=torch.float
-            )
+            expected_node = torch.tensor(nodes[i][1][fkey], dtype=torch.float)
             assert torch.all(torch.eq(expected_node, data.x[i]))
 
         # check edge data
         for i, (n1, n2, ne) in enumerate(g.ordered_edges):
             edata = g[n1][n2][ne]
-            expected_edge = torch.tensor(
-                edata[fkey], dtype=torch.float
-            )
+            expected_edge = torch.tensor(edata[fkey], dtype=torch.float)
             assert torch.all(torch.eq(expected_edge, data.e[i]))
+
 
 # TODO: test data for numpy or torch
 class TestGraphData:
@@ -266,9 +263,7 @@ class TestApply:
                 v = getattr(data2, k)
                 assert v.device.type == "cuda"
 
-    @pytest.mark.parametrize(
-        'req', [True, False]
-    )
+    @pytest.mark.parametrize("req", [True, False])
     def tests_seq_requires_grad(self, random_data_example, req):
         data = random_data_example
 
@@ -280,6 +275,7 @@ class TestApply:
             for k in data._differentiable:
                 v = getattr(data, k)
                 assert v.requires_grad is req
+
 
 # TODO: TestComparison
 class TestComparison:
@@ -678,8 +674,7 @@ def test_graph_batch_random_batch():
 
 
 @rndm_data()
-class TestCloneCopy():
-
+class TestCloneCopy:
     def test_copy(self, random_data_example):
         data = random_data_example
         data2 = data.copy()
@@ -693,14 +688,16 @@ class TestCloneCopy():
         assert not data.share_storage(data2)
 
 
-class TestView():
-
-    @pytest.mark.parametrize('slices', [
-        (None, None, None),
-        (slice(None, 2), None, None),
-        (None, slice(None, 3), None),
-        (None, None, slice(None, 3))
-    ])
+class TestView:
+    @pytest.mark.parametrize(
+        "slices",
+        [
+            (None, None, None),
+            (slice(None, 2), None, None),
+            (None, slice(None, 3), None),
+            (None, None, slice(None, 3)),
+        ],
+    )
     def test_view_graph_data(self, slices):
         data = GraphData.random(5, 5, 5)
         assert data.shape == (5, 5, 5)

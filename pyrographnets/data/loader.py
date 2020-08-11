@@ -6,7 +6,7 @@ from pyrographnets.utils import _first
 from typing import Callable, Tuple, Optional, Tuple, Any, TypeVar, Generator
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def collate(data_list):
@@ -31,9 +31,12 @@ class GraphDataLoader(DataLoader):
     def first(self, *args, **kwargs):
         return _first(tee(self(*args, **kwargs))[0])
 
-    def __call__(self, device: Optional[str] = None, f: Optional[Callable[[GraphBatch], T]] = None,
-                 send_to_device_before_apply: bool = True) ->\
-            Generator[T, None, None]:
+    def __call__(
+        self,
+        device: Optional[str] = None,
+        f: Optional[Callable[[GraphBatch], T]] = None,
+        send_to_device_before_apply: bool = True,
+    ) -> Generator[T, None, None]:
         """
         Create a new generator. Optionall apply some function to each item or send the item to a device.
         In cases where both are defined, items are first sent to device and then the function is applied,

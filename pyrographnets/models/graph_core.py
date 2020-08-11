@@ -1,5 +1,9 @@
 import torch
-from pyrographnets.blocks import AggregatingEdgeBlock, AggregatingNodeBlock, AggregatingGlobalBlock
+from pyrographnets.blocks import (
+    AggregatingEdgeBlock,
+    AggregatingNodeBlock,
+    AggregatingGlobalBlock,
+)
 from pyrographnets.data import GraphBatch, GraphTuple
 from pyrographnets.models.base import GraphNetworkBase
 
@@ -23,9 +27,7 @@ class GraphCore(GraphNetworkBase):
         self.pass_to_global_to_edge = pass_global_to_edge
         self.pass_to_global_to_node = pass_global_to_node
 
-    def forward(
-        self, data: GraphBatch
-    ) -> GraphTuple:
+    def forward(self, data: GraphBatch) -> GraphTuple:
         if self.pass_to_global_to_edge:
             edge_attr = self.edge_block(
                 data.e, data.x, data.edges, data.g, data.edge_idx

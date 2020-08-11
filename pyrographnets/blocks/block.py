@@ -19,4 +19,3 @@ class Block(nn.Module):
     #     for child in self.children():
     #         if hasattr(child, 'reset_parameters'):
     #             child.reset_parameters()
-

@@ -8,9 +8,10 @@ import torch
 
 def get_cuda_device():
     if torch.cuda.is_available():
-        return 'cuda:' + str(torch.cuda.current_device())
+        return "cuda:" + str(torch.cuda.current_device())
 
-devices = ['cpu']
+
+devices = ["cpu"]
 if get_cuda_device():
     devices.append(get_cuda_device())
 

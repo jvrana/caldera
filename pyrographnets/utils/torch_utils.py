@@ -37,5 +37,3 @@ def to_one_hot(arr: torch.tensor, mx: int) -> torch.tensor:
     for i, a in enumerate(arr):
         oh[i, a] = 1.0
     return oh
-
-
