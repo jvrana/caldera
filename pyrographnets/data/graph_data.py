@@ -236,7 +236,8 @@ class GraphData(object):
         n_glob_feat: Optional[int] = None,
         feature_key: str = "features",
         global_attr_key: str = "data",
-        requires_grad: Optional[bool] = None
+        requires_grad: Optional[bool] = None,
+        dtype: str = torch.float32
     ):
         """
 
@@ -305,16 +306,17 @@ class GraphData(object):
             glob_attr[0] = gdata[feature_key]
 
         if requires_grad is not None:
-            tensor = functools.partial(torch.tensor, requires_grad=requires_grad)
+            tensor = functools.partial(torch.tensor, dtype=dtype, requires_grad=requires_grad)
         else:
-            tensor = torch.tensor
+            tensor = functools.partial(torch.tensor, dtype=dtype)
 
-        return GraphData(
-            tensor(node_attr, dtype=torch.float),
-            tensor(edge_attr, dtype=torch.float),
-            tensor(glob_attr, dtype=torch.float),
-            tensor(edges, dtype=torch.long),
+        data = GraphData(
+            tensor(node_attr),
+            tensor(edge_attr),
+            tensor(glob_attr),
+            torch.tensor(edges, dtype=torch.long)
         )
+        return data
 
     def to_networkx(
         self,
