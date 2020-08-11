@@ -1,3 +1,11 @@
+"""
+test_train_networks.py
+
+Inststructions for creating a new test case.
+
+loader, getter, network
+"""
+
 from typing import Union, Callable, Tuple, Any, Dict, Optional, Type
 
 import pytest
@@ -11,6 +19,7 @@ from pyrographnets.utils import deterministic_seed
 import networkx as nx
 from pyrographnets.utils.torch_utils import to_one_hot
 import numpy as np
+import functools
 
 
 SEED = 0
@@ -281,6 +290,7 @@ class NetworkTestCase(object):
                  getter: Optional[Callable[[GraphBatch], Any]] = None,
                  optimizer: Type[torch.optim.Optimizer] = None,
                  criterion=None,
+                 loss_func: Callable = None,
                  epochs: int = 20,
                  batch_size: int = 100,
                  data_size: int = 1000,
@@ -303,6 +313,7 @@ class NetworkTestCase(object):
         self.loader = loader(data_size, batch_size)
         self.criterion = criterion
         self.optimizer = optimizer
+        self.loss_func = loss_func
         self.losses = None
 
     def to(self, x, device=None):
@@ -344,6 +355,7 @@ class NetworkTestCase(object):
         optimizer = self.optimizer
         getter = self.getter
         modifier = self.modifier
+        loss_func = self.loss_func
 
         # provide example
         self.provide_example()
@@ -352,6 +364,10 @@ class NetworkTestCase(object):
             optimizer = optim.AdamW(net.parameters(), lr=1e-2)
         if criterion is None:
             criterion = torch.nn.MSELoss()
+        if loss_func is not None:
+            loss_func = functools.partial(loss_func, criterion, device)
+        else:
+            loss_func = criterion
 
         self.pre_train_validate()
 
@@ -376,7 +392,8 @@ class NetworkTestCase(object):
                             )
                         )
 
-                loss = criterion(output, target)
+                loss = loss_func(output, target)
+                self.to(loss)
                 loss.backward(retain_graph=True)
                 optimizer.step()
 
@@ -401,7 +418,8 @@ class NetworkTestCase(object):
 
 @pytest.mark.parametrize('loader_func', [
     DataLoaders.random_loader,
-    DataLoaders.random_graph_red_black_nodes
+    DataLoaders.random_graph_red_black_nodes,
+    DataLoaders.random_graph_red_black_edges
 ])
 def test_loaders(loader_func):
     loader = loader_func(100, 20)
@@ -409,15 +427,15 @@ def test_loaders(loader_func):
         assert x
 
 
-def mse_tuple(a, b):
-    mse = torch.nn.MSELoss()
-    loss = torch.tensor(0.)
+def mse_tuple(criterion, device, a, b):
+    loss = torch.tensor(0., dtype=torch.float32, device=device)
     assert len(a) == len(b)
     for i, (_a, _b) in enumerate(zip(a, b)):
         assert _a.shape == _b.shape
-        l = mse(_a, _b)
+        l = criterion(_a, _b)
         loss += l
     return loss
+
 
 def get_id(case):
     tokens = [case['network'].name]
@@ -427,6 +445,7 @@ def get_id(case):
         tokens.append(loader)
     print(tokens)
     return '-'.join(tokens)
+
 
 @pytest.fixture(params=[
     dict(
@@ -458,13 +477,13 @@ def get_id(case):
         network=Networks.graph_encoder,
         loader=DataLoaders.random_graph_red_black_nodes,
         getter=DataGetter.get_batch,
-        criterion=mse_tuple
+        loss_func=mse_tuple
     ),
     dict(
         network=Networks.graph_encoder,
         loader=DataLoaders.random_graph_red_black_edges,
         getter=DataGetter.get_batch,
-        criterion=mse_tuple
+        loss_func=mse_tuple
     )
 ], ids=get_id)
 def network_case(request):
