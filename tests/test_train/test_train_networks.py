@@ -20,24 +20,24 @@ import pytest
 import torch
 from torch import optim
 
-from pyrographnets.blocks import AggregatingEdgeBlock
-from pyrographnets.blocks import AggregatingGlobalBlock
-from pyrographnets.blocks import AggregatingNodeBlock
-from pyrographnets.blocks import Aggregator
-from pyrographnets.blocks import EdgeBlock
-from pyrographnets.blocks import Flex
-from pyrographnets.blocks import GlobalBlock
-from pyrographnets.blocks import MLP
-from pyrographnets.blocks import MultiAggregator
-from pyrographnets.blocks import NodeBlock
-from pyrographnets.data import GraphBatch
-from pyrographnets.data import GraphData
-from pyrographnets.data import GraphDataLoader
-from pyrographnets.models import GraphCore
-from pyrographnets.models import GraphEncoder
-from pyrographnets.utils import deterministic_seed
-from pyrographnets.utils import nx_utils
-from pyrographnets.utils.torch_utils import to_one_hot
+from caldera.blocks import AggregatingEdgeBlock
+from caldera.blocks import AggregatingGlobalBlock
+from caldera.blocks import AggregatingNodeBlock
+from caldera.blocks import Aggregator
+from caldera.blocks import EdgeBlock
+from caldera.blocks import Flex
+from caldera.blocks import GlobalBlock
+from caldera.blocks import MLP
+from caldera.blocks import MultiAggregator
+from caldera.blocks import NodeBlock
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.data import GraphDataLoader
+from caldera.models import GraphCore
+from caldera.models import GraphEncoder
+from caldera.utils import deterministic_seed
+from caldera.utils import nx_utils
+from caldera.utils.torch_utils import to_one_hot
 
 SEED = 0
 

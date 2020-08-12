@@ -1,7 +1,7 @@
 import torch
 
-from pyrographnets.blocks.block import Block
-from pyrographnets.data import GraphBatch
+from caldera.blocks.block import Block
+from caldera.data import GraphBatch
 
 
 class GlobalBlock(Block):

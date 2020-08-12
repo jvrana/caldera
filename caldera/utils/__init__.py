@@ -4,12 +4,12 @@ from typing import Dict
 from typing import List
 from typing import TypeVar
 
-from pyrographnets.utils.jit import jit_scatter_group
-from pyrographnets.utils.jit import scatter_group
-from pyrographnets.utils.jit import stable_arg_sort_long
-from pyrographnets.utils.jit import unique_with_counts
-from pyrographnets.utils.torch_utils import deterministic_seed
-from pyrographnets.utils.torch_utils import same_storage
+from caldera.utils.jit import jit_scatter_group
+from caldera.utils.jit import scatter_group
+from caldera.utils.jit import stable_arg_sort_long
+from caldera.utils.jit import unique_with_counts
+from caldera.utils.torch_utils import deterministic_seed
+from caldera.utils.torch_utils import same_storage
 
 T = TypeVar("T")
 K = TypeVar("K")

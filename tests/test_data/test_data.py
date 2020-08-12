@@ -4,8 +4,8 @@ import pytest
 import torch
 from flaky import flaky
 
-from pyrographnets.data import GraphBatch
-from pyrographnets.data import GraphData
+from caldera.data import GraphBatch
+from caldera.data import GraphData
 
 random_graph_data = GraphData.random
 

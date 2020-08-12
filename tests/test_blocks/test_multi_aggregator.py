@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-from pyrographnets.blocks import Aggregator
-from pyrographnets.blocks import MultiAggregator
+from caldera.blocks import Aggregator
+from caldera.blocks import MultiAggregator
 
 
 @pytest.mark.parametrize("methods", [["min", "max"]])

@@ -5,7 +5,7 @@ from os.path import join
 import pytest
 import torch
 
-from pyrographnets.utils.tensorboard import new_writer as new_summary_writer
+from caldera.utils.tensorboard import new_writer as new_summary_writer
 
 runs = join(abspath(dirname(__file__)), "pytest_runs")
 

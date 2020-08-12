@@ -4,10 +4,10 @@ import networkx as nx
 import numpy as np
 import torch
 
-from pyrographnets.data import GraphBatch
-from pyrographnets.data import GraphData
-from pyrographnets.utils import _first
-from pyrographnets.utils import scatter_group
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.utils import _first
+from caldera.utils import scatter_group
 
 
 def to_graph_data(

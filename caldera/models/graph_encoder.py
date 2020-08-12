@@ -1,11 +1,11 @@
 import torch
 
-from pyrographnets.blocks import EdgeBlock
-from pyrographnets.blocks import GlobalBlock
-from pyrographnets.blocks import NodeBlock
-from pyrographnets.data import GraphBatch
-from pyrographnets.data import GraphTuple
-from pyrographnets.models.base import GraphNetworkBase
+from caldera.blocks import EdgeBlock
+from caldera.blocks import GlobalBlock
+from caldera.blocks import NodeBlock
+from caldera.data import GraphBatch
+from caldera.data import GraphTuple
+from caldera.models.base import GraphNetworkBase
 
 
 class GraphEncoder(GraphNetworkBase):

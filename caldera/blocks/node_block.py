@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 
-from pyrographnets.blocks.aggregator import Aggregator
-from pyrographnets.blocks.block import Block
-from pyrographnets.data import GraphBatch
+from caldera.blocks.aggregator import Aggregator
+from caldera.blocks.block import Block
+from caldera.data import GraphBatch
 
 
 class NodeBlock(Block):

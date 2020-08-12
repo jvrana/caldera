@@ -8,9 +8,9 @@ from typing import TypeVar
 
 from torch.utils.data import DataLoader
 
-from pyrographnets.data import GraphBatch
-from pyrographnets.data import GraphData
-from pyrographnets.utils import _first
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.utils import _first
 
 
 T = TypeVar("T")
