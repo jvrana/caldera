@@ -1,4 +1,4 @@
-# Pyro-GraphNets
+# Caldera 🌋
 
 Deep learning package for learning on graphical data.
 
@@ -58,7 +58,7 @@ The `GraphDataLoader` class provides a data loader for returning `GraphBatch`
 instances from a list of `GraphData` objects.
 
 ```python
-from pyrographnets.data import GraphDataLoader
+from caldera.data import GraphDataLoader
 
 loader = GraphDataLoader(data, batch_size=32, shuffle=True)
 

@@ -8,10 +8,10 @@ from typing import Type
 import networkx as nx
 import torch
 
-from pyrographnets.data.graph_data import GraphData
-from pyrographnets.data.graph_data import GraphType
-from pyrographnets.utils import scatter_group
-from pyrographnets.utils import stable_arg_sort_long
+from caldera.data.graph_data import GraphData
+from caldera.data.graph_data import GraphType
+from caldera.utils import scatter_group
+from caldera.utils import stable_arg_sort_long
 
 
 class GraphBatch(GraphData):

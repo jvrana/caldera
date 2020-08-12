@@ -7,7 +7,7 @@ import torch
 import torch_scatter
 from torch import nn
 
-from pyrographnets.defaults import PyroGraphNetsDefaults as D
+from caldera.defaults import CalderaDefaults as D
 
 
 @wraps(torch_scatter.scatter_max)

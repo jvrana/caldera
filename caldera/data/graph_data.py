@@ -14,8 +14,8 @@ import networkx as nx
 import numpy as np
 import torch
 
-from pyrographnets.utils import _first
-from pyrographnets.utils import same_storage
+from caldera.utils import _first
+from caldera.utils import same_storage
 
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 

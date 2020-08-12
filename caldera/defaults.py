@@ -1,6 +1,6 @@
 import torch
 
 
-class PyroGraphNetsDefaults:
+class CalderaNetsDefaults:
 
     activation = torch.nn.LeakyReLU

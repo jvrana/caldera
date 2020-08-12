@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from pyrographnets.blocks import MLP
+from caldera.blocks import MLP
 
 
 @pytest.mark.parametrize("layers", [(8, 32), (16, 16, 32), (64, 16, 8)])

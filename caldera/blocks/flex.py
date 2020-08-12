@@ -6,7 +6,7 @@ from typing import Type
 
 import torch
 
-from pyrographnets.exceptions import PyroGraphNetsException
+from caldera.exceptions import CalderaNetsException
 
 
 class FlexDim:
@@ -106,7 +106,7 @@ class FlexBlock(torch.nn.Module):
             for args, kwargs in self._apply_history:
                 super()._apply(*args, **kwargs)
         except Exception as e:
-            raise PyroGraphNetsException(
+            raise CalderaNetsException(
                 "An error occurred while trying to "
                 " replay `_apply` in a {}. Try resolving the module"
                 " by providing an example before using"

@@ -5,8 +5,8 @@ from typing import Union
 
 from torch import nn
 
-from pyrographnets.defaults import PyroGraphNetsDefaults as D
-from pyrographnets.utils import pairwise
+from caldera.defaults import CalderaNetsDefaults as D
+from caldera.utils import pairwise
 
 
 class MLPBlock(nn.Module):

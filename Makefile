@@ -5,7 +5,7 @@ lock:
 	conda env export > environment.yml
 
 activate:
-	conda activate pyrographnets
+	conda activate caldera
 
 check:
 	echo "Python environment"

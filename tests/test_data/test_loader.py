@@ -1,6 +1,6 @@
-from pyrographnets.data import GraphBatch
-from pyrographnets.data import GraphData
-from pyrographnets.data import GraphDataLoader
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.data import GraphDataLoader
 
 
 def test_loader():

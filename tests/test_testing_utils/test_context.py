@@ -1,7 +1,7 @@
 import pytest
 
-from pyrographnets.utils.testing import _context_manager_test_cases
-from pyrographnets.utils.testing import pytest_contexts
+from caldera.utils.testing import _context_manager_test_cases
+from caldera.utils.testing import pytest_contexts
 
 
 # @pytest.mark.parametrize("x", [1, 2, 3])

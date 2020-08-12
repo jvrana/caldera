@@ -1,9 +1,9 @@
 import torch
 
-from pyrographnets.blocks import AggregatingNodeBlock
-from pyrographnets.blocks import Flex
-from pyrographnets.blocks import MLP
-from pyrographnets.blocks import MultiAggregator
+from caldera.blocks import AggregatingNodeBlock
+from caldera.blocks import Flex
+from caldera.blocks import MLP
+from caldera.blocks import MultiAggregator
 
 
 def test_flexible_multiaggregator():

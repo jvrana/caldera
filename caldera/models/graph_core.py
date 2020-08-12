@@ -1,11 +1,11 @@
 import torch
 
-from pyrographnets.blocks import AggregatingEdgeBlock
-from pyrographnets.blocks import AggregatingGlobalBlock
-from pyrographnets.blocks import AggregatingNodeBlock
-from pyrographnets.data import GraphBatch
-from pyrographnets.data import GraphTuple
-from pyrographnets.models.base import GraphNetworkBase
+from caldera.blocks import AggregatingEdgeBlock
+from caldera.blocks import AggregatingGlobalBlock
+from caldera.blocks import AggregatingNodeBlock
+from caldera.data import GraphBatch
+from caldera.data import GraphTuple
+from caldera.models.base import GraphNetworkBase
 
 
 class GraphCore(GraphNetworkBase):

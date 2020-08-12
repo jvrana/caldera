@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from pyrographnets.utils import same_storage
+from caldera.utils import same_storage
 
 view_methods = {
     "slice": lambda x: x[:10],

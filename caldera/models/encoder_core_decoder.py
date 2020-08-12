@@ -2,18 +2,18 @@ from functools import partial
 
 import torch
 
-from pyrographnets.blocks import AggregatingEdgeBlock
-from pyrographnets.blocks import AggregatingGlobalBlock
-from pyrographnets.blocks import AggregatingNodeBlock
-from pyrographnets.blocks import Aggregator
-from pyrographnets.blocks import EdgeBlock
-from pyrographnets.blocks import Flex
-from pyrographnets.blocks import GlobalBlock
-from pyrographnets.blocks import MLP
-from pyrographnets.blocks import NodeBlock
-from pyrographnets.data import GraphBatch
-from pyrographnets.models.graph_core import GraphCore
-from pyrographnets.models.graph_encoder import GraphEncoder
+from caldera.blocks import AggregatingEdgeBlock
+from caldera.blocks import AggregatingGlobalBlock
+from caldera.blocks import AggregatingNodeBlock
+from caldera.blocks import Aggregator
+from caldera.blocks import EdgeBlock
+from caldera.blocks import Flex
+from caldera.blocks import GlobalBlock
+from caldera.blocks import MLP
+from caldera.blocks import NodeBlock
+from caldera.data import GraphBatch
+from caldera.models.graph_core import GraphCore
+from caldera.models.graph_encoder import GraphEncoder
 
 
 class EncodeCoreDecode(torch.nn.Module):
