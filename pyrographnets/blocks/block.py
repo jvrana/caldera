@@ -14,3 +14,8 @@ class Block(nn.Module):
     @property
     def independent(self):
         return self._independent
+
+    # def reset_parameters(self):
+    #     for child in self.children():
+    #         if hasattr(child, 'reset_parameters'):
+    #             child.reset_parameters()

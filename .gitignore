@@ -678,8 +678,7 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
-*.yaml
-
 tests/pytest_runs/**/*
 experiments/wandb/**/*
 experiments/runs/**/*
+experiments/crn/wandb/**/*

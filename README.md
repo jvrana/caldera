@@ -1,10 +1,6 @@
 # Pyro-GraphNets
 
-Pytorch deep learning extension for training on graphical data. 
-Goals of this library are to:
-
-* provide a simple API for training deep neural networks on graph data
-* implement bayesian neural networks on graph data
+Deep learning package for learning on graphical data.
 
 ## Installation
 
