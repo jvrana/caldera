@@ -29,7 +29,14 @@ def test_init_agg_global_block_requires_grad():
     global_model = AggregatingGlobalBlock(
         MLP(8, 16, 10), Aggregator("mean"), Aggregator("mean")
     )
-    out = global_model(global_attr, node_attr, edge_attr, edges, node_idx, edge_idx)
+    out = global_model(
+        global_attr=global_attr,
+        node_attr=node_attr,
+        edge_attr=edge_attr,
+        edges=edges,
+        node_idx=node_idx,
+        edge_idx=edge_idx,
+    )
 
     for p in global_model.parameters():
         assert p.requires_grad

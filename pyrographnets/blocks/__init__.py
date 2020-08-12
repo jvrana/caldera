@@ -1,4 +1,4 @@
-from pyrographnets.blocks.aggregator import Aggregator
+from pyrographnets.blocks.aggregator import Aggregator, MultiAggregator
 from pyrographnets.blocks.flex import Flex
 from pyrographnets.blocks.mlp import MLP
 from pyrographnets.blocks.edge_block import EdgeBlock, AggregatingEdgeBlock

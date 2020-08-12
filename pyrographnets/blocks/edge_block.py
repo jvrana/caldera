@@ -29,19 +29,20 @@ class AggregatingEdgeBlock(EdgeBlock):
 
     def forward(
         self,
+        *,
         edge_attr: torch.tensor,
         node_attr: torch.tensor,
         edges: torch.tensor,
         global_attr: torch.Tensor = None,
-        edge_index: torch.Tensor = None,
+        edge_idx: torch.Tensor = None,
     ):
         to_agg = (node_attr[edges[0]], node_attr[edges[1]])
         if global_attr is not None:
-            if edge_index is None:
+            if edge_idx is None:
                 raise RuntimeError(
                     "If `global_attr` provided must also provide `edge_index`"
                 )
-            to_agg += (global_attr[edge_index],)
+            to_agg += (global_attr[edge_idx],)
         out = torch.cat([*to_agg, edge_attr], 1)
 
         return self.block_dict["mlp"](out)

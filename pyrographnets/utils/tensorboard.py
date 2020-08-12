@@ -8,7 +8,7 @@ except ImportError as e:
 if SummaryWriter is None:
 
     def new_writer(*args, **kwargs):
-        raise e
+        raise ImportError("`tensorboard` not installed")
 
 
 else:
