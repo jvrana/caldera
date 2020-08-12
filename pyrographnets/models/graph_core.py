@@ -34,13 +34,12 @@ class GraphCore(GraphNetworkBase):
                 node_attr=data.x,
                 edges=data.edges,
                 global_attr=data.g,
-                edge_idx=data.edge_idx
+                edge_idx=data.edge_idx,
             )
         else:
             edge_attr = self.edge_block(
-                edge_attr=data.e,
-                node_attr=data.x,
-                edges=data.edges)
+                edge_attr=data.e, node_attr=data.x, edges=data.edges
+            )
 
         if self.pass_to_global_to_node:
             node_attr = self.node_block(
@@ -48,10 +47,12 @@ class GraphCore(GraphNetworkBase):
                 edge_attr=edge_attr,
                 edges=data.edges,
                 global_attr=data.g,
-                node_idx=data.node_idx
+                node_idx=data.node_idx,
             )
         else:
-            node_attr = self.node_block(node_attr=data.x, edge_attr=edge_attr, edges=data.edges)
+            node_attr = self.node_block(
+                node_attr=data.x, edge_attr=edge_attr, edges=data.edges
+            )
 
         global_attr = self.global_block(
             global_attr=data.g,
@@ -59,6 +60,6 @@ class GraphCore(GraphNetworkBase):
             edge_attr=edge_attr,
             edges=data.edges,
             node_idx=data.node_idx,
-            edge_idx=data.edge_idx
+            edge_idx=data.edge_idx,
         )
         return GraphTuple(edge_attr, node_attr, global_attr)

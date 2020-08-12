@@ -3,9 +3,7 @@ import torch
 import pytest
 
 
-@pytest.mark.parametrize("methods", [
-    ["min", "max"]
-])
+@pytest.mark.parametrize("methods", [["min", "max"]])
 def test_aggregators(methods):
     shape = (10, 5)
     block = MultiAggregator(shape[1], methods)

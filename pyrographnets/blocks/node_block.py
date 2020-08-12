@@ -18,7 +18,6 @@ class NodeBlock(Block):
 
 
 class AggregatingNodeBlock(NodeBlock):
-
     def __init__(self, mlp: nn.Module, edge_aggregator: Aggregator):
         super().__init__(mlp)
         self.block_dict["edge_aggregator"] = edge_aggregator

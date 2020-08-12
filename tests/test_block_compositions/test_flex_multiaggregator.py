@@ -3,9 +3,9 @@ import torch
 
 
 def test_flexible_multiaggregator():
-    net = Flex(MultiAggregator)(Flex.d(), aggregators=['add'])
+    net = Flex(MultiAggregator)(Flex.d(), aggregators=["add"])
     data = torch.randn((10, 5), dtype=torch.float)
-    idx = torch.randint(0, 2, (10, ), dtype=torch.long)
+    idx = torch.randint(0, 2, (10,), dtype=torch.long)
     net(data, idx, dim=0, dim_size=20)
     print(net)
 
@@ -13,7 +13,7 @@ def test_flexible_multiaggregator():
 def test_flexible_agg_node_block_mult_agg():
     net = AggregatingNodeBlock(
         Flex(MLP)(Flex.d(), 25),
-        edge_aggregator=Flex(MultiAggregator)(Flex.d(), aggregators=['add'])
+        edge_aggregator=Flex(MultiAggregator)(Flex.d(), aggregators=["add"]),
     )
     n_edges = 10
     e_feat = 5

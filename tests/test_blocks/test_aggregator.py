@@ -11,6 +11,7 @@ def test_aggregators(method):
     out = block(x, idx, dim=0)
     print(out)
 
+
 @pytest.mark.parametrize("method", ["mean", "max", "min", "add"])
 def test_aggregators_2d(method):
     block = Aggregator(method)
@@ -25,9 +26,7 @@ def test_invalid_method():
         block = Aggregator("not a method")
 
 
-@pytest.mark.parametrize("methods", [
-    ["min", "max"]
-])
+@pytest.mark.parametrize("methods", [["min", "max"]])
 def test_multi_aggregators(methods):
     shape = (10, 5)
     block = MultiAggregator(shape[1], methods)

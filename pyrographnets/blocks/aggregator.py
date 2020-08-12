@@ -4,6 +4,7 @@ import torch_scatter
 from torch import nn
 from typing import Union, Tuple, List
 import torch
+from pyrographnets.defaults import PyroGraphNetsDefaults as D
 
 
 @wraps(torch_scatter.scatter_max)
@@ -15,6 +16,7 @@ def scatter_max(*args, **kwargs):
 def scatter_min(*args, **kwargs):
     return torch_scatter.scatter_min(*args, **kwargs)[0]
 
+
 class AggregatorBase(nn.Module):
     """Aggregation layer."""
 
@@ -24,6 +26,7 @@ class AggregatorBase(nn.Module):
         "min": scatter_min,
         "add": torch_scatter.scatter_add,
     }
+
 
 # TODO: make aggregation selection trainable
 class Aggregator(AggregatorBase):
@@ -69,12 +72,14 @@ class Aggregator(AggregatorBase):
 
 
 class MultiAggregator(AggregatorBase):
-
-    def __init__(self, input_size: int,
-                 aggregators: Union[Tuple[str, ...], List[str]],
-                 dim: int = None,
-                 dim_size: int = None,
-                 activation_function=torch.nn.LeakyReLU):
+    def __init__(
+        self,
+        input_size: int,
+        aggregators: Union[Tuple[str, ...], List[str]],
+        dim: int = None,
+        dim_size: int = None,
+        activation_function=D.activation,
+    ):
         """
         A differentiable and trainable way to select the aggregation function.
 
@@ -92,12 +97,11 @@ class MultiAggregator(AggregatorBase):
                     )
                 )
         self.layers = torch.nn.Sequential(
-            torch.nn.Linear(input_size, len(aggregators)),
-            activation_function()
+            torch.nn.Linear(input_size, len(aggregators)), activation_function()
         )
-        self.aggregators = torch.nn.ModuleDict({
-            agg: Aggregator(agg) for agg in aggregators
-        })
+        self.aggregators = torch.nn.ModuleDict(
+            {agg: Aggregator(agg) for agg in aggregators}
+        )
 
         self.kwargs = dict(dim=dim, dim_size=dim_size)
 
@@ -106,19 +110,17 @@ class MultiAggregator(AggregatorBase):
         func_kwargs.update(kwargs)
 
         # stack each aggregation function
-        stacked = torch.stack([agg(x, indices, **func_kwargs) for agg in self.aggregators.values()])
+        stacked = torch.stack(
+            [agg(x, indices, **func_kwargs) for agg in self.aggregators.values()]
+        )
 
         # get the weights
         weights = self.layers(x)
 
         # match shape of aggregated matrix
-        scatter_weights = self.valid_aggregators['add'](weights, indices, **func_kwargs)
+        scatter_weights = self.valid_aggregators["add"](weights, indices, **func_kwargs)
 
         # weight each 'function' by the learned weights
         return torch.sum(
-            torch.mul(
-                stacked,
-                scatter_weights.expand(1, -1, -1).T
-            ),
-            axis=0
+            torch.mul(stacked, scatter_weights.expand(1, -1, -1).T), axis=0
         )
