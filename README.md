@@ -1,6 +1,6 @@
 # Caldera 🌋
 
-Deep learning package for learning on graphical data.
+Pytorch extension for learning on graphical data.
 
 ## Installation
 
@@ -45,7 +45,6 @@ Dimensions:
 
 To support minbatch training, the `GraphBatch` represents a batch of
 GraphData instances and has the following additional tensors:
-
 
 `gt.node_idx` - [n_nodes]
 
