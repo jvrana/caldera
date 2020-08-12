@@ -1,7 +1,11 @@
 from functools import wraps
-from typing import Tuple, Any, Dict, Type
+from typing import Any
+from typing import Dict
+from typing import Tuple
+from typing import Type
 
 import torch
+
 from pyrographnets.exceptions import PyroGraphNetsException
 
 
@@ -29,12 +33,12 @@ class FlexDim:
 
 
 class FlexBlock(torch.nn.Module):
-    """Flexible Block that is resolve upon calling of `forward` with an example."""
+    """Flexible Block that is resolve upon calling of `forward` with an
+    example."""
 
     def __init__(self, module_fn: Type[torch.nn.Module], *args, **kwargs):
-        """
-        A Flexible torch.nn.Module whose dimensions are resolved when provided with
-        an example.
+        """A Flexible torch.nn.Module whose dimensions are resolved when
+        provided with an example.
 
         :param module_fn:
         :param args:
@@ -50,9 +54,9 @@ class FlexBlock(torch.nn.Module):
 
     @property
     def is_resolved(self):
-        """
-        Returns whether this block has been resolved with an example. Note that
-        before an example is presented, this block will have no parameters.
+        """Returns whether this block has been resolved with an example. Note
+        that before an example is presented, this block will have no
+        parameters.
 
         :return: whether this block has been resolved
         """
@@ -96,7 +100,8 @@ class FlexBlock(torch.nn.Module):
         self._apply_history.append((args, kwargs))
 
     def _play_apply(self):
-        """Plays back the `_apply` function from the `_apply_history` storage."""
+        """Plays back the `_apply` function from the `_apply_history`
+        storage."""
         try:
             for args, kwargs in self._apply_history:
                 super()._apply(*args, **kwargs)
@@ -110,9 +115,8 @@ class FlexBlock(torch.nn.Module):
         self._apply_history = None
 
     def _apply(self, *args, **kwargs) -> None:
-        """
-        Special override method. In the case that `_apply` is called
-        and this module has not been resolved, the arguments for the `_apply`
+        """Special override method. In the case that `_apply` is called and
+        this module has not been resolved, the arguments for the `_apply`
         function are stored. These are reapplied after they have been resolved.
 
         :param args:
@@ -148,7 +152,7 @@ class FlexBlock(torch.nn.Module):
     #             child.reset_parameters()
 
 
-class Flex(object):
+class Flex:
 
     d = FlexDim
 

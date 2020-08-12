@@ -1,4 +1,6 @@
-from pyrographnets.data import GraphDataLoader, GraphData, GraphBatch
+from pyrographnets.data import GraphBatch
+from pyrographnets.data import GraphData
+from pyrographnets.data import GraphDataLoader
 
 
 def test_loader():

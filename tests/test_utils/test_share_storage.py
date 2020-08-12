@@ -1,6 +1,7 @@
-from pyrographnets.utils import same_storage
-import torch
 import pytest
+import torch
+
+from pyrographnets.utils import same_storage
 
 view_methods = {
     "slice": lambda x: x[:10],

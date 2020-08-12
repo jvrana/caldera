@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 
-from pyrographnets.blocks.block import Block
 from pyrographnets.blocks.aggregator import Aggregator
+from pyrographnets.blocks.block import Block
 from pyrographnets.data import GraphBatch
 
 

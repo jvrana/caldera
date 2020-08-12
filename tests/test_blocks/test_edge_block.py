@@ -1,5 +1,8 @@
-from pyrographnets.blocks import MLP, EdgeBlock, AggregatingEdgeBlock
 import torch
+
+from pyrographnets.blocks import AggregatingEdgeBlock
+from pyrographnets.blocks import EdgeBlock
+from pyrographnets.blocks import MLP
 
 
 def test_init_edge_block():

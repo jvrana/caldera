@@ -1,6 +1,10 @@
-from pyrographnets.blocks.aggregator import Aggregator, MultiAggregator
+from pyrographnets.blocks.aggregator import Aggregator
+from pyrographnets.blocks.aggregator import MultiAggregator
+from pyrographnets.blocks.edge_block import AggregatingEdgeBlock
+from pyrographnets.blocks.edge_block import EdgeBlock
 from pyrographnets.blocks.flex import Flex
+from pyrographnets.blocks.global_block import AggregatingGlobalBlock
+from pyrographnets.blocks.global_block import GlobalBlock
 from pyrographnets.blocks.mlp import MLP
-from pyrographnets.blocks.edge_block import EdgeBlock, AggregatingEdgeBlock
-from pyrographnets.blocks.node_block import NodeBlock, AggregatingNodeBlock
-from pyrographnets.blocks.global_block import GlobalBlock, AggregatingGlobalBlock
+from pyrographnets.blocks.node_block import AggregatingNodeBlock
+from pyrographnets.blocks.node_block import NodeBlock

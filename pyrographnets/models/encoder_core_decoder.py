@@ -1,19 +1,19 @@
+from functools import partial
+
 import torch
+
+from pyrographnets.blocks import AggregatingEdgeBlock
+from pyrographnets.blocks import AggregatingGlobalBlock
+from pyrographnets.blocks import AggregatingNodeBlock
+from pyrographnets.blocks import Aggregator
+from pyrographnets.blocks import EdgeBlock
+from pyrographnets.blocks import Flex
+from pyrographnets.blocks import GlobalBlock
+from pyrographnets.blocks import MLP
+from pyrographnets.blocks import NodeBlock
 from pyrographnets.data import GraphBatch
 from pyrographnets.models.graph_core import GraphCore
 from pyrographnets.models.graph_encoder import GraphEncoder
-from pyrographnets.blocks import (
-    EdgeBlock,
-    NodeBlock,
-    GlobalBlock,
-    AggregatingEdgeBlock,
-    AggregatingGlobalBlock,
-    AggregatingNodeBlock,
-    Aggregator,
-)
-from pyrographnets.blocks import Flex
-from pyrographnets.blocks import MLP
-from functools import partial
 
 
 class EncodeCoreDecode(torch.nn.Module):
@@ -73,7 +73,7 @@ class EncodeCoreDecode(torch.nn.Module):
         self.core = GraphCore(
             AggregatingEdgeBlock(mlp(*edge_layers)),
             AggregatingNodeBlock(
-                mlp(*node_layers), Aggregator(self.config["node_block_aggregator"]),
+                mlp(*node_layers), Aggregator(self.config["node_block_aggregator"])
             ),
             AggregatingGlobalBlock(
                 mlp(*global_layers),

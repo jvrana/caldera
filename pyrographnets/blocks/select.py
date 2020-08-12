@@ -2,7 +2,7 @@ import torch
 
 
 class Select(torch.nn.Module):
-    """Differentiable select block"""
+    """Differentiable select block."""
 
     def __init__(self, input_size: int, output_size: int):
         super().__init__()
