@@ -25,7 +25,7 @@ def pairwise(iterable):
 
 def _first(i):
     """Select the first element in an iterable."""
-    return next((x for x in itertools.tee(i)[0]))
+    return next(x for x in itertools.tee(i)[0])
 
 
 def dict_collate(
