@@ -30,19 +30,35 @@ class GraphCore(GraphNetworkBase):
     def forward(self, data: GraphBatch) -> GraphTuple:
         if self.pass_to_global_to_edge:
             edge_attr = self.edge_block(
-                data.e, data.x, data.edges, data.g, data.edge_idx
+                edge_attr=data.e,
+                node_attr=data.x,
+                edges=data.edges,
+                global_attr=data.g,
+                edge_idx=data.edge_idx
             )
         else:
-            edge_attr = self.edge_block(data.e, data.x, data.edges)
+            edge_attr = self.edge_block(
+                edge_attr=data.e,
+                node_attr=data.x,
+                edges=data.edges)
 
         if self.pass_to_global_to_node:
             node_attr = self.node_block(
-                data.x, edge_attr, data.edges, data.g, data.node_idx
+                node_attr=data.x,
+                edge_attr=edge_attr,
+                edges=data.edges,
+                global_attr=data.g,
+                node_idx=data.node_idx
             )
         else:
-            node_attr = self.node_block(data.x, edge_attr, data.edges)
+            node_attr = self.node_block(node_attr=data.x, edge_attr=edge_attr, edges=data.edges)
 
         global_attr = self.global_block(
-            data.g, node_attr, edge_attr, data.edges, data.node_idx, data.edge_idx
+            global_attr=data.g,
+            node_attr=node_attr,
+            edge_attr=edge_attr,
+            edges=data.edges,
+            node_idx=data.node_idx,
+            edge_idx=data.edge_idx
         )
         return GraphTuple(edge_attr, node_attr, global_attr)

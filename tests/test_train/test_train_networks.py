@@ -19,7 +19,7 @@ from pyrographnets.blocks import (
     AggregatingNodeBlock,
     AggregatingEdgeBlock,
     AggregatingGlobalBlock,
-    Aggregator,
+    Aggregator, MultiAggregator
 )
 from pyrographnets.models import GraphEncoder, GraphCore
 from pyrographnets.data import GraphData, GraphBatch, GraphDataLoader
@@ -137,6 +137,35 @@ class Networks(object):
         )
 
     graph_core = n("graph_core", create_graph_core)
+
+    def create_graph_core_multi_agg(pass_global_to_edge: bool, pass_global_to_node: bool):
+        return GraphCore(
+            AggregatingEdgeBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                )
+            ),
+            AggregatingNodeBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                ),
+                edge_aggregator=Flex(MultiAggregator)(Flex.d(), ["add", "min", "max", "mean"]),
+            ),
+            AggregatingGlobalBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                ),
+                edge_aggregator=Flex(MultiAggregator)(Flex.d(), ["add", "min", "max", "mean"]),
+                node_aggregator=Flex(MultiAggregator)(Flex.d(), ["add", "min", "max", "mean"]),
+            ),
+            pass_global_to_edge=pass_global_to_edge,
+            pass_global_to_node=pass_global_to_node,
+        )
+
+    graph_core_multi_agg = n("graph_core(multiagg)", create_graph_core_multi_agg)
 
     @staticmethod
     def reset(net: torch.nn.Module):
@@ -820,7 +849,17 @@ cases = [
         network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True, },
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
+        epochs=100,
         tags=["sigmoid_circuit"]
+    ),  # estimate the graph density using GraphCore
+    dict(
+        network=Networks.graph_core_multi_agg,
+        loader=DataLoaders.sigmoid_circuit,
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True, },
+        getter=DataGetter.get_batch,
+        loss_func=mse_tuple,
+        epochs=100,
+        tags=["sigmoid_circuit_(multiagg)"]
     ),  # estimate the graph density using GraphCore
 ]
 # in degree
@@ -879,5 +918,9 @@ class TestTraining(object):
 
     @parameterize_by_group(["sigmoid_circuit"])
     def test_train_sigmoid_circuit(self, network_case, device):
+        run_test_case(network_case, device)
+
+    @parameterize_by_group(["sigmoid_circuit_(multiagg)"])
+    def test_train_sigmoid_circuit_with_multi_agg(self, network_case, device):
         run_test_case(network_case, device)
 

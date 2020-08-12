@@ -23,7 +23,7 @@ class AggregatingGlobalBlock(GlobalBlock):
         self.block_dict["node_aggregator"] = node_aggregator
         self._independent = False
 
-    def forward(self, global_attr, node_attr, edge_attr, edges, node_idx, edge_idx):
+    def forward(self, *, global_attr, node_attr, edge_attr, edges, node_idx, edge_idx):
         aggregated = [global_attr]
         if "node_aggregator" in self.block_dict:
             aggregated.append(

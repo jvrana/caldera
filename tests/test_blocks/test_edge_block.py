@@ -20,7 +20,7 @@ def test_init_agg_edge_block_requires_grad():
     edges = torch.randint(0, 40, torch.Size([2, 20]))
     n = torch.randn(40, 2)
 
-    assert edge_model(x, n, edges).shape == torch.Size([20, 16])
+    assert edge_model(edge_attr=x, node_attr=n, edges=edges).shape == torch.Size([20, 16])
 
     for p in edge_model.parameters():
         assert p.requires_grad
