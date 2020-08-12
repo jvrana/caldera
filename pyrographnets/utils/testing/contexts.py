@@ -1,10 +1,17 @@
-import pytest
 import itertools
-from copy import copy as do_copy
-from typing import Type, Tuple, Iterable, Union, List, Callable, Optional
 from contextlib import AbstractContextManager
+from copy import copy as do_copy
 from functools import wraps
 from inspect import signature
+from typing import Callable
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
+
+import pytest
 
 
 class IgnoreContextManager(AbstractContextManager):
@@ -38,9 +45,7 @@ class IgnoreContextManager(AbstractContextManager):
 
 
 class ContextContainer(AbstractContextManager):
-    """
-    Container for keeping a list of ContextManagers.
-    """
+    """Container for keeping a list of ContextManagers."""
 
     def __init__(
         self,
@@ -104,7 +109,7 @@ class ContextContainer(AbstractContextManager):
 
 
 def override_signature(from_key, to_key):
-    """Create a new function with the signature replaced"""
+    """Create a new function with the signature replaced."""
 
     def wrapped(f):
         @wraps(f)
@@ -142,8 +147,8 @@ def change_key(from_key: str, to_key: str) -> Callable:
 
 
 def signature_swap(function_key: str, fixture_key: str) -> Callable:
-    """Perform a sneaky signature swap for a function so that indirect fixtures may be applied to the function
-    with custom names."""
+    """Perform a sneaky signature swap for a function so that indirect fixtures
+    may be applied to the function with custom names."""
 
     def wrapped(f):
         return override_signature(function_key, fixture_key)(
@@ -155,7 +160,7 @@ def signature_swap(function_key: str, fixture_key: str) -> Callable:
 
 @pytest.fixture
 def _context_manager_test_cases(request):
-    """Create new context managers for test cases"""
+    """Create new context managers for test cases."""
     return ContextContainer(*request.param)
 
 
@@ -169,8 +174,7 @@ def pytest_contexts(
     exceptions: Optional[Tuple[Type[Exception], ...]] = None,
     mode: str = choices[0],
 ):
-    """
-    Decorator to provide pytest with test cases.
+    """Decorator to provide pytest with test cases.
 
     Usage:
 

@@ -1,11 +1,12 @@
+from typing import Callable
 from typing import List
+from typing import Optional
+from typing import Union
 
 from torch import nn
 
-from pyrographnets.utils import pairwise
-from typing import Union, Optional
-from typing import Callable
 from pyrographnets.defaults import PyroGraphNetsDefaults as D
+from pyrographnets.utils import pairwise
 
 
 class MLPBlock(nn.Module):

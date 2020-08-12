@@ -1,41 +1,48 @@
-"""
-test_train_networks.py
+"""test_train_networks.py.
 
 Inststructions for creating a new test case.
 
 loader, getter, network
 """
-
-from typing import Callable, Any, Dict, Optional, Type
+import functools
+from collections import OrderedDict
+from contextlib import contextmanager
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
 from typing import Tuple
+from typing import Type
 
+import networkx as nx
+import numpy as np
 import pytest
 import torch
 from torch import optim
-from contextlib import contextmanager
 
-from pyrographnets.blocks import NodeBlock, EdgeBlock, GlobalBlock, Flex, MLP
-from pyrographnets.blocks import (
-    AggregatingNodeBlock,
-    AggregatingEdgeBlock,
-    AggregatingGlobalBlock,
-    Aggregator,
-    MultiAggregator,
-)
-from pyrographnets.models import GraphEncoder, GraphCore
-from pyrographnets.data import GraphData, GraphBatch, GraphDataLoader
+from pyrographnets.blocks import AggregatingEdgeBlock
+from pyrographnets.blocks import AggregatingGlobalBlock
+from pyrographnets.blocks import AggregatingNodeBlock
+from pyrographnets.blocks import Aggregator
+from pyrographnets.blocks import EdgeBlock
+from pyrographnets.blocks import Flex
+from pyrographnets.blocks import GlobalBlock
+from pyrographnets.blocks import MLP
+from pyrographnets.blocks import MultiAggregator
+from pyrographnets.blocks import NodeBlock
+from pyrographnets.data import GraphBatch
+from pyrographnets.data import GraphData
+from pyrographnets.data import GraphDataLoader
+from pyrographnets.models import GraphCore
+from pyrographnets.models import GraphEncoder
 from pyrographnets.utils import deterministic_seed
-import networkx as nx
-from pyrographnets.utils.torch_utils import to_one_hot
-import numpy as np
-import functools
-from collections import OrderedDict
 from pyrographnets.utils import nx_utils
+from pyrographnets.utils.torch_utils import to_one_hot
 
 SEED = 0
 
 
-class NamedNetwork(object):
+class NamedNetwork:
     def __init__(self, name, network_func):
         self.name = name
         self.f = network_func
@@ -44,8 +51,8 @@ class NamedNetwork(object):
         return self.f(*args, **kwargs)
 
 
-class Networks(object):
-    """Networks that will be used in the tests"""
+class Networks:
+    """Networks that will be used in the tests."""
 
     n = NamedNetwork
 
@@ -189,8 +196,8 @@ class Networks(object):
         net.apply(weight_reset)
 
 
-class DataModifier(object):
-    """Methods to modify data before training"""
+class DataModifier:
+    """Methods to modify data before training."""
 
     def __init__(self, datalist):
         self.datalist = datalist
@@ -236,7 +243,7 @@ class DataModifier(object):
         return False
 
 
-class DataLoaders(object):
+class DataLoaders:
     """Data loaders for test."""
 
     @staticmethod
@@ -467,8 +474,8 @@ class DataLoaders(object):
 T = Tuple[Tuple[Tuple[Any, ...], Dict], torch.Tensor]
 
 
-class DataGetter(object):
-    """Methods to collect input, output from the loader"""
+class DataGetter:
+    """Methods to collect input, output from the loader."""
 
     @classmethod
     def get_node(cls, batch: GraphBatch) -> T:
@@ -509,7 +516,7 @@ def does_not_raise():
 
 
 # TODO: model reset is not working
-class NetworkTestCase(object):
+class NetworkTestCase:
     """A network test case."""
 
     def __init__(
@@ -696,7 +703,7 @@ def mse_tuple(criterion, device, a, b):
 def get_id(case):
     print(case.__class__)
     tokens = OrderedDict(
-        {"id": None, "name": None, "loader": None, "expectation": None,}
+        {"id": None, "name": None, "loader": None, "expectation": None}
     )
 
     tokens["name"] = case["network"].name
@@ -793,7 +800,7 @@ cases = [
     ),  # network cannot learn the density without connections between nodes and edges,
     dict(
         network=Networks.graph_core,
-        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True,},
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True},
         loader=DataLoaders.est_density,
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
@@ -801,7 +808,7 @@ cases = [
     ),  # estimate the graph density using GraphCore
     dict(
         network=Networks.graph_core,
-        network_kwargs={"pass_global_to_edge": False, "pass_global_to_node": True,},
+        network_kwargs={"pass_global_to_edge": False, "pass_global_to_node": True},
         loader=DataLoaders.est_density,
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
@@ -809,7 +816,7 @@ cases = [
     ),  # estimate the graph density using GraphCore
     dict(
         network=Networks.graph_core,
-        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": False,},
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": False},
         loader=DataLoaders.est_density,
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
@@ -817,7 +824,7 @@ cases = [
     ),  # estimate the graph density using GraphCore
     dict(
         network=Networks.graph_core,
-        network_kwargs={"pass_global_to_edge": False, "pass_global_to_node": False,},
+        network_kwargs={"pass_global_to_edge": False, "pass_global_to_node": False},
         loader=DataLoaders.est_density,
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
@@ -825,7 +832,7 @@ cases = [
     ),  # estimate the graph density using GraphCore
     dict(
         network=Networks.graph_core,
-        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True,},
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True},
         loader=DataLoaders.in_degree,
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
@@ -841,7 +848,7 @@ cases = [
     ),  # estimate the graph density using GraphCore
     dict(
         network=Networks.graph_core,
-        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True,},
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True},
         loader=DataLoaders.boolean_network,
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
@@ -858,7 +865,7 @@ cases = [
     dict(
         network=Networks.graph_core,
         loader=DataLoaders.sigmoid_circuit,
-        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True,},
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True},
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
         epochs=100,
@@ -867,7 +874,7 @@ cases = [
     dict(
         network=Networks.graph_core_multi_agg,
         loader=DataLoaders.sigmoid_circuit,
-        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True,},
+        network_kwargs={"pass_global_to_edge": True, "pass_global_to_node": True},
         getter=DataGetter.get_batch,
         loss_func=mse_tuple,
         epochs=100,
@@ -911,7 +918,7 @@ def run_test_case(network_case, device):
     return network_case
 
 
-class TestTraining(object):
+class TestTraining:
     @parameterize_by_group(["basic", "block"])
     def test_train_block(self, network_case, device):
         run_test_case(network_case, device)

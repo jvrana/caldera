@@ -1,6 +1,7 @@
-from pyrographnets.utils import scatter_group
 import torch
 from flaky import flaky
+
+from pyrographnets.utils import scatter_group
 
 
 def test_scatter_group_0():

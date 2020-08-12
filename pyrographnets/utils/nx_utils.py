@@ -1,5 +1,7 @@
+from typing import Generator
+from typing import Hashable
+
 import networkx as nx
-from typing import Generator, Hashable
 
 
 def iter_roots(g: nx.DiGraph) -> Generator[Hashable, None, None]:

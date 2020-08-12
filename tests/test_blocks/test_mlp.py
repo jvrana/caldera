@@ -1,6 +1,7 @@
-from pyrographnets.blocks import MLP
-import torch
 import pytest
+import torch
+
+from pyrographnets.blocks import MLP
 
 
 @pytest.mark.parametrize("layers", [(8, 32), (16, 16, 32), (64, 16, 8)])

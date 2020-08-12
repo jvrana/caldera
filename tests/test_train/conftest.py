@@ -1,3 +1,4 @@
-"""test_train/conftest.py
+"""test_train/conftest.py.
 
-Tests blocks and networks are differentiable and trainable"""
+Tests blocks and networks are differentiable and trainable
+"""

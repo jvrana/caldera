@@ -1,11 +1,16 @@
 from __future__ import annotations
+
+from typing import Generator
+from typing import List
+from typing import Optional
+from typing import Type
+
+import networkx as nx
 import torch
 
-from pyrographnets.data.graph_data import GraphData, GraphType
+from pyrographnets.data.graph_data import GraphData
+from pyrographnets.data.graph_data import GraphType
 from pyrographnets.utils import scatter_group
-from typing import List
-import networkx as nx
-from typing import Type, Generator, Optional
 from pyrographnets.utils import stable_arg_sort_long
 
 
@@ -14,7 +19,7 @@ class GraphBatch(GraphData):
 
     # TODO: global_idx
     def __init__(self, node_attr, edge_attr, global_attr, edges, node_idx, edge_idx):
-        super(GraphBatch, self).__init__(node_attr, edge_attr, global_attr, edges)
+        super().__init__(node_attr, edge_attr, global_attr, edges)
         self.node_idx = node_idx
         self.edge_idx = edge_idx
         GraphBatch.debug(self)
@@ -175,16 +180,11 @@ class GraphBatch(GraphData):
         self.debug()
         return self
 
-    def to_tuple(self) -> graph_batch_tuple:
-        return graph_batch_tuple(
-            self.e, self.x, self.g, self.edges, self.node_idx, self.edge_idx
-        )
-
     def append_edges(
         self, edge_attr: torch.Tensor, edges: torch.Tensor, edge_idx: torch.Tensor
     ):
-        """
-        Append edges to the graph batch at the specified edge_idx (assumed to be sorted).
+        """Append edges to the graph batch at the specified edge_idx (assumed
+        to be sorted).
 
         :param edge_attr:
         :param edges:

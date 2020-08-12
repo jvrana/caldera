@@ -1,6 +1,7 @@
-import torch
-from pyrographnets.blocks import Flex
 import pytest
+import torch
+
+from pyrographnets.blocks import Flex
 
 
 def test_flex_block():

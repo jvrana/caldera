@@ -1,14 +1,15 @@
 import itertools
-from pyrographnets.utils.jit import (
-    scatter_group,
-    stable_arg_sort_long,
-    jit_scatter_group,
-    unique_with_counts,
-)
-from pyrographnets.utils.torch_utils import same_storage, deterministic_seed
-from typing import TypeVar
 from typing import Callable
-from typing import List, Dict
+from typing import Dict
+from typing import List
+from typing import TypeVar
+
+from pyrographnets.utils.jit import jit_scatter_group
+from pyrographnets.utils.jit import scatter_group
+from pyrographnets.utils.jit import stable_arg_sort_long
+from pyrographnets.utils.jit import unique_with_counts
+from pyrographnets.utils.torch_utils import deterministic_seed
+from pyrographnets.utils.torch_utils import same_storage
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -23,8 +24,8 @@ def pairwise(iterable):
 
 
 def _first(i):
-    """Select the first element in an iterable"""
-    return next((x for x in itertools.tee(i)[0]))
+    """Select the first element in an iterable."""
+    return next(x for x in itertools.tee(i)[0])
 
 
 def dict_collate(

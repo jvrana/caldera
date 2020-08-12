@@ -1,7 +1,8 @@
-import torch
 import random
-import numpy
 from typing import overload
+
+import numpy
+import torch
 
 
 def same_storage(x: torch.Tensor, y: torch.Tensor) -> bool:
@@ -9,8 +10,8 @@ def same_storage(x: torch.Tensor, y: torch.Tensor) -> bool:
     print(x)
     print(y)
     print(x.shape)
-    x_ptrs = set(e.data_ptr() for e in x.view(-1))
-    y_ptrs = set(e.data_ptr() for e in y.view(-1))
+    x_ptrs = {e.data_ptr() for e in x.view(-1)}
+    y_ptrs = {e.data_ptr() for e in y.view(-1)}
     return (x_ptrs <= y_ptrs) or (y_ptrs <= x_ptrs)
 
 
@@ -24,6 +25,7 @@ def deterministic_seed(seed: int, cudnn_deterministic: bool = False):
         torch.backends.cudnn.benchmark = False
 
 
+@overload
 def to_one_hot(arr: numpy.ndarray, mx: int) -> numpy.ndarray:
     ...
 
