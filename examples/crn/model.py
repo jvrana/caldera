@@ -1,31 +1,34 @@
-from functools import partial
+from typing import List
 
 import torch
+from torch import nn
 
 from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock
-from caldera.blocks import Aggregator
+from caldera.blocks import MultiAggregator
 from caldera.blocks import EdgeBlock
 from caldera.blocks import Flex
 from caldera.blocks import GlobalBlock
 from caldera.blocks import MLP
 from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
-from caldera.models.graph_core import GraphCore
-from caldera.models.graph_encoder import GraphEncoder
+from caldera.models import GraphCore
+from caldera.models import GraphEncoder
+from caldera.utils import pairwise
 
 
-class EncodeCoreDecode(torch.nn.Module):
+class Network(torch.nn.Module):
     def __init__(
         self,
         latent_sizes=(128, 128, 1),
-        output_sizes=(1, 1, 1),
         depths=(1, 1, 1),
-        layer_norm: bool = True,
         dropout: float = None,
         pass_global_to_edge: bool = True,
         pass_global_to_node: bool = True,
+        node_block_aggregator=tuple(['add', 'max', 'mean', 'min']),
+        global_block_to_node_aggregator=tuple(['add', 'max', 'mean', 'min']),
+        global_block_to_edge_aggregator=tuple(['add', 'max', 'mean', 'min']),
     ):
         super().__init__()
         self.config = {
@@ -37,27 +40,16 @@ class EncodeCoreDecode(torch.nn.Module):
                 "core_edge_block_depth": depths[1],
                 "core_global_block_depth": depths[2],
             },
-            "output_size": {
-                "edge": output_sizes[0],
-                "node": output_sizes[1],
-                "global": output_sizes[2],
-            },
-            "node_block_aggregator": "add",
-            "global_block_to_node_aggregator": "add",
-            "global_block_to_edge_aggregator": "add",
+            "node_block_aggregator": node_block_aggregator,
+            "global_block_to_node_aggregator": global_block_to_node_aggregator,
+            "global_block_to_edge_aggregator": global_block_to_edge_aggregator,
             "pass_global_to_edge": pass_global_to_edge,
             "pass_global_to_node": pass_global_to_node,
         }
-
-        def mlp(*layer_sizes):
-            return Flex(MLP)(
-                Flex.d(), *layer_sizes, layer_norm=layer_norm, dropout=dropout
-            )
-
         self.encoder = GraphEncoder(
-            EdgeBlock(mlp(latent_sizes[0])),
-            NodeBlock(mlp(latent_sizes[1])),
-            GlobalBlock(mlp(latent_sizes[2])),
+            EdgeBlock(Flex(MLP)(Flex.d(), latent_sizes[0], dropout=dropout)),
+            NodeBlock(Flex(MLP)(Flex.d(), latent_sizes[1], dropout=dropout)),
+            GlobalBlock(Flex(MLP)(Flex.d(), latent_sizes[2], dropout=dropout)),
         )
 
         edge_layers = [self.config["latent_size"]["edge"]] * self.config["latent_size"][
@@ -71,16 +63,30 @@ class EncodeCoreDecode(torch.nn.Module):
         ]["core_global_block_depth"]
 
         self.core = GraphCore(
-            AggregatingEdgeBlock(mlp(*edge_layers)),
+            AggregatingEdgeBlock(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), *edge_layers, dropout=dropout, layer_norm=True),
+                    # Flex(torch.nn.Linear)(Flex.d(), edge_layers[-1])
+                )
+            ),
             AggregatingNodeBlock(
-                mlp(*node_layers), Aggregator(self.config["node_block_aggregator"])
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), *node_layers, dropout=dropout, layer_norm=True),
+                    # Flex(torch.nn.Linear)(Flex.d(), node_layers[-1])
+                ),
+                Flex(MultiAggregator)(Flex.d(), self.config["node_block_aggregator"]),
             ),
             AggregatingGlobalBlock(
-                mlp(*global_layers),
-                edge_aggregator=Aggregator(
+                torch.nn.Sequential(
+                    Flex(MLP)(Flex.d(), *global_layers, dropout=dropout, layer_norm=True),
+                    # Flex(torch.nn.Linear)(Flex.d(), global_layers[-1])
+                ),
+                edge_aggregator=Flex(MultiAggregator)(
+                    Flex.d(),
                     self.config["global_block_to_edge_aggregator"]
                 ),
-                node_aggregator=Aggregator(
+                node_aggregator=Flex(MultiAggregator)(
+                    Flex.d(),
                     self.config["global_block_to_node_aggregator"]
                 ),
             ),
@@ -89,18 +95,22 @@ class EncodeCoreDecode(torch.nn.Module):
         )
 
         self.decoder = GraphEncoder(
-            EdgeBlock(mlp(latent_sizes[0])),
-            NodeBlock(mlp(latent_sizes[1])),
-            GlobalBlock(mlp(latent_sizes[2])),
+            EdgeBlock(
+                Flex(MLP)(Flex.d(), latent_sizes[0], latent_sizes[0], dropout=dropout)
+            ),
+            NodeBlock(
+                Flex(MLP)(Flex.d(), latent_sizes[1], latent_sizes[1], dropout=dropout)
+            ),
+            GlobalBlock(Flex(MLP)(Flex.d(), latent_sizes[2])),
         )
 
         self.output_transform = GraphEncoder(
-            EdgeBlock(Flex(torch.nn.Linear)(Flex.d(), output_sizes[0])),
-            NodeBlock(Flex(torch.nn.Linear)(Flex.d(), output_sizes[1])),
-            GlobalBlock(Flex(torch.nn.Linear)(Flex.d(), output_sizes[2])),
+            EdgeBlock(Flex(torch.nn.Linear)(Flex.d(), 1)),
+            NodeBlock(Flex(torch.nn.Linear)(Flex.d(), 1)),
+            GlobalBlock(Flex(torch.nn.Linear)(Flex.d(), 1)),
         )
 
-    def forward(self, data, steps, save_all: bool = True):
+    def forward(self, data, steps, save_all: bool = False):
         # encoded
         e, x, g = self.encoder(data)
         data = GraphBatch(x, e, g, data.edges, data.node_idx, data.edge_idx)
@@ -130,10 +140,11 @@ class EncodeCoreDecode(torch.nn.Module):
 
             # transform
             _e, _x, _g = self.output_transform(decoded)
+            print()
             gt = GraphBatch(_x, _e, _g, edges, node_idx, edge_idx)
             if save_all:
                 outputs.append(gt)
             else:
-                outputs[0] = gt
-        return outputs
+                outputs = [gt]
 
+        return outputs

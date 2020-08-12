@@ -449,7 +449,7 @@ class DataLoaders:
 
             for n in nx_utils.iter_roots(g):
                 ndata = g.nodes[n]
-                ndata["target"] = np.array(10.0)
+                ndata["target"] = np.array(3.0)
 
             for n in nx.topological_sort(g):
                 ndata = g.nodes[n]
@@ -696,7 +696,7 @@ def mse_tuple(criterion, device, a, b):
     for i, (_a, _b) in enumerate(zip(a, b)):
         assert _a.shape == _b.shape
         l = criterion(_a, _b)
-        loss += l
+        loss = loss + l
     return loss
 
 

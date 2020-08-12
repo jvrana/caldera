@@ -135,6 +135,12 @@ class GraphData:
         instance of GraphData."""
         return self._apply(func, new_inst=False, args=args, kwargs=kwargs, keys=keys)
 
+    def detach(self):
+        return self.apply(lambda x: x.detach())
+
+    def detach_(self):
+        return self.apply_(lambda x: x.detach())
+
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
 
