@@ -1,6 +1,6 @@
 import torch
 
 
-class CalderaNetsDefaults:
+class CalderaDefaults:
 
     activation = torch.nn.LeakyReLU

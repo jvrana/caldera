@@ -5,7 +5,7 @@ from typing import Union
 
 from torch import nn
 
-from caldera.defaults import CalderaNetsDefaults as D
+from caldera.defaults import CalderaDefaults as D
 from caldera.utils import pairwise
 
 
