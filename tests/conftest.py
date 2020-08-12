@@ -1,8 +1,9 @@
 from os.path import abspath
 from os.path import dirname
 from os.path import join
-import torch
+
 import pytest
+import torch
 
 from pyrographnets.utils.tensorboard import new_writer as new_summary_writer
 

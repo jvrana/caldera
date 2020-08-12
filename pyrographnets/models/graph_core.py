@@ -1,10 +1,10 @@
 import torch
-from pyrographnets.blocks import (
-    AggregatingEdgeBlock,
-    AggregatingNodeBlock,
-    AggregatingGlobalBlock,
-)
-from pyrographnets.data import GraphBatch, GraphTuple
+
+from pyrographnets.blocks import AggregatingEdgeBlock
+from pyrographnets.blocks import AggregatingGlobalBlock
+from pyrographnets.blocks import AggregatingNodeBlock
+from pyrographnets.data import GraphBatch
+from pyrographnets.data import GraphTuple
 from pyrographnets.models.base import GraphNetworkBase
 
 

@@ -1,9 +1,11 @@
-from pyrographnets.data import GraphData, GraphBatch
-import torch
-import pytest
 import networkx as nx
 import numpy as np
+import pytest
+import torch
 from flaky import flaky
+
+from pyrographnets.data import GraphBatch
+from pyrographnets.data import GraphData
 
 random_graph_data = GraphData.random
 
@@ -182,7 +184,7 @@ class TestGraphData:
         Comparator.data_to_nx(data, g, fkey, gkey)
 
     def test_empty_networkx(self):
-        """Empty graphs should be OK"""
+        """Empty graphs should be OK."""
         g = nx.DiGraph()
         GraphData.from_networkx(g)
 
@@ -372,7 +374,7 @@ class TestGraphDataModifiers:
             data.append_edges(e, edges)
 
     def test_differentiable__mask_connectivity(self):
-        """Tests changing the connectivity of the batch"""
+        """Tests changing the connectivity of the batch."""
         data = random_graph_data(5, 4, 3)
         print(data.size)
 

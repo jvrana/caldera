@@ -1,9 +1,16 @@
+from itertools import tee
+from typing import Any
+from typing import Callable
+from typing import Generator
+from typing import Optional
+from typing import Tuple
+from typing import TypeVar
+
 from torch.utils.data import DataLoader
 
-from pyrographnets.data import GraphData, GraphBatch
-from itertools import tee
+from pyrographnets.data import GraphBatch
+from pyrographnets.data import GraphData
 from pyrographnets.utils import _first
-from typing import Callable, Tuple, Optional, Tuple, Any, TypeVar, Generator
 
 
 T = TypeVar("T")
@@ -37,10 +44,10 @@ class GraphDataLoader(DataLoader):
         f: Optional[Callable[[GraphBatch], T]] = None,
         send_to_device_before_apply: bool = True,
     ) -> Generator[T, None, None]:
-        """
-        Create a new generator. Optionall apply some function to each item or send the item to a device.
-        In cases where both are defined, items are first sent to device and then the function is applied,
-        unless argument "send_to_device_before_apply" is set to False
+        """Create a new generator. Optionall apply some function to each item
+        or send the item to a device. In cases where both are defined, items
+        are first sent to device and then the function is applied, unless
+        argument "send_to_device_before_apply" is set to False.
 
         :param device: optional device to send each item to
         :param f: function to apply to each item

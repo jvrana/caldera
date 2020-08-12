@@ -1,5 +1,8 @@
+from typing import Dict
+from typing import List
+from typing import Tuple
+
 import torch
-from typing import Dict, List, Tuple
 
 
 @torch.jit.script
@@ -8,17 +11,17 @@ def stable_arg_sort_long(arr):
 
     Note that Pytorch 1.5.0 does not have a stable sort implementation.
     Here we simply add a delta value between 0 and 1 (exclusive) and
-    assuming we are using integers, call
-    torch.argsort to get a stable sort."""
+    assuming we are using integers, call torch.argsort to get a stable
+    sort.
+    """
     delta = torch.linspace(0, 0.99, arr.shape[0])
     return torch.argsort(arr + delta)
 
 
 @torch.jit.script
 def unique_with_counts(arr: torch.Tensor, grouped: Dict[int, int]):
-    """
-    Equivalent to `np.unqiue(x, return_counts=True)`
-    
+    """Equivalent to `np.unqiue(x, return_counts=True)`
+
     :param arr:
     :param grouped:
     :return:
@@ -43,8 +46,7 @@ def unique_with_counts(arr: torch.Tensor, grouped: Dict[int, int]):
 def jit_scatter_group(
     x: torch.Tensor, idx: torch.Tensor, d: Dict[int, int]
 ) -> Tuple[torch.Tensor, List[torch.Tensor]]:
-    """
-    Assume idx is a sorted index
+    """Assume idx is a sorted index.
 
     :param x:
     :param idx:
@@ -65,9 +67,8 @@ def jit_scatter_group(
 def scatter_group(
     x: torch.Tensor, idx: torch.Tensor
 ) -> Tuple[torch.Tensor, List[torch.Tensor]]:
-    """
-    Group a tensor by indices. This is equivalent to successive applications of `x[torch.where(x == index)]`
-    for all provided sorted indices
+    """Group a tensor by indices. This is equivalent to successive applications
+    of `x[torch.where(x == index)]` for all provided sorted indices.
 
     Example:
 

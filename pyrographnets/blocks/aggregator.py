@@ -1,9 +1,12 @@
 from functools import wraps
+from typing import List
+from typing import Tuple
+from typing import Union
 
+import torch
 import torch_scatter
 from torch import nn
-from typing import Union, Tuple, List
-import torch
+
 from pyrographnets.defaults import PyroGraphNetsDefaults as D
 
 
@@ -80,8 +83,8 @@ class MultiAggregator(AggregatorBase):
         dim_size: int = None,
         activation_function=D.activation,
     ):
-        """
-        A differentiable and trainable way to select the aggregation function.
+        """A differentiable and trainable way to select the aggregation
+        function.
 
         :param input_size:
         :param aggregators:

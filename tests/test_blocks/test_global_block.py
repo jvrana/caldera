@@ -1,5 +1,9 @@
-from pyrographnets.blocks import MLP, GlobalBlock, AggregatingGlobalBlock, Aggregator
 import torch
+
+from pyrographnets.blocks import AggregatingGlobalBlock
+from pyrographnets.blocks import Aggregator
+from pyrographnets.blocks import GlobalBlock
+from pyrographnets.blocks import MLP
 
 
 def test_init_global_block():

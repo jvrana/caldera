@@ -1,16 +1,21 @@
 from __future__ import annotations
-from typing import Dict
 
-import torch
-from pyrographnets.utils import _first
-from typing import Optional
-import numpy as np
-import networkx as nx
-from typing import Callable
-from typing import TypeVar, Type, Tuple, Any, Dict
-from pyrographnets.utils import same_storage
-from typing import Union
 import functools
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import TypeVar
+from typing import Union
+
+import networkx as nx
+import numpy as np
+import torch
+
+from pyrographnets.utils import _first
+from pyrographnets.utils import same_storage
 
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
@@ -19,8 +24,8 @@ GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiG
 # TODO: support n dim tensors
 # TODO: implicit support for torch.Tensor
 # TODO: handle empty features and targets
-class GraphData(object):
-    """Data representing a single graph"""
+class GraphData:
+    """Data representing a single graph."""
 
     __slots__ = ["x", "e", "g", "edges"]
     _differentiable = ["x", "e", "g"]
@@ -89,8 +94,8 @@ class GraphData(object):
         kwargs: Dict = None,
         keys: Optional[Tuple[str]] = None,
     ) -> "GraphData":
-        """
-        Applies the function to the graph. Be mindful of what the function is doing.
+        """Applies the function to the graph. Be mindful of what the function
+        is doing.
 
         Ask the following before using this function:
 
@@ -121,12 +126,14 @@ class GraphData(object):
 
     # TODO: finish clone, copy, apply, etc.
     def apply(self, func, *args, keys: Optional[Tuple[str]] = None, **kwargs):
-        """Applies the function to the data, creating a new instance of GraphData"""
-        return self._apply(func, new_inst=True, args=args, kwargs=kwargs, keys=keys,)
+        """Applies the function to the data, creating a new instance of
+        GraphData."""
+        return self._apply(func, new_inst=True, args=args, kwargs=kwargs, keys=keys)
 
     def apply_(self, func, *args, keys: Optional[Tuple[str]] = None, **kwargs):
-        """Applies the function in place to the data, wihout creating a new instance of GraphData"""
-        return self._apply(func, new_inst=False, args=args, kwargs=kwargs, keys=keys,)
+        """Applies the function in place to the data, wihout creating a new
+        instance of GraphData."""
+        return self._apply(func, new_inst=False, args=args, kwargs=kwargs, keys=keys)
 
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
@@ -134,8 +141,7 @@ class GraphData(object):
     def share_storage(
         self, other: GraphData, return_dict: Optional[bool] = False
     ) -> Union[Dict[str, bool], bool]:
-        """
-        Check if this data shares storage with another data.
+        """Check if this data shares storage with another data.
 
         :param other: The other GraphData object.
         :param return_dict: if true, return dictionary of which tensors share the same storage. Else returns true if
@@ -216,17 +222,20 @@ class GraphData(object):
 
     # TODO: clone tests
     def clone(self):
-        """Clones the data. Note that like the `clone()` method, this function will
-        be recorded in the computation graph."""
+        """Clones the data.
+
+        Note that like the `clone()` method, this function will be
+        recorded in the computation graph.
+        """
         return self.apply(lambda x: x.clone())
 
     # TODO: copy tests
     def copy(self, non_blocking: bool = False, *emtpy_like_args, **emtpy_like_kwargs):
 
-        """
-        non_blocking (bool) – if True and this copy is between CPU and GPU,
-            the copy may occur asynchronously with respect to the host.
-            For other cases, this argument has no effect.
+        """non_blocking (bool) – if True and this copy is between CPU and GPU,
+        the copy may occur asynchronously with respect to the host. For other
+        cases, this argument has no effect.
+
         :return:
         """
         """Unlike clone, copies the data *without the computation graph*"""

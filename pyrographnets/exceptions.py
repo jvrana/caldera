@@ -1,2 +1,2 @@
 class PyroGraphNetsException(Exception):
-    """Generic exception"""
+    """Generic exception."""
