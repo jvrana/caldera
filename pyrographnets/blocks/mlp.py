@@ -4,6 +4,7 @@ from torch import nn
 
 from pyrographnets.utils import pairwise
 from typing import Union, Optional
+from typing import Callable
 
 
 class MLPBlock(nn.Module):
@@ -13,14 +14,15 @@ class MLPBlock(nn.Module):
         self,
         input_size: int,
         output_size: int = None,
-        layer_normalization: bool = True,
+        layer_norm: bool = True,
         dropout: float = None,
+        activation: Callable = nn.ReLU
     ):
         super().__init__()
         if output_size is None:
             output_size = input_size
-        layers = [nn.Linear(input_size, output_size), nn.ReLU()]
-        if layer_normalization:
+        layers = [nn.Linear(input_size, output_size), activation()]
+        if layer_norm:
             layers.append(nn.LayerNorm(output_size))
         if dropout:
             layers.append(nn.Dropout(dropout))
@@ -34,12 +36,13 @@ class MLP(nn.Module):
     """A multilayer perceptron."""
 
     def __init__(
-        self, *latent_sizes: List[int], layer_norm: bool = True, dropout: float = None
+        self, *latent_sizes: List[int], layer_norm: bool = True, dropout: float = None,
+            activation: Callable = nn.ReLU
     ):
         super().__init__()
         self.layers = nn.Sequential(
             *[
-                MLPBlock(n1, n2, layer_norm, dropout)
+                MLPBlock(n1, n2, layer_norm=layer_norm, dropout=dropout, activation=activation)
                 for n1, n2 in pairwise(latent_sizes)
             ]
         )

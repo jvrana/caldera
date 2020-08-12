@@ -70,7 +70,11 @@ class Aggregator(AggregatorBase):
 
 class MultiAggregator(AggregatorBase):
 
-    def __init__(self, input_size: int, aggregators: Union[Tuple[str, ...], List[str]], dim: int = None, dim_size: int = None):
+    def __init__(self, input_size: int,
+                 aggregators: Union[Tuple[str, ...], List[str]],
+                 dim: int = None,
+                 dim_size: int = None,
+                 activation_function=torch.nn.LeakyReLU):
         """
         A differentiable and trainable way to select the aggregation function.
 
@@ -89,7 +93,7 @@ class MultiAggregator(AggregatorBase):
                 )
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(input_size, len(aggregators)),
-            torch.nn.ReLU()
+            activation_function()
         )
         self.aggregators = torch.nn.ModuleDict({
             agg: Aggregator(agg) for agg in aggregators

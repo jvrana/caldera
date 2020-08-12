@@ -139,27 +139,29 @@ class Networks(object):
     graph_core = n("graph_core", create_graph_core)
 
     def create_graph_core_multi_agg(pass_global_to_edge: bool, pass_global_to_node: bool):
+        agg = lambda: Flex(MultiAggregator)(Flex.d(), ['add', 'mean', 'max', 'min'])
+
         return GraphCore(
             AggregatingEdgeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
             AggregatingNodeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 ),
-                edge_aggregator=Flex(MultiAggregator)(Flex.d(), ["add", "min", "max", "mean"]),
+                edge_aggregator=agg(),
             ),
             AggregatingGlobalBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(MLP)(Flex.d(), 5, 5,  layer_norm=True, activation=torch.nn.LeakyReLU),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 ),
-                edge_aggregator=Flex(MultiAggregator)(Flex.d(), ["add", "min", "max", "mean"]),
-                node_aggregator=Flex(MultiAggregator)(Flex.d(), ["add", "min", "max", "mean"]),
+                edge_aggregator=agg(),
+                node_aggregator=agg(),
             ),
             pass_global_to_edge=pass_global_to_edge,
             pass_global_to_node=pass_global_to_node,
