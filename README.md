@@ -2,7 +2,7 @@
 
 **SOFTWARE IS IN ALPHA, README IS PENDING**
 
-**Caldera** is a Pytorch extension for learning on graphical data. Originally designed for learning transcription factor networks, it learns underlying causal relationships in data.
+**Caldera** is a Pytorch extension for learning on graphical data. It learns underlying causal relationships in data.
 
 **Inspirations**
 
