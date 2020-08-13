@@ -1,8 +1,26 @@
 # Caldera 🌋
 
-Pytorch extension for learning on graphical data.
+**SOFTWARE IS IN ALPHA, README IS PENDING**
 
-## Installation
+**Caldera** is a Pytorch extension for learning on graphical data. It learns underlying causal relationships in data.
+
+**Inspirations**
+
+* Pytorch Geometric [ADD REF]
+* GraphNets [ADD REF]
+* Pyro Probabilistic Programming Language
+* Pearl, J. (2009). Causality: Models, Reasoning and Inference.
+* Pearl, J. (2018). Theoretical impediments to machine learning with seven sparks from the causal revolution.
+
+## Gallery
+
+1. TODO: chemical reaction network oscillator design
+2. TODO: linkage prediction on CORA dataset
+3. TODO: 
+
+## Usage
+
+### Installation
 
 You'll required `conda` installed. Load the conda environment by running:
 
@@ -24,9 +42,9 @@ make lock
 
 ### installing `torch_scatter`
 
-## Tour
+### Tour
 
-### GraphData, GraphBatch, GraphDataLoader
+#### GraphData, GraphBatch, GraphDataLoader
 
 The `GraphData` an object borrowed heavily from deepminds/graph_nets and 
 Pytorch Geometric that represents MultiGraphs and MultiDiGraphs. 
