@@ -11,7 +11,15 @@
 * Pyro
 * Judea Pearl [ADD REF]
 
-## Installation
+## Gallery
+
+1. TODO: chemical reaction network oscillator design
+2. TODO: linkage prediction on CORA dataset
+3. TODO: 
+
+## Usage
+
+### Installation
 
 You'll required `conda` installed. Load the conda environment by running:
 
@@ -33,9 +41,9 @@ make lock
 
 ### installing `torch_scatter`
 
-## Tour
+### Tour
 
-### GraphData, GraphBatch, GraphDataLoader
+#### GraphData, GraphBatch, GraphDataLoader
 
 The `GraphData` an object borrowed heavily from deepminds/graph_nets and 
 Pytorch Geometric that represents MultiGraphs and MultiDiGraphs. 
