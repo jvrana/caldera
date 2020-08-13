@@ -8,8 +8,9 @@
 
 * Pytorch Geometric [ADD REF]
 * GraphNets [ADD REF]
-* Pyro
-* Judea Pearl [ADD REF]
+* Pyro Probabilistic Programming Language
+* Pearl, J. (2009). Causality: Models, Reasoning and Inference.
+* Pearl, J. (2018). Theoretical impediments to machine learning with seven sparks from the causal revolution.
 
 ## Gallery
 
