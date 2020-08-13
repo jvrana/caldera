@@ -1,6 +1,6 @@
 # Caldera 🌋
 
-Pytorch extension for learning on graphical data.
+**Caldera** is a Pytorch extension for learning on graphical data. It was designed to learn underlying causal data generation process.
 
 ## Installation
 
