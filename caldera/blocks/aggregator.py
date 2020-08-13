@@ -81,7 +81,7 @@ class MultiAggregator(AggregatorBase):
         aggregators: Union[Tuple[str, ...], List[str]],
         dim: int = None,
         dim_size: int = None,
-        activation_function=D.activation,
+        activation=D.activation,
     ):
         """A differentiable and trainable way to select the aggregation
         function.
@@ -100,7 +100,7 @@ class MultiAggregator(AggregatorBase):
                     )
                 )
         self.layers = torch.nn.Sequential(
-            torch.nn.Linear(input_size, len(aggregators)), activation_function()
+            torch.nn.Linear(input_size, len(aggregators)), activation()
         )
         self.aggregators = torch.nn.ModuleDict(
             {agg: Aggregator(agg) for agg in aggregators}

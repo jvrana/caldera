@@ -2,6 +2,12 @@
 
 Pytorch extension for learning on graphical data.
 
+## Features
+
+* Pytorch Integration
+* Pyro Integration [Coming soon]
+* Deep Casual Inference [Coming soon]
+
 ## Installation
 
 You'll required `conda` installed. Load the conda environment by running:

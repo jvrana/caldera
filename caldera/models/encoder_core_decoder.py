@@ -136,4 +136,3 @@ class EncodeCoreDecode(torch.nn.Module):
             else:
                 outputs[0] = gt
         return outputs
-

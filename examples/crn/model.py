@@ -16,6 +16,7 @@ from caldera.data import GraphBatch
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
 from caldera.utils import pairwise
+from caldera.defaults import CalderaDefaults as defaults
 
 
 class Network(torch.nn.Module):
@@ -26,9 +27,10 @@ class Network(torch.nn.Module):
         dropout: float = None,
         pass_global_to_edge: bool = True,
         pass_global_to_node: bool = True,
-        node_block_aggregator=tuple(['add', 'max', 'mean', 'min']),
-        global_block_to_node_aggregator=tuple(['add', 'max', 'mean', 'min']),
-        global_block_to_edge_aggregator=tuple(['add', 'max', 'mean', 'min']),
+        edge_to_node_aggregators=tuple(["add", "max", "mean", "min"]),
+        edge_to_global_aggregators=tuple(["add", "max", "mean", "min"]),
+        node_to_global_aggregators=tuple(["add", "max", "mean", "min"]),
+        aggregator_activation=defaults.activation,
     ):
         super().__init__()
         self.config = {
@@ -40,9 +42,10 @@ class Network(torch.nn.Module):
                 "core_edge_block_depth": depths[1],
                 "core_global_block_depth": depths[2],
             },
-            "node_block_aggregator": node_block_aggregator,
-            "global_block_to_node_aggregator": global_block_to_node_aggregator,
-            "global_block_to_edge_aggregator": global_block_to_edge_aggregator,
+            "node_block_aggregator": edge_to_node_aggregators,
+            "global_block_to_node_aggregator": node_to_global_aggregators,
+            "global_block_to_edge_aggregator": edge_to_global_aggregators,
+            "aggregator_activation": aggregator_activation,
             "pass_global_to_edge": pass_global_to_edge,
             "pass_global_to_node": pass_global_to_node,
         }
@@ -74,20 +77,28 @@ class Network(torch.nn.Module):
                     Flex(MLP)(Flex.d(), *node_layers, dropout=dropout, layer_norm=True),
                     # Flex(torch.nn.Linear)(Flex.d(), node_layers[-1])
                 ),
-                Flex(MultiAggregator)(Flex.d(), self.config["node_block_aggregator"]),
+                Flex(MultiAggregator)(
+                    Flex.d(),
+                    self.config["node_block_aggregator"],
+                    activation=self.config["aggregator_activation"],
+                ),
             ),
             AggregatingGlobalBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), *global_layers, dropout=dropout, layer_norm=True),
+                    Flex(MLP)(
+                        Flex.d(), *global_layers, dropout=dropout, layer_norm=True
+                    ),
                     # Flex(torch.nn.Linear)(Flex.d(), global_layers[-1])
                 ),
                 edge_aggregator=Flex(MultiAggregator)(
                     Flex.d(),
-                    self.config["global_block_to_edge_aggregator"]
+                    self.config["global_block_to_edge_aggregator"],
+                    activation=self.config["aggregator_activation"],
                 ),
                 node_aggregator=Flex(MultiAggregator)(
                     Flex.d(),
-                    self.config["global_block_to_node_aggregator"]
+                    self.config["global_block_to_node_aggregator"],
+                    activation=self.config["aggregator_activation"],
                 ),
             ),
             pass_global_to_edge=self.config["pass_global_to_edge"],

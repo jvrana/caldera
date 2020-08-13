@@ -9,7 +9,7 @@ SCRIPT_DIR = os.path.dirname(
     os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__)))
 )
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-print(sys.path)
+
 import wandb
 import torch
 from caldera.data import GraphBatch
@@ -25,6 +25,29 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import random
+
+import argparse
+
+defaults = dict(
+    latent_size_0=512,
+    latent_size_1=512,
+    latent_size_2=512,
+    latent_depth_0=5,
+    latent_depth_1=5,
+    latent_depth_2=5,
+    processing_steps=5,
+    pass_global_to_node=True,
+    pass_global_to_edge=True,
+    lr_to_batch_size=5e-4 / 3e3,
+    batch_size=3000,
+    weight_decay=1e-3,
+    epochs=1000,
+    train_size=10000,
+    dev_size=2000,
+    log_every_epoch=10,
+    dropout=0.2,
+)
+
 
 def create_data(
     train_size: int,
@@ -64,6 +87,7 @@ def plot(target_data, out):
     ax.set_xlim(-5, 20)
     return ax, fig
 
+
 def seed(s):
     random.seed(s)
     np.random.seed(s)
@@ -79,25 +103,7 @@ def train(**kwargs):
 
     # Set up your default hyperparameters before wandb.init
     # so they get properly set in the sweep
-    hyperparameter_defaults = dict(
-        latent_size_0=512,
-        latent_size_1=512,
-        latent_size_2=512,
-        latent_depth_0=5,
-        latent_depth_1=5,
-        latent_depth_2=5,
-        processing_steps=5,
-        pass_global_to_node=True,
-        pass_global_to_edge=True,
-        lr_to_batch_size=5e-4 / 3e3,
-        batch_size=3000,
-        weight_decay=1e-3,
-        epochs=1000,
-        train_size=10000,
-        dev_size=2000,
-        log_every_epoch=10,
-        dropout=0.2,
-    )
+    hyperparameter_defaults = dict(defaults)
 
     # Pass your defaults to wandb.init
 
@@ -106,26 +112,58 @@ def train(**kwargs):
     config = wandb.config
 
     # update config
-    wandb.config.update({'learning_rate': config['batch_size'] * config['lr_to_batch_size']})
+    wandb.config.update(
+        {"learning_rate": config["batch_size"] * config["lr_to_batch_size"]}
+    )
 
     # Your model here ...
     device = "cuda:0"
-    net = Network(
-        (config["latent_size_0"], config["latent_size_1"], config["latent_size_2"]),
-        (config["latent_depth_0"], config["latent_depth_1"], config["latent_depth_2"]),
+
+    class Null:
+        pass
+
+    net_config = dict(
+        latent_sizes=(
+            config["latent_size_0"],
+            config["latent_size_1"],
+            config["latent_size_2"],
+        ),
+        depths=(
+            config["latent_depth_0"],
+            config["latent_depth_1"],
+            config["latent_depth_2"],
+        ),
         pass_global_to_edge=config["pass_global_to_edge"],
         pass_global_to_node=config["pass_global_to_node"],
         dropout=config["dropout"],
+        edge_to_node_aggregators=config.get("aggregators", Null),
+        edge_to_global_aggregators=config.get("aggregators", Null),
+        node_to_global_aggregators=config.get("aggregators", Null),
+        aggregator_activation=config.get("aggregator_activation", Null),
     )
+    net_config = {k: v for k, v in net_config.items() if v is not Null}
+
+    net_config["aggregator_activation"] = {
+        "leakyrelu": torch.nn.LeakyReLU,
+        "tanh": torch.nn.Tanh,
+        "sigmoid": torch.nn.Sigmoid,
+    }.get(net_config["aggregator_activation"])
+
+    net = Network(**net_config)
 
     # create your data
     data, gen = create_data(
         config["train_size"], config["dev_size"], 20, (2, 6), (8, 20)
     )
+
     seed(0)
-    train_loader = create_loader(gen, data["train"], config["batch_size"], shuffle=True, pin_memory=True)
+    train_loader = create_loader(
+        gen, data["train"], config["batch_size"], shuffle=True, pin_memory=True
+    )
     seed(1)
-    eval_loader = create_loader(gen, data["train/dev"], None, shuffle=False, pin_memory=True)
+    eval_loader = create_loader(
+        gen, data["train/dev"], None, shuffle=False, pin_memory=True
+    )
 
     wandb.config.update(
         {
@@ -150,7 +188,7 @@ def train(**kwargs):
     for epoch in tqdm(range(config["epochs"]), desc="epochs"):
         net.train()
 
-        running_loss = torch.tensor(0., device=device)
+        running_loss = torch.tensor(0.0, device=device)
         for batch_idx, (train_data, target_data) in enumerate(train_loader):
 
             optimizer.zero_grad()
@@ -165,7 +203,9 @@ def train(**kwargs):
             assert out[-1].x.shape == target_data.x.shape
 
             # TODO: the scale of the loss is proporational to the processing steps and batch_size, should this be normalized???
-            loss = torch.tensor(0.0).to(device=device, non_blocking=True, dtype=torch.float32)
+            loss = torch.tensor(0.0).to(
+                device=device, non_blocking=True, dtype=torch.float32
+            )
             for _out in out:
                 loss += loss_fn(_out.x, target_data.x)
             loss = loss / (target_data.x.shape[0] * 1.0 * len(out))
@@ -190,11 +230,11 @@ def train(**kwargs):
                 eval_target = to(eval_target, device, non_blocking=True)
                 eval_outs = net(eval_data, config["processing_steps"], save_all=False)
                 eval_outs[-1].detach_()
-                eval_loss = loss_fn(eval_outs[-1].x, eval_target.x) / eval_outs[-1].x.shape[0]
-
-                wandb.log(
-                    {"eval_loss": eval_loss}, step=epoch
+                eval_loss = (
+                    loss_fn(eval_outs[-1].x, eval_target.x) / eval_outs[-1].x.shape[0]
                 )
+
+                wandb.log({"eval_loss": eval_loss}, step=epoch)
 
                 wandb.log(
                     {
@@ -207,7 +247,6 @@ def train(**kwargs):
                 # # plot values
                 # ax, fig = plot(eval_target, eval_outs[-1])
                 # wandb.log({"chart": fig}, step=epoch)
-
 
 
 if __name__ == "__main__":

@@ -253,5 +253,8 @@ def create_loader(generator, graphs, batch_size, shuffle, pin_memory=False):
     if batch_size is None:
         batch_size = len(train_list)
     return GraphDataLoader(
-        list(zip(train_list, target_list)), batch_size=batch_size, shuffle=shuffle, pin_memory=pin_memory
+        list(zip(train_list, target_list)),
+        batch_size=batch_size,
+        shuffle=shuffle,
+        pin_memory=pin_memory,
     )
