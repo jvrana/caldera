@@ -8,7 +8,7 @@ from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.utils import _first
 from caldera.utils import scatter_group
-
+from typing import Union, List, Tuple, Callable, Set
 
 def to_graph_data(
     g: nx.DiGraph,
@@ -88,3 +88,62 @@ def graph_data_to_nx(data: GraphData):
         g.add_edge(e[0], e[1], **{"features": data.e[i]})
     g.data = {"features": data.g}
     return g
+
+
+def _create_all_edges(start: int, n_nodes: int) -> torch.LongTensor:
+    """
+    Create all edges starting from node index 'start' for 'n_nodes' additional nodes.
+
+    E.g. _all_edges(5, 4) would create all edges of nodes 5, 6, 7, 8 with shape (2, 4)
+    """
+    a = torch.arange(start, start + n_nodes, dtype=torch.long)
+    b = a.repeat_interleave(torch.ones(n_nodes, dtype=torch.long) * n_nodes)
+    c = torch.arange(start, start + n_nodes, dtype=torch.long).repeat(n_nodes)
+    return torch.stack([b, c], axis=0)
+
+
+def _edges_to_tuples_set(edges: torch.LongTensor) -> Set[Tuple[int, int]]:
+    edge_tuples = set()
+    for e in edges.T:
+        edge_tuples.add((e[0].item(), e[1].item()))
+    return edge_tuples
+
+
+def _validate_edges(edges: torch.LongTensor):
+    assert edges.ndim == 2
+    assert edges.shape[0] == 2
+
+
+def _tuples_set_to_tensor(tuples: List[Tuple[int, int]]):
+    return torch.tensor(list(zip(*list(tuples))), dtype=torch.long)
+
+
+def _apply_to_edge_sets(
+        edges1: torch.LongTensor,
+        edges2: torch.LongTensor,
+        func: Callable[[Set[Tuple[int, int]], Set[Tuple[int, int]]], torch.LongTensor]) -> torch.LongTensor:
+    s1 = _edges_to_tuples_set(edges1)
+    s2 = _edges_to_tuples_set(edges2)
+    s3 = func(s1, s2)
+    return _tuples_set_to_tensor(s3)
+
+
+def edges_difference(e1: torch.LongTensor, e2: torch.LongTensor) -> torch.LongTensor:
+    def difference(e1, e2):
+        return e1.difference(e2)
+    return _apply_to_edge_sets(e1, e2, difference)
+
+
+def edges_intersection(e1: torch.LongTensor, e2: torch.LongTensor) -> torch.LongTensor:
+    def intersection(e1, e2):
+        return e1.intersection(e2)
+    return _apply_to_edge_sets(e1, e2, intersection)
+
+
+def _edge_difference(edges1, edges2):
+    s1 = _edges_to_tuples_set(edges1)
+    s2 = _edges_to_tuples_set(edges2)
+    s3 = s1.difference(s2)
+
+    return s1.difference(s2)
+

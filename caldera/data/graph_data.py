@@ -32,10 +32,10 @@ class GraphData:
 
     def __init__(
         self,
-        node_attr,
-        edge_attr,
-        global_attr,
-        edges,
+        node_attr: torch.FloatTensor,
+        edge_attr: torch.FloatTensor,
+        global_attr: torch.FloatTensor,
+        edges: torch.LongTensor,
         requires_grad: Optional[bool] = None,
     ):
         self.x = node_attr

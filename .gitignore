@@ -682,3 +682,4 @@ tests/pytest_runs/**/*
 experiments/wandb/**/*
 experiments/runs/**/*
 experiments/crn/wandb/**/*
+tmp

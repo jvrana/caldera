@@ -18,7 +18,12 @@ class GraphBatch(GraphData):
     __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
 
     # TODO: global_idx
-    def __init__(self, node_attr, edge_attr, global_attr, edges, node_idx, edge_idx):
+    def __init__(self, node_attr: torch.FloatTensor,
+                 edge_attr: torch.FloatTensor,
+                 global_attr: torch.FloatTensor,
+                 edges: torch.LongTensor,
+                 node_idx: torch.LongTensor,
+                 edge_idx: torch.LongTensor):
         super().__init__(node_attr, edge_attr, global_attr, edges)
         self.node_idx = node_idx
         self.edge_idx = edge_idx
@@ -43,9 +48,9 @@ class GraphBatch(GraphData):
                 )
             )
         if (
-            self.node_idx.shape[0]
-            and self.edge_idx.shape[0]
-            and self.node_idx.max() != self.edge_idx.max()
+                self.node_idx.shape[0]
+                and self.edge_idx.shape[0]
+                and self.node_idx.max() != self.edge_idx.max()
         ):
             raise RuntimeError(
                 "Number of graphs in node_idx {} and edge_idx {} mismatch".format(
@@ -147,10 +152,10 @@ class GraphBatch(GraphData):
         raise NotImplementedError
 
     def to_networkx_list(
-        self,
-        feature_key: str = "features",
-        global_attr_key: str = "data",
-        graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
+            self,
+            feature_key: str = "features",
+            global_attr_key: str = "data",
+            graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
     ) -> List[GraphType]:
         graphs = []
         for data in self.to_data_list():
@@ -181,7 +186,7 @@ class GraphBatch(GraphData):
         return self
 
     def append_edges(
-        self, edge_attr: torch.Tensor, edges: torch.Tensor, edge_idx: torch.Tensor
+            self, edge_attr: torch.Tensor, edges: torch.Tensor, edge_idx: torch.Tensor
     ):
         """Append edges to the graph batch at the specified edge_idx (assumed
         to be sorted).
@@ -305,12 +310,12 @@ class GraphBatch(GraphData):
 
     @classmethod
     def random_batch(
-        cls,
-        size: int,
-        n_feat: int,
-        e_feat: int,
-        g_feat: int,
-        requires_grad: Optional[bool] = None,
+            cls,
+            size: int,
+            n_feat: int,
+            e_feat: int,
+            g_feat: int,
+            requires_grad: Optional[bool] = None,
     ) -> GraphBatch:
         datalist = []
         for _ in range(size):
@@ -324,11 +329,11 @@ class GraphBatch(GraphData):
         raise NotImplementedError("Cannot compare batches")
 
     def view(
-        self,
-        x_slice: Optional[slice] = None,
-        e_slice: Optional[slice] = None,
-        g_slice: Optional[slice] = None,
-        edges_slice: Optional[slice] = None,
+            self,
+            x_slice: Optional[slice] = None,
+            e_slice: Optional[slice] = None,
+            g_slice: Optional[slice] = None,
+            edges_slice: Optional[slice] = None,
     ) -> GraphData:
         if x_slice is None:
             x_slice = slice(None, None, None)
