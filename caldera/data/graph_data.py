@@ -171,6 +171,10 @@ class GraphData:
         return self.x.shape[0]
 
     @property
+    def num_edges(self):
+        return self.edges.shape[1]
+
+    @property
     def node_shape(self):
         return self.x.shape[1:]
 
@@ -190,23 +194,37 @@ class GraphData:
     def size(self):
         return self.x.shape[:1] + self.e.shape[:1] + self.g.shape[:1]
 
-    def _mask_fields(self, masks: Dict[str, torch.tensor]):
-        for m in masks:
-            if m not in self.__slots__:
-                raise RuntimeError("{} is not a valid field".format(m))
-        masked_fields = []
-        for field in self.__slots__:
-            if field not in masks or masks[field] is None:
-                masked_fields.append(getattr(self, field))
-            else:
-                masked_fields.append(getattr(self, field)[:, masks[field]])
-        return masked_fields
+    # def _mask_fields(self, masks: Dict[str, torch.tensor]):
+    #     for m in masks:
+    #         if m not in self.__slots__:
+    #             raise RuntimeError("{} is not a valid field".format(m))
+    #     masked_fields = []
+    #     for field in self.__slots__:
+    #         if field not in masks or masks[field] is None:
+    #             masked_fields.append(getattr(self, field))
+    #         else:
+    #             masked_fields.append(getattr(self, field)[:, masks[field]])
+    #     return masked_fields
+    #
+    # def mask(self, node_mask, edge_mask, global_mask, invert: bool = False):
+    #     d = {"x": node_mask, "e": edge_mask, "g": global_mask}
+    #     if invert:
+    #         d = {k: ~v for k, v in d.items()}
+    #     return self.__class__(*self._mask_fields(d))
 
-    def mask(self, node_mask, edge_mask, global_mask, invert: bool = False):
-        d = {"x": node_mask, "e": edge_mask, "g": global_mask}
-        if invert:
-            d = {k: ~v for k, v in d.items()}
-        return self.__class__(*self._mask_fields(d))
+    def apply_edge_mask(self, mask: torch.BoolTensor):
+        return self.__class__(
+            self.x,
+            self.e[mask],
+            self.g,
+            self.edges[:, mask]
+        )
+
+    # TODO: apply node mask, view edges
+    # TODO: which methods are views and which are copies?
+    # TODO: about copies
+    def apply_node_mask(self, mask: torch.BoolTensor):
+        pass
 
     @property
     def requires_grad(self):
@@ -428,7 +446,6 @@ class GraphData:
         x_slice: Optional[slice] = None,
         e_slice: Optional[slice] = None,
         g_slice: Optional[slice] = None,
-        edges_slice: Optional[slice] = None,
     ) -> GraphData:
         if x_slice is None:
             x_slice = slice(None, None, None)
@@ -436,11 +453,9 @@ class GraphData:
             e_slice = slice(None, None, None)
         if g_slice is None:
             g_slice = slice(None, None, None)
-        if edges_slice is None:
-            edges_slice = slice(None, None, None)
         return self.__class__(
             self.x[:, x_slice],
             self.e[:, e_slice],
             self.g[:, g_slice],
-            self.edges[:, edges_slice],
+            self.edges
         )

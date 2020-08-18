@@ -10,6 +10,7 @@ from caldera.utils.jit import stable_arg_sort_long
 from caldera.utils.jit import unique_with_counts
 from caldera.utils.torch_utils import deterministic_seed
 from caldera.utils.torch_utils import same_storage
+from caldera.utils.jit import long_isin
 
 T = TypeVar("T")
 K = TypeVar("K")

@@ -6,8 +6,8 @@ Make graph fully connected
 
 from .base import TransformBase
 from caldera.data import GraphData, GraphBatch
-from typing import overload
 import torch
+from typing import overload
 from caldera.data.utils import edges_difference, _create_all_edges
 
 
@@ -33,7 +33,11 @@ class FullyConnected(TransformBase):
     #         edges=edges
     #     )
 
-        #             graph_edges_list.append(missing_edges)
+    @overload
+    def __call__(self, data: GraphData) -> GraphData:
+        ...
+
+
     def __call__(self, data: GraphBatch) -> GraphBatch:
 
         data_cls = data.__class__
