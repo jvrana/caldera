@@ -7,3 +7,4 @@ Methods for transforming GraphData and GraphBatch
 # random_edge_mask
 
 from .fully_connected import FullyConnected
+from .undirected import Undirected
