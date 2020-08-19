@@ -10,6 +10,7 @@ from caldera.utils import _first
 from caldera.utils import scatter_group
 from typing import Union, List, Tuple, Callable, Set
 from typing import overload
+from caldera.utils import long_isin
 
 
 def to_graph_data(
@@ -242,3 +243,34 @@ def add_missing_edges(
             global_attr=data.g.detach().clone(),
             edges=edges[:, idx],
         )
+
+@overload
+def neighbors(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
+    ...
+
+def neighbors(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor) -> torch.LongTensor:
+    """
+    Return the neighbors of the provided nodes.
+
+    :param data:
+    :param nodes:
+    :return:
+    """
+    if isinstance(nodes, int):
+        nodes = torch.LongTensor([nodes])
+    elif nodes.ndim == 0:
+        nodes = nodes.expand(1)
+    reachable = long_isin(data.edges[0], nodes)
+    dest = data.edges[1][reachable]
+    if nodes.dtype == torch.bool:
+        dest = long_isin(torch.arange(data.num_nodes), dest)
+    return dest
+
+@overload
+def hop(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
+    ...
+
+def hop(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int) -> torch.LongTensor:
+    for _k in range(k):
+        nodes = neighbors(data, nodes)
+    return nodes

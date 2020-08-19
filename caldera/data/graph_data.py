@@ -58,10 +58,15 @@ class GraphData:
                     self.edges.max(), self.x.shape[0]
                 )
             )
-        if not self.edges.shape[1] == self.e.shape[0]:
+
+        if self.edges.shape[0]:
+            n_edges = self.edges.shape[1]
+        else:
+            n_edges = 0
+        if not n_edges == self.e.shape[0]:
             raise RuntimeError(
                 "Number of edges {} must match number of edge attributes {}".format(
-                    self.edges.shape[1], self.e.shape[0]
+                    n_edges, self.e.shape[0]
                 )
             )
 
@@ -289,7 +294,9 @@ class GraphData:
                 self.__init__(*args, **kwargs)
                 return self
 
-        return constructor(x, e, g, edges)
+        masked_data = constructor(x, e, g, edges)
+        masked_data.debug()
+        return masked_data
 
     def apply_edge_mask_(self, mask: torch.BoolTensor) -> GraphData:
         return self._mask_dispatch(
@@ -529,19 +536,25 @@ class GraphData:
         e_feat: int,
         g_feat: int,
         requires_grad: Optional[bool] = None,
-        min_nodes: int = 0,
+        min_nodes: int = 1,
         max_nodes: int = 10,
         min_edges: int = 1,
         max_edges: int = 20,
     ) -> GraphData:
 
-        n_nodes = torch.randint(min_nodes, max_nodes + 1, torch.Size([])).item()
-        n_edges = torch.randint(0, n_nodes + 1, torch.Size([])).item()
+        n_nodes = torch.randint(min_nodes, max_nodes+1, torch.Size([])).item()
+        n_edges = torch.randint(min_edges, max_edges+1, torch.Size([])).item()
+
+        edges = torch.empty((2, 0), dtype=torch.long)
+        if n_nodes:
+            edges = torch.randint(0, n_nodes, torch.Size([2, n_edges]))
+        else:
+            n_edges = 0
         return cls(
             torch.randn(n_nodes, n_feat),
             torch.randn(n_edges, e_feat),
             torch.randn(1, g_feat),
-            torch.randint(0, n_nodes, torch.Size([2, n_edges])),
+            edges,
             requires_grad=requires_grad,
         )
 
