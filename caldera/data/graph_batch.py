@@ -326,11 +326,17 @@ class GraphBatch(GraphData):
     ) -> GraphBatch:
         datalist = []
         for _ in range(size):
-            datalist.append(GraphData.random(n_feat, e_feat, g_feat,
-                                             min_nodes=min_nodes,
-                                             max_nodes=max_nodes,
-                                             min_edges=min_edges,
-                                             max_edges=max_edges))
+            datalist.append(
+                GraphData.random(
+                    n_feat,
+                    e_feat,
+                    g_feat,
+                    min_nodes=min_nodes,
+                    max_nodes=max_nodes,
+                    min_edges=min_edges,
+                    max_edges=max_edges,
+                )
+            )
         batch = cls.from_data_list(datalist)
         if requires_grad is not None:
             batch.requires_grad = requires_grad

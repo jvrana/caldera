@@ -214,11 +214,13 @@ class GraphData:
     #     return self.__class__(*self._mask_fields(d))
 
     @staticmethod
-    def _apply_mask(arr: torch.Tensor,
-                   mask: torch.BoolTensor,
-                   detach: bool,
-                   as_view: bool,
-                   dim: int = 0):
+    def _apply_mask(
+        arr: torch.Tensor,
+        mask: torch.BoolTensor,
+        detach: bool,
+        as_view: bool,
+        dim: int = 0,
+    ):
         if detach:
             ret = arr.detach()
 
@@ -236,20 +238,26 @@ class GraphData:
                 raise ValueError("dim must be 0 or 1")
         return ret
 
-    def _mask_dispatch(self,
-                       node_mask: Optional[torch.BoolTensor],
-                       edge_mask: Optional[torch.BoolTensor],
-                       as_view: bool, detach: bool,
-                       new_inst: bool):
+    def _mask_dispatch(
+        self,
+        node_mask: Optional[torch.BoolTensor],
+        edge_mask: Optional[torch.BoolTensor],
+        as_view: bool,
+        detach: bool,
+        new_inst: bool,
+    ):
         if node_mask is not None and not node_mask.ndim == 1:
             raise ValueError("Node mask must be 1 dimensional")
         if edge_mask is not None and not edge_mask.ndim == 1:
             raise ValueError("Edge mask must be 1 dimensional")
         if node_mask is not None and not node_mask.dtype == torch.bool:
-            raise ValueError("Node mask must be tensor.BoolTensor, not " + str(node_mask.dtype))
+            raise ValueError(
+                "Node mask must be tensor.BoolTensor, not " + str(node_mask.dtype)
+            )
         if edge_mask is not None and not edge_mask.dtype == torch.bool:
-            raise ValueError("Edge mask must be tensor.BoolTensor, not " + str(edge_mask.dtype))
-
+            raise ValueError(
+                "Edge mask must be tensor.BoolTensor, not " + str(edge_mask.dtype)
+            )
 
         edges = self._apply_mask(self.edges, edge_mask, detach, as_view, dim=1)
 
@@ -276,28 +284,43 @@ class GraphData:
         if new_inst:
             constructor = self.__class__
         else:
+
             def constructor(*args, **kwargs):
                 self.__init__(*args, **kwargs)
                 return self
+
         return constructor(x, e, g, edges)
 
     def apply_edge_mask_(self, mask: torch.BoolTensor) -> GraphData:
-        return self._mask_dispatch(None, mask, as_view=True, detach=False, new_inst=False)
+        return self._mask_dispatch(
+            None, mask, as_view=True, detach=False, new_inst=False
+        )
 
     def apply_edge_mask(self, mask: torch.BoolTensor) -> GraphData:
-        return self._mask_dispatch(None, mask, as_view=False, detach=True, new_inst=True)
+        return self._mask_dispatch(
+            None, mask, as_view=False, detach=True, new_inst=True
+        )
 
-    def _apply_node_mask_dispatch(self, node_mask, as_view: bool, detach: bool,
-              new_inst: bool):
+    def _apply_node_mask_dispatch(
+        self, node_mask, as_view: bool, detach: bool, new_inst: bool
+    ):
         nidx = torch.where(~node_mask)[0]
-        edge_mask = ~torch.any(long_isin(self.edges.flatten(), nidx, invert=False).view(2, -1), 0)
-        return self._mask_dispatch(node_mask, edge_mask, as_view=as_view, detach=detach, new_inst=new_inst)
+        edge_mask = ~torch.any(
+            long_isin(self.edges.flatten(), nidx, invert=False).view(2, -1), 0
+        )
+        return self._mask_dispatch(
+            node_mask, edge_mask, as_view=as_view, detach=detach, new_inst=new_inst
+        )
 
     def apply_node_mask_(self, node_mask: torch.BoolTensor) -> GraphData:
-        return self._apply_node_mask_dispatch(node_mask, as_view=True, detach=False, new_inst=False)
+        return self._apply_node_mask_dispatch(
+            node_mask, as_view=True, detach=False, new_inst=False
+        )
 
     def apply_node_mask(self, node_mask: torch.BoolTensor) -> GraphData:
-        return self._apply_node_mask_dispatch(node_mask, as_view=False, detach=True, new_inst=True)
+        return self._apply_node_mask_dispatch(
+            node_mask, as_view=False, detach=True, new_inst=True
+        )
 
     @property
     def requires_grad(self):
@@ -501,12 +524,19 @@ class GraphData:
 
     @classmethod
     def random(
-        cls, n_feat: int, e_feat: int, g_feat: int, requires_grad: Optional[bool] = None,
-            min_nodes: int = 0, max_nodes: int = 10, min_edges: int = 1, max_edges: int = 20
+        cls,
+        n_feat: int,
+        e_feat: int,
+        g_feat: int,
+        requires_grad: Optional[bool] = None,
+        min_nodes: int = 0,
+        max_nodes: int = 10,
+        min_edges: int = 1,
+        max_edges: int = 20,
     ) -> GraphData:
 
-        n_nodes = torch.randint(min_nodes, max_nodes+1, torch.Size([])).item()
-        n_edges = torch.randint(0, n_nodes+1, torch.Size([])).item()
+        n_nodes = torch.randint(min_nodes, max_nodes + 1, torch.Size([])).item()
+        n_edges = torch.randint(0, n_nodes + 1, torch.Size([])).item()
         return cls(
             torch.randn(n_nodes, n_feat),
             torch.randn(n_edges, e_feat),

@@ -12,6 +12,7 @@ def test_long_isin_explicit():
     d = long_isin(b, a)
     assert torch.all(d == torch.BoolTensor([True, True, True, False]))
 
+
 def test_long_isin_explicit2():
     a = torch.LongTensor([1, 2, 3, 4])
     b = torch.LongTensor([])
@@ -51,10 +52,9 @@ def isin(a, b):
     return c
 
 
-@pytest.mark.parametrize(('a', 'b'), [
-    ([1, 2, 3, 4], [4, 5]),
-    ([4, 3, 2, 1], [5, 100, 2])
-])
+@pytest.mark.parametrize(
+    ("a", "b"), [([1, 2, 3, 4], [4, 5]), ([4, 3, 2, 1], [5, 100, 2])]
+)
 def test_long_isin_compare(a, b):
     a = torch.LongTensor(a)
     b = torch.LongTensor(b)
@@ -66,17 +66,21 @@ def test_long_isin_compare(a, b):
     assert torch.all(c == expected_c)
     assert torch.all(d == expected_d)
 
-@pytest.mark.parametrize(('a_range', 'b_range'), [
-    ((0, 5, 5), (2, 10, 10)),
-    ((0, 2, 7), (2, 6, 11)),
-    ((2, 10, 10), (0, 5, 5)),
-    ((0, 50, 50), (2, 10, 100)),
-    ((2, 10, 100), (0, 50, 50)),
-    ((0, 1, 10), (0, 1, 10)),
-    ((0, 1, 10), (3, 4, 10)),
-    ((0, 1, 10), (3, 4, 0)),
-    ((0, 1, 0), (3, 4, 10)),
-])
+
+@pytest.mark.parametrize(
+    ("a_range", "b_range"),
+    [
+        ((0, 5, 5), (2, 10, 10)),
+        ((0, 2, 7), (2, 6, 11)),
+        ((2, 10, 10), (0, 5, 5)),
+        ((0, 50, 50), (2, 10, 100)),
+        ((2, 10, 100), (0, 50, 50)),
+        ((0, 1, 10), (0, 1, 10)),
+        ((0, 1, 10), (3, 4, 10)),
+        ((0, 1, 10), (3, 4, 0)),
+        ((0, 1, 0), (3, 4, 10)),
+    ],
+)
 def test_long_isin_random(a_range, b_range):
     deterministic_seed(0)
     a = torch.randint(a_range[0], a_range[1], (a_range[2],))
