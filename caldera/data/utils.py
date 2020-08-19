@@ -260,10 +260,16 @@ def neighbors(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor) -> to
         nodes = torch.LongTensor([nodes])
     elif nodes.ndim == 0:
         nodes = nodes.expand(1)
+    is_bool = False
+    if nodes.dtype == torch.bool:
+        is_bool = True
+        nodes = torch.where(nodes)[0]
     reachable = long_isin(data.edges[0], nodes)
     dest = data.edges[1][reachable]
-    if nodes.dtype == torch.bool:
+    if is_bool:
         dest = long_isin(torch.arange(data.num_nodes), dest)
+    else:
+        dest = torch.unique(dest, sorted=True)
     return dest
 
 @overload
@@ -271,6 +277,14 @@ def hop(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
     ...
 
 def hop(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int) -> torch.LongTensor:
+    if isinstance(nodes, int):
+        nodes = torch.LongTensor([nodes])
+    elif nodes.ndim == 0:
+        nodes = nodes.expand(1)
+    visited = nodes.clone()
     for _k in range(k):
         nodes = neighbors(data, nodes)
-    return nodes
+        visited = torch.unique(torch.cat([visited, nodes]), sorted=True)
+        if visited.shape[0] >= data.num_nodes:
+            break
+    return visited
