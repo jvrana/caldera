@@ -4,7 +4,9 @@ import torch
 from caldera.utils import same_storage
 
 view_methods = {
-    "slice": lambda x: x[:10],
+    "slice_:10": lambda x: x[:10],
+    "slice_10:": lambda x: x[10:],
+    "slice_5:10": lambda x: x[5:10],
     "cpu": lambda x: x.cpu(),
     "contiguous": lambda x: x.contiguous(),
 }
@@ -29,21 +31,29 @@ def parameterize(n, d):
     return pytest.mark.parametrize(n, args, ids=ids)
 
 
+@pytest.fixture(params=[
+    torch.randn(100),
+    torch.randn((10, 9)),
+    torch.randn((2, 3)),
+    torch.randn((2, 0)),
+    torch.randn((0, 2)),
+    torch.tensor([])
+])
+def example(request):
+    return request.param
+
+
 @parameterize("f", view_methods)
-@pytest.mark.parametrize(
-    "a", [torch.randn(100), torch.randn((10, 9)), torch.randn((2, 3))]
-)
-def test_same_storage_view_methods(f, a):
+def test_same_storage_view_methods(f, example):
+    a = example
     b = f(a)
-    assert same_storage(a, b)
-    assert same_storage(b, a)
+    assert same_storage(a, b, empty_does_not_share_storage=False)
+    assert same_storage(b, a, empty_does_not_share_storage=False)
 
 
 @parameterize("f", copy_methods)
-@pytest.mark.parametrize(
-    "a", [torch.randn(100), torch.randn((10, 9)), torch.randn((2, 3))]
-)
-def test_same_storage_copy_methods(f, a):
+def test_same_storage_copy_methods(f, example):
+    a = example
     b = f(a)
     assert not same_storage(a, b)
     assert not same_storage(b, a)

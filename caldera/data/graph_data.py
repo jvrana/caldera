@@ -150,18 +150,21 @@ class GraphData:
         """Check if this data shares storage with another data.
 
         :param other: The other GraphData object.
-        :param return_dict: if true, return dictionary of which tensors share the same storage. Else returns true if
-            any tensors share the same storage.
+        :param return_dict: if true, return dictionary of which tensors share the same
+            storage. Else returns true if any tensors share the same storage.
         :return:
         """
         d = {}
         for k in self.__slots__:
             a = getattr(self, k)
             b = getattr(other, k)
-            c = same_storage(a, b)
+            if 0 in a.shape or 0 in b.shape:
+                shares_storage = False
+            else:
+                shares_storage = same_storage(a, b)
             if return_dict:
-                d[k] = c
-            elif c:
+                d[k] = shares_storage
+            elif shares_storage:
                 return True
         return d
 

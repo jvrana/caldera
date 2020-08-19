@@ -5,11 +5,23 @@ import numpy
 import torch
 
 
-def same_storage(x: torch.Tensor, y: torch.Tensor) -> bool:
-    """Checks if two tensors share storage."""
-    print(x)
-    print(y)
-    print(x.shape)
+def empty(x: torch.Tensor) -> bool:
+    return 0 in x.shape
+
+
+def same_storage(x: torch.Tensor, y: torch.Tensor,
+                 empty_does_not_share_storage: bool = True) -> bool:
+    """
+    Checks if two tensors share storage.
+
+    :param x: first tensor
+    :param y: second tensor
+    :param empty_does_not_share_storage: if True (default), will return False if
+        either tensor is empty (despite that they technically data_ptr are the same).
+    :return: if the tensor shares the same storage
+    """
+    if empty_does_not_share_storage and (empty(x) or empty(y)):
+        return False
     x_ptrs = {e.data_ptr() for e in x.view(-1)}
     y_ptrs = {e.data_ptr() for e in y.view(-1)}
     return (x_ptrs <= y_ptrs) or (y_ptrs <= x_ptrs)

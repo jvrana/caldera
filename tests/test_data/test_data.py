@@ -673,6 +673,9 @@ class TestCloneCopy:
         data = random_data_example
         data2 = data.copy()
         assert id(data) != id(data2)
+        c = data.share_storage(data2, return_dict=True)
+        print(data.size)
+        print(c)
         assert not data.share_storage(data2)
 
     def test_clone(self, random_data_example):
