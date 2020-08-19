@@ -4,9 +4,8 @@ from caldera.utils import deterministic_seed
 import torch
 import pytest
 
-@pytest.fixture(params=[
-    GraphData, GraphBatch
-])
+
+@pytest.fixture(params=[GraphData, GraphBatch])
 def data(request):
     data_cls = request.param
     deterministic_seed(0)
@@ -15,16 +14,14 @@ def data(request):
     e = torch.randn((4, 2))
     g = torch.randn((3, 1))
 
-    edges = torch.tensor([
-        [0, 1, 2, 1],
-        [1, 2, 3, 0]
-    ])
+    edges = torch.tensor([[0, 1, 2, 1], [1, 2, 3, 0]])
 
     data = GraphData(x, e, g, edges)
     if data_cls is GraphBatch:
         return GraphBatch.from_data_list([data])
     else:
         return data
+
 
 def test_undirected(data):
     undirected = Undirected()

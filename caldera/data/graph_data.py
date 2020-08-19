@@ -213,12 +213,7 @@ class GraphData:
     #     return self.__class__(*self._mask_fields(d))
 
     def apply_edge_mask(self, mask: torch.BoolTensor):
-        return self.__class__(
-            self.x,
-            self.e[mask],
-            self.g,
-            self.edges[:, mask]
-        )
+        return self.__class__(self.x, self.e[mask], self.g, self.edges[:, mask])
 
     # TODO: apply node mask, view edges
     # TODO: which methods are views and which are copies?
@@ -454,8 +449,5 @@ class GraphData:
         if g_slice is None:
             g_slice = slice(None, None, None)
         return self.__class__(
-            self.x[:, x_slice],
-            self.e[:, e_slice],
-            self.g[:, g_slice],
-            self.edges
+            self.x[:, x_slice], self.e[:, e_slice], self.g[:, g_slice], self.edges
         )

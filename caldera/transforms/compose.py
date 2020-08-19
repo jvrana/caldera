@@ -11,10 +11,9 @@ T = TypeVar("T")
 
 
 class Compose(object):
-
-    def __init__(self,
-                 transforms: Union[List[TransformCallable],
-                                   Tuple[TransformCallable, ...]]):
+    def __init__(
+        self, transforms: Union[List[TransformCallable], Tuple[TransformCallable, ...]]
+    ):
         """
         Composes several transforms together.
 
@@ -29,7 +28,7 @@ class Compose(object):
 
     def __repr__(self):
         sep = "\n   "
-        format_string = self.__class__.__name__ + '('
+        format_string = self.__class__.__name__ + "("
         format_string += sep.join([str(t) for t in self.transforms])
-        format_string += '\n)'
+        format_string += "\n)"
         return format_string

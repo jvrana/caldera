@@ -98,7 +98,6 @@ def scatter_group(
     return jit_scatter_group(x, idx, {})
 
 
-
 def long_isin(ar1, ar2, assume_unique=True, invert=False):
     if ar1.dtype != torch.long or ar2.dtype != torch.long:
         raise ValueError("Arrays be torch.LongTensor")
@@ -115,14 +114,14 @@ def long_isin(ar1, ar2, assume_unique=True, invert=False):
     order = stable_arg_sort_long(ar)
     sar = ar[order]
     if invert:
-        bool_ar = (sar[1:] != sar[:-1])
+        bool_ar = sar[1:] != sar[:-1]
     else:
-        bool_ar = (sar[1:] == sar[:-1])
+        bool_ar = sar[1:] == sar[:-1]
     flag = torch.cat((bool_ar, torch.tensor([invert])))
     ret = torch.empty(ar.shape, dtype=bool)
     ret[order] = flag
 
     if assume_unique:
-        return ret[:len(ar1)]
+        return ret[: len(ar1)]
     else:
         return ret[rev_idx]

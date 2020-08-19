@@ -12,13 +12,15 @@ def test_long_isin():
     assert torch.all(d == torch.BoolTensor([True, True, True, False]))
 
 
-@pytest.mark.parametrize(('x', 'y', 'does_raise'), [
-    (False, False, False),
-    (True, False, True),
-    (False, True, True),
-    (True, True, True)
-]
-                         )
+@pytest.mark.parametrize(
+    ("x", "y", "does_raise"),
+    [
+        (False, False, False),
+        (True, False, True),
+        (False, True, True),
+        (True, True, True),
+    ],
+)
 def test_double_isin(x, y, does_raise):
     a = torch.LongTensor([1, 2, 3, 4])
     b = torch.LongTensor([2, 3, 4, 5])

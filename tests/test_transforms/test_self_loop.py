@@ -5,9 +5,7 @@ import torch
 import pytest
 
 
-@pytest.fixture(params=[
-    GraphData, GraphBatch
-])
+@pytest.fixture(params=[GraphData, GraphBatch])
 def data(request):
 
     data_cls = request.param
@@ -17,10 +15,7 @@ def data(request):
     e = torch.randn((5, 2))
     g = torch.randn((3, 1))
 
-    edges = torch.tensor([
-        [0, 1, 2, 1, 0],
-        [1, 2, 3, 0, 0]
-    ])
+    edges = torch.tensor([[0, 1, 2, 1, 0], [1, 2, 3, 0, 0]])
 
     data = GraphData(x, e, g, edges)
     if data_cls is GraphBatch:

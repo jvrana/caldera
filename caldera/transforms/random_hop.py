@@ -10,7 +10,6 @@ from typing import overload
 
 
 class RandomHop(TransformBase):
-
     def __init__(self, n_nodes: int, n_hops: int):
         self.n_nodes = n_nodes
         self.n_hops = n_hops

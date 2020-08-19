@@ -121,9 +121,10 @@ def _tuples_set_to_tensor(tuples: List[Tuple[int, int]]):
 
 
 def _apply_to_edge_sets(
-        edges1: torch.LongTensor,
-        edges2: torch.LongTensor,
-        func: Callable[[Set[Tuple[int, int]], Set[Tuple[int, int]]], torch.LongTensor]) -> torch.LongTensor:
+    edges1: torch.LongTensor,
+    edges2: torch.LongTensor,
+    func: Callable[[Set[Tuple[int, int]], Set[Tuple[int, int]]], torch.LongTensor],
+) -> torch.LongTensor:
     s1 = _edges_to_tuples_set(edges1)
     s2 = _edges_to_tuples_set(edges2)
     s3 = func(s1, s2)
@@ -133,12 +134,14 @@ def _apply_to_edge_sets(
 def edges_difference(e1: torch.LongTensor, e2: torch.LongTensor) -> torch.LongTensor:
     def difference(e1, e2):
         return e1.difference(e2)
+
     return _apply_to_edge_sets(e1, e2, difference)
 
 
 def edges_intersection(e1: torch.LongTensor, e2: torch.LongTensor) -> torch.LongTensor:
     def intersection(e1, e2):
         return e1.intersection(e2)
+
     return _apply_to_edge_sets(e1, e2, intersection)
 
 
@@ -155,8 +158,9 @@ def add_missing_edges(batch: GraphBatch, fill_value: ..., kind: ...) -> GraphBat
     ...
 
 
-def add_missing_edges(data: GraphData, fill_value: Union[float, int],
-                      kind: str) -> GraphData:
+def add_missing_edges(
+    data: GraphData, fill_value: Union[float, int], kind: str
+) -> GraphData:
     UNDIRECTED = "undirected"
     COMPLETE = "complete"
     SELF = "self"
@@ -172,8 +176,11 @@ def add_missing_edges(data: GraphData, fill_value: Union[float, int],
         node_idx = torch.zeros(data.x.shape[0], dtype=torch.long)
         edge_idx = torch.zeros(data.e.shape[0], dtype=torch.long)
     else:
-        raise ValueError("data must be a subclass of {} or {}".format(
-            GraphBatch.__class__.__name__, GraphData.__class__.__name__))
+        raise ValueError(
+            "data must be a subclass of {} or {}".format(
+                GraphBatch.__class__.__name__, GraphData.__class__.__name__
+            )
+        )
 
     with torch.no_grad():
         # we count the number of nodes in each graph using node_idx
@@ -186,7 +193,7 @@ def add_missing_edges(data: GraphData, fill_value: Union[float, int],
         new_edges_lengths = torch.zeros(gidx.shape[0], dtype=torch.long)
 
         for _gidx, _n_nodes, _n_edges in zip(gidx, n_nodes, n_edges):
-            graph_edges = data.edges[:, eidx:eidx + _n_edges]
+            graph_edges = data.edges[:, eidx : eidx + _n_edges]
             if kind == UNDIRECTED:
                 missing_edges = edges_difference(graph_edges.flip(0), graph_edges)
             elif kind == COMPLETE:
@@ -194,7 +201,7 @@ def add_missing_edges(data: GraphData, fill_value: Union[float, int],
                 missing_edges = edges_difference(all_graph_edges, graph_edges)
             elif kind == SELF:
                 self_edges = torch.cat(
-                    [torch.arange(nidx, nidx+_n_nodes).expand(1, -1)]*2
+                    [torch.arange(nidx, nidx + _n_nodes).expand(1, -1)] * 2
                 )
                 missing_edges = edges_difference(self_edges, graph_edges)
             graph_edges_list.append(missing_edges)
@@ -209,8 +216,9 @@ def add_missing_edges(data: GraphData, fill_value: Union[float, int],
 
         new_edges = torch.cat(graph_edges_list, axis=1)
         new_edge_idx = gidx.repeat_interleave(new_edges_lengths)
-        new_edge_attr = torch.full((new_edges.shape[1], data.e.shape[1]),
-                                   fill_value=fill_value)
+        new_edge_attr = torch.full(
+            (new_edges.shape[1], data.e.shape[1]), fill_value=fill_value
+        )
 
         edges = torch.cat([data.edges, new_edges], axis=1)
         edge_idx = torch.cat([edge_idx, new_edge_idx])
@@ -225,7 +233,7 @@ def add_missing_edges(data: GraphData, fill_value: Union[float, int],
             global_attr=data.g.detach().clone(),
             edges=edges[:, idx],
             node_idx=data.node_idx.detach().clone(),
-            edge_idx=edge_idx[idx]
+            edge_idx=edge_idx[idx],
         )
     elif issubclass(data_cls, GraphData):
         return data_cls(

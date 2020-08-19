@@ -13,11 +13,9 @@ from caldera.data.utils import edges_difference
 
 
 class Undirected(TransformBase):
-
-    def __init__(self, fill_value: float = 0.):
+    def __init__(self, fill_value: float = 0.0):
         super().__init__()
         self.fill_value = fill_value
-
 
     # def __call__(self, data: GraphData) -> GraphData:
     #     if issubclass(data.__class__, GraphBatch):
@@ -39,4 +37,4 @@ class Undirected(TransformBase):
         ...
 
     def __call__(self, data: GraphBatch) -> GraphBatch:
-        return add_missing_edges(data, self.fill_value, kind='undirected')
+        return add_missing_edges(data, self.fill_value, kind="undirected")

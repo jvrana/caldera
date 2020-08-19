@@ -6,18 +6,12 @@ import networkx as nx
 import torch
 
 
-
-
-
 def test_fully_connected_singe_graph_batch_manual():
     deterministic_seed(0)
     x = torch.randn((3, 1))
     e = torch.randn((2, 2))
     g = torch.randn((3, 1))
-    edges = torch.tensor([
-        [0, 1],
-        [0, 1]
-    ])
+    edges = torch.tensor([[0, 1], [0, 1]])
     data = GraphData(x, e, g, edges)
     batch = GraphBatch.from_data_list([data, data])
     batch2 = FullyConnected()(batch)

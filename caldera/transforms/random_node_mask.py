@@ -9,7 +9,6 @@ from typing import overload
 
 
 class RandomNodeMask(TransformBase):
-
     @overload
     def __call__(self, data: GraphData) -> GraphData:
         ...

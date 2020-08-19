@@ -11,11 +11,9 @@ from typing import overload
 
 
 class FullyConnected(TransformBase):
-
-    def __init__(self, fill_value: float = 0.):
+    def __init__(self, fill_value: float = 0.0):
         super().__init__()
         self.fill_value = fill_value
-
 
     # def __call__(self, data: GraphData) -> GraphData:
     #     if issubclass(data.__class__, GraphBatch):
@@ -37,4 +35,4 @@ class FullyConnected(TransformBase):
         ...
 
     def __call__(self, data: GraphBatch) -> GraphBatch:
-        return add_missing_edges(data, self.fill_value, kind='complete')
+        return add_missing_edges(data, self.fill_value, kind="complete")

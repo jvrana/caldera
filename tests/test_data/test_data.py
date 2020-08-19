@@ -710,7 +710,6 @@ class TestView:
 
 
 class TestMask:
-
     def test_graph_data_mask(self):
         data = GraphData.random(5, 4, 3)
         mask = torch.ones(data.num_edges, dtype=torch.bool)
