@@ -98,7 +98,7 @@ def scatter_group(
     return jit_scatter_group(x, idx, {})
 
 
-def long_isin(ar1, ar2, assume_unique=True, invert=False):
+def long_isin(ar1, ar2, assume_unique=False, invert=False):
     if ar1.dtype != torch.long or ar2.dtype != torch.long:
         raise ValueError("Arrays be torch.LongTensor")
 
