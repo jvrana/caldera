@@ -38,7 +38,7 @@ def test_fully_connected_singe_graph_batch():
 
 def test_fully_connected_graph_batch():
     deterministic_seed(0)
-    batch = GraphBatch.random_batch(10000, 5, 4, 3)
+    batch = GraphBatch.random_batch(100, 5, 4, 3)
     t = FullyConnected()
     batch2 = t(batch)
     assert batch2.edges.shape[1] > batch.edges.shape[1]
@@ -50,6 +50,3 @@ def test_fully_connected_singe_graph_batch():
     t = FullyConnected()
     data2 = t(data)
     assert data2.edges.shape[1] > data.edges.shape[1]
-
-# test GraphData and GraphBatch result in differentiable
-# ^^ is same
