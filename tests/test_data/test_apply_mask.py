@@ -133,3 +133,38 @@ def test_node_mask_grid_graph(grid_data):
     subgraph = grid_data.apply_node_mask(node_mask)
     assert subgraph.__class__ is grid_data.__class__
     print(subgraph.size)
+
+def test_node_mask_entire_graph():
+    data1 = GraphData(
+        torch.randn(5, 3),
+        torch.randn(3, 3),
+        torch.randn(1, 1),
+        edges=torch.LongTensor([
+            [0, 1, 2],
+            [2, 3, 4]
+        ])
+    )
+    data2 = GraphData(
+        torch.randn(5, 3),
+        torch.randn(3, 3),
+        torch.randn(1, 1),
+        edges=torch.LongTensor([
+            [0, 1, 2],
+            [2, 3, 4]
+        ])
+    )
+    data3 = GraphData(
+        torch.randn(5, 3),
+        torch.randn(3, 3),
+        torch.randn(1, 1),
+        edges=torch.LongTensor([
+            [0, 1, 2],
+            [2, 3, 4]
+        ])
+    )
+
+    batch = GraphBatch.from_data_list([data1, data2, data3])
+    node_mask = torch.BoolTensor([True] * 5 + [False] * 5 + [True] * 5)
+    masked = batch.apply_node_mask(node_mask)
+    print(masked.node_idx)
+    print(masked.edge_idx)

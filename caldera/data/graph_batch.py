@@ -226,6 +226,7 @@ class GraphBatch(GraphData):
         g = self._apply_mask(self.g, None, detach, as_view)
         node_idx = self._apply_mask(self.node_idx, node_mask, detach, as_view)
         edge_idx = self._apply_mask(self.edge_idx, edge_mask, detach, as_view)
+        raise ValueError("TODO: reindex node_idx and edge_idx")
         return self._mask_dispatch_constructor(new_inst, x, e, g, edges,
                                                node_idx=node_idx, edge_idx=edge_idx)
 
