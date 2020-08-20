@@ -1,6 +1,9 @@
-from caldera.data import GraphData
+from caldera.data import GraphData, GraphBatch
 import torch
 from caldera.utils import deterministic_seed
+import networkx as nx
+import pytest
+from caldera.data.utils import nx_random_features
 
 
 def test_mask_all_nodes():
@@ -107,3 +110,26 @@ def test_mask_one_node():
     assert torch.allclose(data2.x, expected_x)
     assert torch.allclose(data2.e, expected_e)
     assert torch.allclose(data2.g, data.g)
+
+
+@pytest.fixture(params=[GraphData, GraphBatch])
+def grid_data(request):
+    def newg(g):
+        return nx_random_features(g, 5, 4, 3)
+
+    if request.param is GraphData:
+        g = newg(nx.grid_graph([2, 4, 3]))
+        return GraphData.from_networkx(g)
+    elif request.param is GraphBatch:
+        graphs = [newg(nx.grid_graph([2, 4, 3]))  for _ in range(10)]
+        return GraphBatch.from_networkx_list(graphs)
+    else:
+        raise ValueError()
+
+
+def test_node_mask_grid_graph(grid_data):
+    print(grid_data.size)
+    node_mask = torch.randint(2, (grid_data.num_nodes,), dtype=torch.bool)
+    subgraph = grid_data.apply_node_mask(node_mask)
+    assert subgraph.__class__ is grid_data.__class__
+    print(subgraph.size)

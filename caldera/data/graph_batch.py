@@ -210,6 +210,25 @@ class GraphBatch(GraphData):
         self.debug()
         return self
 
+    def _mask_dispatch(
+        self,
+        node_mask: Optional[torch.BoolTensor],
+        edge_mask: Optional[torch.BoolTensor],
+        as_view: bool,
+        detach: bool,
+        new_inst: bool,
+    ):
+        self._validate_masks(node_mask, edge_mask)
+        edges = self._apply_mask(self.edges, edge_mask, detach, as_view, dim=1)
+        edges = self._mask_dispatch_reindex_edges(edges, node_mask)
+        x = self._apply_mask(self.x, node_mask, detach, as_view)
+        e = self._apply_mask(self.e, edge_mask, detach, as_view)
+        g = self._apply_mask(self.g, None, detach, as_view)
+        node_idx = self._apply_mask(self.node_idx, node_mask, detach, as_view)
+        edge_idx = self._apply_mask(self.edge_idx, edge_mask, detach, as_view)
+        return self._mask_dispatch_constructor(new_inst, x, e, g, edges,
+                                               node_idx=node_idx, edge_idx=edge_idx)
+
     # def append_edges
     # def collect_and_collate(x1, i1, x2, i2, collate_fn = torch.cat):
     #     i1, groups1 = scatter_group(x1, i1)

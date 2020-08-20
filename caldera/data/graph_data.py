@@ -18,8 +18,17 @@ from caldera.utils import _first
 from caldera.utils import same_storage
 from caldera.utils import long_isin
 
+
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
+
+def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
+    if issubclass(arr.__class__, torch.Tensor):
+        return arr.nelement()
+    elif issubclass(arr.__class__, np.ndarray):
+        return arr.size
+    else:
+        raise ValueError("Must be a {} or {}".format(np.ndarry, torch.Tensor))
 
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
 # TODO: support n dim tensors
@@ -246,14 +255,9 @@ class GraphData:
                 raise ValueError("dim must be 0 or 1")
         return ret
 
-    def _mask_dispatch(
-        self,
-        node_mask: Optional[torch.BoolTensor],
-        edge_mask: Optional[torch.BoolTensor],
-        as_view: bool,
-        detach: bool,
-        new_inst: bool,
-    ):
+    def _validate_masks(self,
+                        node_mask: Optional[torch.BoolTensor],
+                        edge_mask: Optional[torch.BoolTensor],):
         if node_mask is not None and not node_mask.ndim == 1:
             raise ValueError("Node mask must be 1 dimensional")
         if edge_mask is not None and not edge_mask.ndim == 1:
@@ -267,8 +271,7 @@ class GraphData:
                 "Edge mask must be tensor.BoolTensor, not " + str(edge_mask.dtype)
             )
 
-        edges = self._apply_mask(self.edges, edge_mask, detach, as_view, dim=1)
-
+    def _mask_dispatch_reindex_edges(self, edges, node_mask):
         # remap node indices in edges
         if node_mask is not None and not torch.all(node_mask):
             # remap edges
@@ -282,13 +285,9 @@ class GraphData:
                 remapped_edges[0].append(old_to_new_idx[n1.item()])
                 remapped_edges[1].append(old_to_new_idx[n2.item()])
             edges = torch.LongTensor(remapped_edges)
+        return edges
 
-        x = self._apply_mask(self.x, node_mask, detach, as_view)
-        e = self._apply_mask(self.e, edge_mask, detach, as_view)
-        g = self._apply_mask(self.g, None, detach, as_view)
-
-        # TODO: reindex edges
-
+    def _mask_dispatch_constructor(self, new_inst: bool, *args, **kwargs):
         if new_inst:
             constructor = self.__class__
         else:
@@ -297,9 +296,25 @@ class GraphData:
                 self.__init__(*args, **kwargs)
                 return self
 
-        masked_data = constructor(x, e, g, edges)
+        masked_data = constructor(*args, **kwargs)
         masked_data.debug()
         return masked_data
+
+    def _mask_dispatch(
+        self,
+        node_mask: Optional[torch.BoolTensor],
+        edge_mask: Optional[torch.BoolTensor],
+        as_view: bool,
+        detach: bool,
+        new_inst: bool,
+    ):
+        self._validate_masks(node_mask, edge_mask)
+        edges = self._apply_mask(self.edges, edge_mask, detach, as_view, dim=1)
+        edges = self._mask_dispatch_reindex_edges(edges, node_mask)
+        x = self._apply_mask(self.x, node_mask, detach, as_view)
+        e = self._apply_mask(self.e, edge_mask, detach, as_view)
+        g = self._apply_mask(self.g, None, detach, as_view)
+        return self._mask_dispatch_constructor(new_inst, x, e, g, edges)
 
     def apply_edge_mask_(self, mask: torch.BoolTensor) -> GraphData:
         return self._mask_dispatch(
@@ -405,7 +420,7 @@ class GraphData:
                 if feature_key not in ndata:
                     n_node_feat = 0
                 else:
-                    n_node_feat = ndata[feature_key].size
+                    n_node_feat = np_or_tensor_size(ndata[feature_key])
             except StopIteration:
                 n_node_feat = 0
 
@@ -415,7 +430,7 @@ class GraphData:
                 if feature_key not in edata:
                     n_edge_feat = 0
                 else:
-                    n_edge_feat = edata[feature_key].size
+                    n_edge_feat = np_or_tensor_size(edata[feature_key])
             except StopIteration:
                 n_edge_feat = 0
 
@@ -424,7 +439,7 @@ class GraphData:
                 if feature_key not in gdata:
                     n_glob_feat = 0
                 else:
-                    n_glob_feat = gdata[feature_key].size
+                    n_glob_feat = np_or_tensor_size(gdata[feature_key])
             else:
                 n_glob_feat = 0
 

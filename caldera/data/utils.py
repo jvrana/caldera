@@ -258,7 +258,7 @@ def neighbors(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor) -> to
     """
     if isinstance(nodes, int):
         nodes = torch.LongTensor([nodes])
-    elif nodes.ndim == 0:
+    elif nodes.dtype == torch.long and nodes.ndim == 0:
         nodes = nodes.expand(1)
     is_bool = False
     if nodes.dtype == torch.bool:
@@ -279,12 +279,29 @@ def hop(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
 def hop(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int) -> torch.LongTensor:
     if isinstance(nodes, int):
         nodes = torch.LongTensor([nodes])
-    elif nodes.ndim == 0:
+    elif nodes.dtype == torch.long and nodes.ndim == 0:
         nodes = nodes.expand(1)
+
     visited = nodes.clone()
     for _k in range(k):
         nodes = neighbors(data, nodes)
-        visited = torch.unique(torch.cat([visited, nodes]), sorted=True)
-        if visited.shape[0] >= data.num_nodes:
-            break
+        if nodes.dtype == torch.bool:
+            visited = torch.logical_or(visited, nodes)
+            if visited.sum() >= data.num_nodes:
+                break
+        else:
+            visited = torch.unique(torch.cat([visited, nodes]), sorted=True)
+            if visited.shape[0] >= data.num_nodes:
+                break
     return visited
+
+
+def nx_random_features(g: nx.DiGraph, n_feat: int, e_feat: int, g_feat: int):
+    for _, ndata in g.nodes(data=True):
+        ndata['features'] = torch.randn(n_feat)
+    for _, _, edata in g.edges(data=True):
+        edata['features'] = torch.randn(e_feat)
+    g.data = {
+        'features': torch.randn(g_feat)
+    }
+    return g
