@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Type
@@ -9,16 +8,25 @@ import networkx as nx
 import torch
 
 from caldera.data.graph_data import GraphData
-from caldera.data.graph_data import GraphType
+from caldera.utils.nx_utils import DirectedGraph
 from caldera.utils import scatter_group
 from caldera.utils import stable_arg_sort_long
+from caldera.utils import reindex_tensor
 
 
 class GraphBatch(GraphData):
     __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
 
     # TODO: global_idx
-    def __init__(self, node_attr, edge_attr, global_attr, edges, node_idx, edge_idx):
+    def __init__(
+        self,
+        node_attr: torch.FloatTensor,
+        edge_attr: torch.FloatTensor,
+        global_attr: torch.FloatTensor,
+        edges: torch.LongTensor,
+        node_idx: torch.LongTensor,
+        edge_idx: torch.LongTensor,
+    ):
         super().__init__(node_attr, edge_attr, global_attr, edges)
         self.node_idx = node_idx
         self.edge_idx = edge_idx
@@ -150,8 +158,8 @@ class GraphBatch(GraphData):
         self,
         feature_key: str = "features",
         global_attr_key: str = "data",
-        graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
-    ) -> List[GraphType]:
+        graph_type: Type[DirectedGraph] = nx.OrderedMultiDiGraph,
+    ) -> List[DirectedGraph]:
         graphs = []
         for data in self.to_data_list():
             graphs.append(
@@ -162,7 +170,9 @@ class GraphBatch(GraphData):
         return graphs
 
     @staticmethod
-    def from_networkx_list(graphs: List[GraphType], *args, **kwargs) -> "GraphBatch":
+    def from_networkx_list(
+        graphs: List[DirectedGraph], *args, **kwargs
+    ) -> "GraphBatch":
         data_list = [GraphData.from_networkx(g, *args, **kwargs) for g in graphs]
         return GraphBatch.from_data_list(data_list)
 
@@ -201,6 +211,29 @@ class GraphBatch(GraphData):
         self.edge_idx = edge_idx[i]
         self.debug()
         return self
+
+    def _mask_dispatch(
+        self,
+        node_mask: Optional[torch.BoolTensor],
+        edge_mask: Optional[torch.BoolTensor],
+        as_view: bool,
+        detach: bool,
+        new_inst: bool,
+    ):
+        self._validate_masks(node_mask, edge_mask)
+        edges = self._apply_mask(self.edges, edge_mask, detach, as_view, dim=1)
+        edges = self._mask_dispatch_reindex_edges(edges, node_mask)
+        x = self._apply_mask(self.x, node_mask, detach, as_view)
+        e = self._apply_mask(self.e, edge_mask, detach, as_view)
+        g = self._apply_mask(self.g, None, detach, as_view)
+        node_idx = self._apply_mask(self.node_idx, node_mask, detach, as_view)
+        edge_idx = self._apply_mask(self.edge_idx, edge_mask, detach, as_view)
+
+        node_idx, edge_idx = reindex_tensor(node_idx, edge_idx)
+
+        return self._mask_dispatch_constructor(
+            new_inst, x, e, g, edges, node_idx=node_idx, edge_idx=edge_idx
+        )
 
     # def append_edges
     # def collect_and_collate(x1, i1, x2, i2, collate_fn = torch.cat):
@@ -310,11 +343,25 @@ class GraphBatch(GraphData):
         n_feat: int,
         e_feat: int,
         g_feat: int,
+        min_nodes: int = 1,
+        max_nodes: int = 10,
+        min_edges: int = 1,
+        max_edges: int = 20,
         requires_grad: Optional[bool] = None,
     ) -> GraphBatch:
         datalist = []
         for _ in range(size):
-            datalist.append(GraphData.random(n_feat, e_feat, g_feat))
+            datalist.append(
+                GraphData.random(
+                    n_feat,
+                    e_feat,
+                    g_feat,
+                    min_nodes=min_nodes,
+                    max_nodes=max_nodes,
+                    min_edges=min_edges,
+                    max_edges=max_edges,
+                )
+            )
         batch = cls.from_data_list(datalist)
         if requires_grad is not None:
             batch.requires_grad = requires_grad
@@ -346,3 +393,45 @@ class GraphBatch(GraphData):
             self.node_idx[:],
             self.edge_idx[e_slice],
         )
+
+    def disjoint_union(self, other: GraphBatch) -> GraphBatch:
+        """
+        Disjoint union between two GraphBatches.
+
+        :param other:
+        :return:
+        """
+        x = torch.cat(self.x, other.x)
+        e = torch.cat(self.e, other.e)
+        g = torch.cat(self.g, other.g)
+
+        n = self.node_idx.max()
+        node_idx = torch.cat(self.node_idx, other.node_idx + n)
+        edge_idx = torch.cat(self.edge_idx, other.edge_idx + n)
+        edges = torch.cat(self.edges, other.edges + n)
+        node_idx, edge_idx, edges = reindex_tensor(node_idx, edge_idx, edges)
+
+        return GraphBatch(x, e, g, edges, node_idx, edge_idx)
+
+    def shuffle_graphs_(self) -> None:
+        b = torch.unique(self.node_idx)
+        ridx = torch.randperm(b.shape[0])
+        self.g = self.g[ridx]
+        _, node_idx, edge_idx = reindex_tensor(ridx, self.node_idx, self.edge_idx)
+        self.node_idx = node_idx
+        self.edge_idx = edge_idx
+
+    def shuffle_graphs(self) -> GraphBatch:
+        cloned = self.clone()
+        cloned.shuffle_graphs_()
+        return cloned
+
+    def shuffle_(self) -> None:
+        self.shuffle_graphs_()
+        self.shuffle_nodes_()
+        self.shuffle_edges_()
+
+    def shuffle(self) -> GraphBatch:
+        cloned = self.clone()
+        cloned.shuffle_()
+        return cloned

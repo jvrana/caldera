@@ -34,5 +34,3 @@ scatter methods in pytorch. Necessary for graph attribute aggregation
 * PGN - provided a blueprint for implementing this library
 
 ## References
-
-

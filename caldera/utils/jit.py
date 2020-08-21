@@ -96,3 +96,32 @@ def scatter_group(
     :return: tuple of unique, sorted indices and a list of tensors corresponding to the groups
     """
     return jit_scatter_group(x, idx, {})
+
+
+def long_isin(ar1, ar2, assume_unique=False, invert=False):
+    if ar1.dtype != torch.long or ar2.dtype != torch.long:
+        raise ValueError("Arrays be torch.LongTensor")
+
+    # Otherwise use sorting
+    if not assume_unique:
+        ar1, rev_idx = torch.unique(ar1, return_inverse=True)
+        ar2 = torch.unique(ar2)
+
+    ar = torch.cat((ar1, ar2))
+    # We need this to be a stable sort, so always use 'mergesort'
+    # here. The values from the first array should always come before
+    # the values from the second array.
+    order = stable_arg_sort_long(ar)
+    sar = ar[order]
+    if invert:
+        bool_ar = sar[1:] != sar[:-1]
+    else:
+        bool_ar = sar[1:] == sar[:-1]
+    flag = torch.cat((bool_ar, torch.tensor([invert])))
+    ret = torch.empty(ar.shape, dtype=bool)
+    ret[order] = flag
+
+    if assume_unique:
+        return ret[: len(ar1)]
+    else:
+        return ret[rev_idx]

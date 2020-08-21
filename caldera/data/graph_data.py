@@ -7,7 +7,6 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Type
-from typing import TypeVar
 from typing import Union
 
 import networkx as nx
@@ -16,8 +15,18 @@ import torch
 
 from caldera.utils import _first
 from caldera.utils import same_storage
+from caldera.utils import long_isin
+from caldera.utils import reindex_tensor
+from caldera.utils.nx_utils import DirectedGraph
 
-GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
+
+def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
+    if issubclass(arr.__class__, torch.Tensor):
+        return arr.nelement()
+    elif issubclass(arr.__class__, np.ndarray):
+        return arr.size
+    else:
+        raise ValueError("Must be a {} or {}".format(np.ndarry, torch.Tensor))
 
 
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
@@ -32,10 +41,10 @@ class GraphData:
 
     def __init__(
         self,
-        node_attr,
-        edge_attr,
-        global_attr,
-        edges,
+        node_attr: torch.FloatTensor,
+        edge_attr: torch.FloatTensor,
+        global_attr: torch.FloatTensor,
+        edges: torch.LongTensor,
         requires_grad: Optional[bool] = None,
     ):
         self.x = node_attr
@@ -57,10 +66,15 @@ class GraphData:
                     self.edges.max(), self.x.shape[0]
                 )
             )
-        if not self.edges.shape[1] == self.e.shape[0]:
+
+        if self.edges.shape[0]:
+            n_edges = self.edges.shape[1]
+        else:
+            n_edges = 0
+        if not n_edges == self.e.shape[0]:
             raise RuntimeError(
                 "Number of edges {} must match number of edge attributes {}".format(
-                    self.edges.shape[1], self.e.shape[0]
+                    n_edges, self.e.shape[0]
                 )
             )
 
@@ -144,18 +158,21 @@ class GraphData:
         """Check if this data shares storage with another data.
 
         :param other: The other GraphData object.
-        :param return_dict: if true, return dictionary of which tensors share the same storage. Else returns true if
-            any tensors share the same storage.
+        :param return_dict: if true, return dictionary of which tensors share the same
+            storage. Else returns true if any tensors share the same storage.
         :return:
         """
         d = {}
         for k in self.__slots__:
             a = getattr(self, k)
             b = getattr(other, k)
-            c = same_storage(a, b)
+            if 0 in a.shape or 0 in b.shape:
+                shares_storage = False
+            else:
+                shares_storage = same_storage(a, b)
             if return_dict:
-                d[k] = c
-            elif c:
+                d[k] = shares_storage
+            elif shares_storage:
                 return True
         return d
 
@@ -169,6 +186,10 @@ class GraphData:
     @property
     def num_nodes(self):
         return self.x.shape[0]
+
+    @property
+    def num_edges(self):
+        return self.edges.shape[1]
 
     @property
     def node_shape(self):
@@ -190,23 +211,158 @@ class GraphData:
     def size(self):
         return self.x.shape[:1] + self.e.shape[:1] + self.g.shape[:1]
 
-    def _mask_fields(self, masks: Dict[str, torch.tensor]):
-        for m in masks:
-            if m not in self.__slots__:
-                raise RuntimeError("{} is not a valid field".format(m))
-        masked_fields = []
-        for field in self.__slots__:
-            if field not in masks or masks[field] is None:
-                masked_fields.append(getattr(self, field))
-            else:
-                masked_fields.append(getattr(self, field)[:, masks[field]])
-        return masked_fields
+    # def _mask_fields(self, masks: Dict[str, torch.tensor]):
+    #     for m in masks:
+    #         if m not in self.__slots__:
+    #             raise RuntimeError("{} is not a valid field".format(m))
+    #     masked_fields = []
+    #     for field in self.__slots__:
+    #         if field not in masks or masks[field] is None:
+    #             masked_fields.append(getattr(self, field))
+    #         else:
+    #             masked_fields.append(getattr(self, field)[:, masks[field]])
+    #     return masked_fields
+    #
+    # def mask(self, node_mask, edge_mask, global_mask, invert: bool = False):
+    #     d = {"x": node_mask, "e": edge_mask, "g": global_mask}
+    #     if invert:
+    #         d = {k: ~v for k, v in d.items()}
+    #     return self.__class__(*self._mask_fields(d))
 
-    def mask(self, node_mask, edge_mask, global_mask, invert: bool = False):
-        d = {"x": node_mask, "e": edge_mask, "g": global_mask}
-        if invert:
-            d = {k: ~v for k, v in d.items()}
-        return self.__class__(*self._mask_fields(d))
+    @staticmethod
+    def _apply_mask(
+        arr: torch.Tensor,
+        mask: torch.BoolTensor,
+        detach: bool,
+        as_view: bool,
+        dim: int = 0,
+    ):
+        if detach:
+            ret = arr.detach()
+
+        if mask is None:
+            if not as_view:
+                ret = arr.clone()
+        else:
+            if as_view:
+                mask = torch.where(mask)
+            if isinstance(mask, tuple) or dim == 0:
+                ret = arr[mask]
+            elif dim == 1:
+                ret = arr[:, mask]
+            else:
+                raise ValueError("dim must be 0 or 1")
+        return ret
+
+    def _validate_masks(
+        self,
+        node_mask: Optional[torch.BoolTensor],
+        edge_mask: Optional[torch.BoolTensor],
+    ):
+        if node_mask is not None and not node_mask.ndim == 1:
+            raise ValueError("Node mask must be 1 dimensional")
+        if edge_mask is not None and not edge_mask.ndim == 1:
+            raise ValueError("Edge mask must be 1 dimensional")
+        if node_mask is not None and not node_mask.dtype == torch.bool:
+            raise ValueError(
+                "Node mask must be tensor.BoolTensor, not " + str(node_mask.dtype)
+            )
+        if edge_mask is not None and not edge_mask.dtype == torch.bool:
+            raise ValueError(
+                "Edge mask must be tensor.BoolTensor, not " + str(edge_mask.dtype)
+            )
+
+    def _mask_dispatch_reindex_edges(self, edges, node_mask):
+        # remap node indices in edges
+        if node_mask is not None and not torch.all(node_mask):
+            nidx = torch.where(node_mask)[0]
+            _, edges = reindex_tensor(nidx, edges)
+        return edges
+
+    def _mask_dispatch_constructor(self, new_inst: bool, *args, **kwargs):
+        if new_inst:
+            constructor = self.__class__
+        else:
+
+            def constructor(*args, **kwargs):
+                self.__init__(*args, **kwargs)
+                return self
+
+        masked_data = constructor(*args, **kwargs)
+        masked_data.debug()
+        return masked_data
+
+    def _mask_dispatch(
+        self,
+        node_mask: Optional[torch.BoolTensor],
+        edge_mask: Optional[torch.BoolTensor],
+        as_view: bool,
+        detach: bool,
+        new_inst: bool,
+    ):
+        self._validate_masks(node_mask, edge_mask)
+        edges = self._apply_mask(self.edges, edge_mask, detach, as_view, dim=1)
+        edges = self._mask_dispatch_reindex_edges(edges, node_mask)
+        x = self._apply_mask(self.x, node_mask, detach, as_view)
+        e = self._apply_mask(self.e, edge_mask, detach, as_view)
+        g = self._apply_mask(self.g, None, detach, as_view)
+        return self._mask_dispatch_constructor(new_inst, x, e, g, edges)
+
+    def apply_edge_mask_(self, mask: torch.BoolTensor) -> GraphData:
+        """
+        In place version of :meth:`caldera.data.GraphData.apply_edge_mask`
+
+        :param mask: boolean mask
+        :return: self
+        """
+        return self._mask_dispatch(
+            None, mask, as_view=True, detach=False, new_inst=False
+        )
+
+    def apply_edge_mask(self, mask: torch.BoolTensor) -> GraphData:
+        """
+        Apply edge mask to the graph, returning a new :class:`GraphData` instance.
+
+        :param mask: boolean mask
+        :return: a new :class:`GraphData` instance.
+        """
+        return self._mask_dispatch(
+            None, mask, as_view=False, detach=True, new_inst=True
+        )
+
+    def _apply_node_mask_dispatch(
+        self, node_mask, as_view: bool, detach: bool, new_inst: bool
+    ):
+        nidx = torch.where(~node_mask)[0]
+        edge_mask = ~torch.any(
+            long_isin(self.edges.flatten(), nidx, invert=False).view(2, -1), 0
+        )
+        return self._mask_dispatch(
+            node_mask, edge_mask, as_view=as_view, detach=detach, new_inst=new_inst
+        )
+
+    def apply_node_mask_(self, node_mask: torch.BoolTensor) -> GraphData:
+        """
+        In place version of :meth:`caldera.data.GraphData.apply_node_mask`.
+
+        :param node_mask: boolean mask
+        :return: self
+        """
+        return self._apply_node_mask_dispatch(
+            node_mask, as_view=True, detach=False, new_inst=False
+        )
+
+    def apply_node_mask(self, node_mask: torch.BoolTensor) -> GraphData:
+        """
+        Apply node mask to the graph, returning a new :class:`GraphData` instance, removing any
+        edges if necessary. Note this will reindex any indices in the data (e.g. `edges`)
+
+        :param mask: boolean mask
+        :return: a new :class:`GraphData` instance.
+        """
+        return self._apply_node_mask_dispatch(
+            node_mask, as_view=False, detach=True, new_inst=True
+        )
 
     @property
     def requires_grad(self):
@@ -251,7 +407,7 @@ class GraphData:
     @classmethod
     def from_networkx(
         cls,
-        g: GraphType,
+        g: DirectedGraph,
         n_node_feat: Optional[int] = None,
         n_edge_feat: Optional[int] = None,
         n_glob_feat: Optional[int] = None,
@@ -261,6 +417,7 @@ class GraphData:
         dtype: str = torch.float32,
     ):
         """
+        Create a new :class:`GraphData` from a networkx graph.
 
         :param g:
         :param n_node_feat:
@@ -281,7 +438,7 @@ class GraphData:
                 if feature_key not in ndata:
                     n_node_feat = 0
                 else:
-                    n_node_feat = ndata[feature_key].size
+                    n_node_feat = np_or_tensor_size(ndata[feature_key])
             except StopIteration:
                 n_node_feat = 0
 
@@ -291,7 +448,7 @@ class GraphData:
                 if feature_key not in edata:
                     n_edge_feat = 0
                 else:
-                    n_edge_feat = edata[feature_key].size
+                    n_edge_feat = np_or_tensor_size(edata[feature_key])
             except StopIteration:
                 n_edge_feat = 0
 
@@ -300,7 +457,7 @@ class GraphData:
                 if feature_key not in gdata:
                     n_glob_feat = 0
                 else:
-                    n_glob_feat = gdata[feature_key].size
+                    n_glob_feat = np_or_tensor_size(gdata[feature_key])
             else:
                 n_glob_feat = 0
 
@@ -345,8 +502,8 @@ class GraphData:
         self,
         feature_key: str = "features",
         global_attr_key: str = "data",
-        graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
-    ) -> GraphType:
+        graph_type: Type[DirectedGraph] = nx.OrderedMultiDiGraph,
+    ) -> DirectedGraph:
         g = graph_type()
         for n, ndata in enumerate(self.x):
             g.add_node(n, **{feature_key: ndata})
@@ -410,15 +567,30 @@ class GraphData:
 
     @classmethod
     def random(
-        cls, n_feat: int, e_feat: int, g_feat: int, requires_grad: Optional[bool] = None
+        cls,
+        n_feat: int,
+        e_feat: int,
+        g_feat: int,
+        requires_grad: Optional[bool] = None,
+        min_nodes: int = 1,
+        max_nodes: int = 10,
+        min_edges: int = 1,
+        max_edges: int = 20,
     ) -> GraphData:
-        n_nodes = torch.randint(1, 10, torch.Size([])).item()
-        n_edges = torch.randint(1, 20, torch.Size([])).item()
+
+        n_nodes = torch.randint(min_nodes, max_nodes + 1, torch.Size([])).item()
+        n_edges = torch.randint(min_edges, max_edges + 1, torch.Size([])).item()
+
+        edges = torch.empty((2, 0), dtype=torch.long)
+        if n_nodes:
+            edges = torch.randint(0, n_nodes, torch.Size([2, n_edges]))
+        else:
+            n_edges = 0
         return cls(
             torch.randn(n_nodes, n_feat),
             torch.randn(n_edges, e_feat),
             torch.randn(1, g_feat),
-            torch.randint(0, n_nodes, torch.Size([2, n_edges])),
+            edges,
             requires_grad=requires_grad,
         )
 
@@ -428,7 +600,6 @@ class GraphData:
         x_slice: Optional[slice] = None,
         e_slice: Optional[slice] = None,
         g_slice: Optional[slice] = None,
-        edges_slice: Optional[slice] = None,
     ) -> GraphData:
         if x_slice is None:
             x_slice = slice(None, None, None)
@@ -436,11 +607,61 @@ class GraphData:
             e_slice = slice(None, None, None)
         if g_slice is None:
             g_slice = slice(None, None, None)
-        if edges_slice is None:
-            edges_slice = slice(None, None, None)
         return self.__class__(
-            self.x[:, x_slice],
-            self.e[:, e_slice],
-            self.g[:, g_slice],
-            self.edges[:, edges_slice],
+            self.x[:, x_slice], self.e[:, e_slice], self.g[:, g_slice], self.edges
         )
+
+    def index_nodes(self, idx: torch.LongTensor) -> GraphData:
+        """Apply index to nodes"""
+        cloned = self.clone()
+        cloned.index_nodes_(idx)
+        return cloned
+
+    def index_nodes_(self, idx: torch.LongTensor) -> None:
+        """In place version of :meth:`caldera.data.GraphData.index_nodes`"""
+        assert idx.ndim == 1
+        assert idx.shape[0] == self.num_nodes
+        _, edges = reindex_tensor(idx, self.edges)
+        x = self.x[idx]
+        self.edges = edges
+        self.x = x
+
+    def index_edges(self, idx: torch.LongTensor) -> GraphData:
+        """Apply index to nodes"""
+        cloned = self.clone()
+        cloned.index_edges_(idx)
+        return cloned
+
+    def index_edges_(self, idx: torch.LongTensor) -> None:
+        """In place version of :meth:`caldera.data.GraphData.index_edges`"""
+        assert idx.ndim == 1
+        assert idx.shape[0] == self.num_edges
+        self.edges = self.edges[:, idx]
+        self.e = self.e[idx]
+
+    def shuffle_nodes(self) -> GraphData:
+        cloned = self.clone()
+        cloned.shuffle_nodes_()
+        return cloned
+
+    def shuffle_edges(self) -> GraphData:
+        cloned = self.clone()
+        cloned.shuffle_edges_()
+        return cloned
+
+    def shuffle_nodes_(self) -> None:
+        idx = torch.randperm(self.num_nodes)
+        self.index_nodes_(idx)
+
+    def shuffle_edges_(self) -> None:
+        idx = torch.randperm(self.num_edges)
+        self.index_edges_(idx)
+
+    def shuffle_(self) -> None:
+        self.shuffle_edges_()
+        self.shuffle_nodes_()
+
+    def shuffle(self) -> GraphData:
+        cloned = self.clone()
+        cloned.shuffle_()
+        return cloned
