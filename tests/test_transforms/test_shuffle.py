@@ -1,9 +1,11 @@
 import torch
 from caldera.transforms import Shuffle
 from caldera.data import GraphBatch
+from caldera.utils import deterministic_seed
 
 
-def test_reverse_graph_data(random_data):
+def test_shuffle_graph_data(random_data):
+    deterministic_seed(0)
     shuffle = Shuffle()
     shuffled = shuffle(random_data)
     assert not torch.allclose(shuffled.x, random_data.x)

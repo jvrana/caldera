@@ -237,6 +237,7 @@ class GraphData:
         as_view: bool,
         dim: int = 0,
     ):
+        ret = arr
         if detach:
             ret = arr.detach()
 
@@ -673,6 +674,14 @@ class GraphData:
         cloned = self.clone()
         cloned.shuffle_()
         return cloned
+
+    def reverse(self) -> GraphData:
+        cloned = self.clone()
+        cloned.reverse_()
+        return cloned
+
+    def reverse_(self):
+        self.edges = self.edges.flip(1)
 
     def nelement(self) -> int:
         x = 0

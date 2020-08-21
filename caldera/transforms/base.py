@@ -8,9 +8,6 @@ from typing import Callable, Union
 
 
 class TransformBase(ABC):
-    def __init__(self):
-        pass
-
     def __call__(self, data):
         return self.transform(data)
 

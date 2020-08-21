@@ -14,6 +14,4 @@ class Reverse(TransformBase):
         ...
 
     def __call__(self, data: GraphBatch) -> GraphBatch:
-        reverse_data = data.clone()
-        reverse_data.edges = reverse_data.edges.flip(1)
-        return reverse_data
+        return data.reverse()
