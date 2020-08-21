@@ -344,11 +344,24 @@ class GraphData:
         )
 
     def apply_node_mask_(self, node_mask: torch.BoolTensor) -> GraphData:
+        """
+        In place version of :meth:`caldera.data.GraphData.apply_node_mask`.
+
+        :param node_mask: boolean mask
+        :return: self
+        """
         return self._apply_node_mask_dispatch(
             node_mask, as_view=True, detach=False, new_inst=False
         )
 
     def apply_node_mask(self, node_mask: torch.BoolTensor) -> GraphData:
+        """
+        Apply node mask to the graph, returning a new :class:`GraphData` instance, removing any
+        edges if necessary. Note this will reindex any indices in the data (e.g. `edges`)
+
+        :param mask: boolean mask
+        :return: a new :class:`GraphData` instance.
+        """
         return self._apply_node_mask_dispatch(
             node_mask, as_view=False, detach=True, new_inst=True
         )
@@ -406,6 +419,7 @@ class GraphData:
         dtype: str = torch.float32,
     ):
         """
+        Create a new :class:`GraphData` from a networkx graph.
 
         :param g:
         :param n_node_feat:
