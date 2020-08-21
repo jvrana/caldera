@@ -1,96 +1,11 @@
-from typing import Optional
-
 import networkx as nx
-import numpy as np
 import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.utils import _first
-from caldera.utils import scatter_group
 from typing import Union, List, Tuple, Callable, Set
 from typing import overload
 from caldera.utils import long_isin
-
-
-# def to_graph_data(
-#     g: nx.DiGraph,
-#     n_node_feat: Optional[int] = None,
-#     n_edge_feat: Optional[int] = None,
-#     n_glob_feat: Optional[int] = None,
-# ):
-#     if hasattr(g, "data"):
-#         gdata = g.data
-#     else:
-#         gdata = {}
-#
-#     if n_node_feat is None:
-#         _, ndata = _first(g.nodes(data=True))
-#         n_node_feat = ndata["features"].shape[0]
-#
-#     if n_edge_feat is None:
-#         _, _, edata = _first(g.edges(data=True))
-#         n_edge_feat = edata["features"].shape[0]
-#
-#     if n_glob_feat is None:
-#         n_glob_feat = gdata["features"].shape[0]
-#
-#     n_nodes = g.number_of_nodes()
-#     n_edges = g.number_of_edges()
-#     node_attr = np.empty((n_nodes, n_node_feat))
-#     edge_attr = np.empty((n_edges, n_edge_feat))
-#     glob_attr = np.empty((1, n_glob_feat))
-#
-#     nodes = sorted(list(g.nodes(data=True)))
-#     ndict = {}
-#     for i, (n, ndata) in enumerate(nodes):
-#         node_attr[i] = ndata["features"]
-#         ndict[n] = i
-#
-#     edges = np.empty((2, n_edges))
-#     for i, (n1, n2, edata) in enumerate(g.edges(data=True)):
-#         edges[:, i] = np.array([ndict[n1], ndict[n2]])
-#         edge_attr[i] = edata["features"]
-#
-#     glob_attr[0] = g.data["features"]
-#
-#     return GraphData(
-#         torch.tensor(node_attr, dtype=torch.float),
-#         torch.tensor(edge_attr, dtype=torch.float),
-#         torch.tensor(glob_attr, dtype=torch.float),
-#         torch.tensor(edges, dtype=torch.long),
-#     )
-
-
-# def graph_batch_to_data_list(batch: GraphBatch):
-#     assert issubclass(type(batch), GraphBatch)
-#     gidx_n, node_attr = scatter_group(batch.x, batch.node_idx)
-#     gidx_e, edge_attr = scatter_group(batch.e, batch.edge_idx)
-#     gidx_edge, edges = scatter_group(batch.edges.T, batch.edge_idx)
-#
-#     def to_dict(a, b):
-#         return dict(zip([x.item() for x in a], b))
-#
-#     ndict = to_dict(gidx_n, node_attr)
-#     edict = to_dict(gidx_e, edge_attr)
-#     edgesdict = to_dict(gidx_edge, edges)
-#     datalist = []
-#     for k in ndict:
-#         _edges = edgesdict[k].T - edgesdict[k].min()
-#
-#         data = GraphData(ndict[k], edict[k], batch.g[k], _edges)
-#         datalist.append(data)
-#     return datalist
-
-
-# def graph_data_to_nx(data: GraphData):
-#     g = nx.DiGraph()
-#     for n, ndata in enumerate(data.x):
-#         g.add_node(n, **{"features": ndata})
-#     for i, e in enumerate(data.edges.T):
-#         g.add_edge(e[0], e[1], **{"features": data.e[i]})
-#     g.data = {"features": data.g}
-#     return g
 
 
 def _create_all_edges(start: int, n_nodes: int) -> torch.LongTensor:
@@ -320,3 +235,43 @@ def nx_random_features(g: nx.DiGraph, n_feat: int, e_feat: int, g_feat: int):
         edata["features"] = torch.randn(e_feat)
     g.data = {"features": torch.randn(g_feat)}
     return g
+
+
+def adj_matrix_from_edges(edges: torch.LongTensor, n_nodes: int) -> torch.LongTensor:
+    A = torch.zeros(n_nodes, dtype=torch.long)
+    for i in edges.T:
+        A[i[0], i[1]] += 1
+    return A
+
+
+def _degree_matrix_from_edges(
+    edges: torch.LongTensor, n_nodes: int, i: int
+) -> torch.LongTensor:
+    D = torch.zeros(n_nodes, dtype=torch.long)
+    a, b = torch.unique(edges[i], return_counts=True)
+    D[(a, a)] = b
+    return D
+
+
+def in_degree_matrix_from_edges(
+    edges: torch.LongTensor, n_nodes: int
+) -> torch.LongTensor:
+    return _degree_matrix_from_edges(edges, n_nodes, 1)
+
+
+def out_degree_matrix_from_edges(
+    edges: torch.LongTensor, n_nodes: int
+) -> torch.LongTensor:
+    return _degree_matrix_from_edges(edges, n_nodes, 0)
+
+
+def adj_matrix(data: Union[GraphData, GraphBatch]) -> torch.LongTensor:
+    return adj_matrix_from_edges(data.edges, data.num_nodes)
+
+
+def in_degree(data: Union[GraphData, GraphBatch]) -> torch.LongTensor:
+    return in_degree_matrix_from_edges(data.edges, data.num_nodes)
+
+
+def out_degree(data: Union[GraphData, GraphBatch]) -> torch.LongTensor:
+    return out_degree_matrix_from_edges(data.edges, data.num_nodes)

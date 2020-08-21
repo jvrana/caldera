@@ -7,6 +7,8 @@ Choose random nodes, and induce the graph on those nodes to "h" hopes.
 from .base import TransformBase
 from caldera.data import GraphData, GraphBatch
 from typing import overload
+from caldera.data.utils import hop
+import torch
 
 
 class RandomHop(TransformBase):
@@ -19,4 +21,10 @@ class RandomHop(TransformBase):
         ...
 
     def __call__(self, data: GraphBatch) -> GraphBatch:
-        pass
+        if data.num_nodes == 0:
+            return data.clone()
+        src = torch.randint(data.num_nodes, (self.n_nodes,))
+        nodes = hop(data, src, self.n_hops)
+        node_mask = torch.BoolTensor([False] * data.num_nodes)
+        node_mask[nodes] = True
+        return data.apply_node_mask(node_mask)

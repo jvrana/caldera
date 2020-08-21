@@ -572,11 +572,19 @@ class GraphData:
         e_feat: int,
         g_feat: int,
         requires_grad: Optional[bool] = None,
-        min_nodes: int = 1,
-        max_nodes: int = 10,
-        min_edges: int = 1,
-        max_edges: int = 20,
+        min_nodes: int = None,
+        max_nodes: int = None,
+        min_edges: int = None,
+        max_edges: int = None,
     ) -> GraphData:
+        if max_nodes is None:
+            max_nodes = 20
+        if max_edges is None:
+            max_edges = 10
+        if min_nodes is None:
+            min_nodes = min(1, max_nodes)
+        if min_edges is None:
+            min_edges = min(1, max_edges)
 
         n_nodes = torch.randint(min_nodes, max_nodes + 1, torch.Size([])).item()
         n_edges = torch.randint(min_edges, max_edges + 1, torch.Size([])).item()
