@@ -14,8 +14,16 @@ def stable_arg_sort_long(arr):
     assuming we are using integers, call torch.argsort to get a stable
     sort.
     """
-    delta = torch.linspace(0, 0.99, arr.shape[0])
-    return torch.argsort(arr + delta)
+    dim = -1
+    if not (arr.dtype == torch.long or arr.dtype == torch.int):
+        raise ValueError("only torch.Long or torch.Int allowed")
+    if not dim == -1:
+        raise ValueError("only last dimension sort is supported. Try reshaping tensor.")
+    delta_shape = list(arr.shape)
+    delta_shape[dim] = 1
+    delta = torch.linspace(0, 0.99, arr.shape[dim])
+    delta = delta.repeat(delta_shape)
+    return torch.argsort(arr + delta, dim=dim)
 
 
 @torch.jit.script
@@ -101,11 +109,17 @@ def scatter_group(
 def long_isin(ar1, ar2, assume_unique=False, invert=False):
     if ar1.dtype != torch.long or ar2.dtype != torch.long:
         raise ValueError("Arrays be torch.LongTensor")
+    if ar1.ndim > 1 and ar2.ndim > 1:
+        raise ValueError(
+            "Unable to broadcast shape {} and {}".format(ar1.shape, ar2.shape)
+        )
 
     # Otherwise use sorting
     if not assume_unique:
         ar1, rev_idx = torch.unique(ar1, return_inverse=True)
-        ar2 = torch.unique(ar2)
+        ar2 = torch.unique(ar2, dim=1)
+    if ar2.ndim > 1:
+        ar1 = ar1.repeat((ar2.shape[0], 1))
 
     ar = torch.cat((ar1, ar2))
     # We need this to be a stable sort, so always use 'mergesort'

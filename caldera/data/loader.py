@@ -37,16 +37,23 @@ def collate(data_list: List[GraphData]) -> GraphBatch:
 
 
 class GraphDataLoader(DataLoader):
-
     @overload
     def __init__(self, dataset: Dataset, batch_size: ..., shuffle: ..., **kwargs):
         ...
 
     @overload
-    def __init__(self, dataset: List[GraphData], batch_size: ..., shuffle: ..., **kwargs):
+    def __init__(
+        self, dataset: List[GraphData], batch_size: ..., shuffle: ..., **kwargs
+    ):
         ...
 
-    def __init__(self, dataset: List[GraphBatch], batch_size: int=1, shuffle: bool=False, **kwargs):
+    def __init__(
+        self,
+        dataset: List[GraphBatch],
+        batch_size: int = 1,
+        shuffle: bool = False,
+        **kwargs
+    ):
         super().__init__(dataset, batch_size, shuffle, collate_fn=collate, **kwargs)
 
     def first(self, *args, **kwargs):

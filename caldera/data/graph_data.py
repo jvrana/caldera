@@ -724,4 +724,3 @@ class GraphData:
         msg += "  bytes: {}\n".format(self.memsize())
         msg += ")"
         return msg
-

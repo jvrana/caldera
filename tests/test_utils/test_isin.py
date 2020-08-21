@@ -111,3 +111,29 @@ def test_double_isin(x, y, does_raise):
             long_isin(a, b)
     else:
         long_isin(a, b)
+
+
+def test_broadcast_isin():
+    a = torch.LongTensor([[1, 2, 3, 4], [3, 4, 5, 6]])
+    b = torch.LongTensor([2, 3, 4, 5])
+    ret = long_isin(a, b)
+    c, d = ret[0], ret[1]
+    expected_c = torch.LongTensor(isin(a[0], b))
+    expected_d = torch.LongTensor(isin(a[1], b))
+
+    assert torch.all(c == expected_c)
+    assert torch.all(d == expected_d)
+
+
+def test_broadcast_isin_2():
+    a = torch.LongTensor([2, 3, 4, 5])
+    b = torch.LongTensor([[1, 2, 3, 4], [3, 4, 5, 6]])
+    ret = long_isin(a, b)
+    print(ret)
+
+    # c, d = ret[0], ret[1]
+    # expected_c = torch.LongTensor(isin(a[0], b))
+    # expected_d = torch.LongTensor(isin(a[1], b))
+    #
+    # assert torch.all(c == expected_c)
+    # assert torch.all(d == expected_d)

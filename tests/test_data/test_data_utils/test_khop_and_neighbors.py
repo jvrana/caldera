@@ -1,7 +1,7 @@
 import pytest
 from caldera.data import GraphBatch, GraphData
 from caldera.data.utils import neighbors
-from caldera.data.utils import hop
+from caldera.data.utils import induce
 from caldera.data.utils import nx_random_features
 from caldera.utils import deterministic_seed
 import networkx as nx
@@ -126,7 +126,7 @@ def test_neighbors(edges, source, expected):
     ],
 )
 def test_k_hop(edges, k, source, expected):
-
+    deterministic_seed(0)
     data = GraphData.random(
         5,
         4,
@@ -139,7 +139,7 @@ def test_k_hop(edges, k, source, expected):
     data.edges = edges
     data.debug()
 
-    res = hop(data, source, k)
+    res = induce(data, source, k)
     print(res)
     assert torch.all(res == expected)
 
@@ -154,6 +154,6 @@ def test_k_hop_random_graph(k):
 
     nodes = torch.BoolTensor([False] * batch.num_nodes)
     nodes[0] = True
-    node_mask = hop(batch, nodes, k)
+    node_mask = induce(batch, nodes, k)
     subgraph = batch.apply_node_mask(node_mask)
     print(subgraph.info())

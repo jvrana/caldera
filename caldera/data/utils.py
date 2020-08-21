@@ -203,11 +203,11 @@ def neighbors(
 
 
 @overload
-def tensor_hop(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
+def tensor_induce(data: ..., nodes: torch.BoolTensor, k: ...) -> torch.BoolTensor:
     ...
 
 
-def tensor_hop(
+def tensor_induce(
     data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int
 ) -> torch.LongTensor:
     if isinstance(nodes, int):
@@ -228,20 +228,26 @@ def tensor_hop(
                 break
     return visited
 
+
 @overload
-def hop(data: ..., nodes: torch.BoolTensor, k: ...) -> torch.BoolTensor:
+def induce(data: ..., nodes: torch.BoolTensor, k: ...) -> torch.BoolTensor:
     ...
 
 
-def hop(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int) -> torch.LongTensor:
+def induce(
+    data: Union[GraphData, GraphBatch],
+    nodes: torch.LongTensor,
+    k: int,
+    edge_dict: Optional[Dict] = None,
+) -> torch.LongTensor:
     assert nodes.ndim == 1
     if nodes.dtype == torch.long:
-        visited = bfs_nodes(nodes, data.edges, depth=k)
+        visited = bfs_nodes(nodes, data.edges, depth=k, edge_dict=edge_dict)
         ret = torch.tensor(list(visited), dtype=torch.long)
         return ret
     elif nodes.dtype == torch.bool:
         nidx = torch.where(nodes)[0]
-        visited = bfs_nodes(nidx, data.edges, depth=k)
+        visited = bfs_nodes(nidx, data.edges, depth=k, edge_dict=edge_dict)
         ret = torch.tensor([False] * data.num_nodes)
         ret[torch.LongTensor(list(visited))] = True
         return ret
@@ -307,8 +313,12 @@ def get_edge_dict(edges: torch.LongTensor) -> Dict[Hashable, Set[Hashable]]:
     return edge_dict
 
 
-def bfs_nodes(src: Union[int, List[int], Tuple[int, ...], torch.LongTensor],
-              edges: torch.LongTensor, depth: Optional[int] = None) -> Set[Hashable]:
+def bfs_nodes(
+    src: Union[int, List[int], Tuple[int, ...], torch.LongTensor],
+    edges: torch.LongTensor,
+    depth: Optional[int] = None,
+    edge_dict: Optional[Dict] = None,
+) -> Set[Hashable]:
     """
     Return nodes from a breadth-first search. Optionally provide a depth.
 
@@ -317,7 +327,8 @@ def bfs_nodes(src: Union[int, List[int], Tuple[int, ...], torch.LongTensor],
     :param depth:
     :return:
     """
-    edge_dict = get_edge_dict(edges)
+    if edge_dict is None:
+        edge_dict = get_edge_dict(edges)
     if torch.is_tensor(src):
         nlist = src.tolist()
     elif isinstance(src, list):
