@@ -7,7 +7,7 @@ from typing import Tuple
 from typing import Union
 
 
-def empty(x: torch.Tensor) -> bool:
+def tensor_is_empty(x: torch.Tensor) -> bool:
     """
     Return whether the tensor is empty.
     """
@@ -26,7 +26,7 @@ def same_storage(
         either tensor is empty (despite that they technically data_ptr are the same).
     :return: if the tensor shares the same storage
     """
-    if empty_does_not_share_storage and (empty(x) or empty(y)):
+    if empty_does_not_share_storage and (tensor_is_empty(x) or tensor_is_empty(y)):
         return False
     x_ptrs = {e.data_ptr() for e in x.view(-1)}
     y_ptrs = {e.data_ptr() for e in y.view(-1)}

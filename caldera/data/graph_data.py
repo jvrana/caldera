@@ -311,11 +311,23 @@ class GraphData:
         return self._mask_dispatch_constructor(new_inst, x, e, g, edges)
 
     def apply_edge_mask_(self, mask: torch.BoolTensor) -> GraphData:
+        """
+        In place version of :meth:`caldera.data.GraphData.apply_edge_mask`
+
+        :param mask: boolean mask
+        :return: self
+        """
         return self._mask_dispatch(
             None, mask, as_view=True, detach=False, new_inst=False
         )
 
     def apply_edge_mask(self, mask: torch.BoolTensor) -> GraphData:
+        """
+        Apply edge mask to the graph, returning a new :class:`GraphData` instance.
+
+        :param mask: boolean mask
+        :return: a new :class:`GraphData` instance.
+        """
         return self._mask_dispatch(
             None, mask, as_view=False, detach=True, new_inst=True
         )
