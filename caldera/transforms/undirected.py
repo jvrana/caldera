@@ -7,9 +7,7 @@ Make graph fully connected
 from .base import TransformBase
 from caldera.data import GraphData, GraphBatch
 from caldera.data.utils import add_edges
-import torch
 from typing import overload
-from caldera.data.utils import edges_difference
 
 
 class Undirected(TransformBase):
