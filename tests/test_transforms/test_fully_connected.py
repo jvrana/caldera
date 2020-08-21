@@ -2,7 +2,6 @@ from caldera.data import GraphBatch, GraphData
 from caldera.transforms import FullyConnected
 from caldera.utils import deterministic_seed
 from caldera.data.utils import _edges_to_tuples_set
-import networkx as nx
 import torch
 
 

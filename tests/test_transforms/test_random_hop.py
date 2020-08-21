@@ -1,7 +1,5 @@
-import torch
 from caldera.transforms import RandomHop
 from caldera.data import GraphBatch, GraphData
-from caldera.utils import deterministic_seed
 import pytest
 
 

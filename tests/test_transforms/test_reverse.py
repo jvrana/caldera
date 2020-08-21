@@ -1,6 +1,5 @@
 import torch
 from caldera.transforms import Reverse
-from caldera.data import GraphBatch, GraphData
 
 
 def test_reverse_graph_data(random_data):
