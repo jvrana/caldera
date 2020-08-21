@@ -7,18 +7,27 @@ from typing import Optional
 from copy import deepcopy as do_deepcopy
 import networkx as nx
 
-Graph = Union[nx.DiGraph, nx.Graph, nx.MultiGraph, nx.MultiDiGraph, nx.OrderedDiGraph, nx.OrderedGraph]
-DirectedGraph = Union[nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph, nx.OrderedMultiDiGraph]
+Graph = Union[
+    nx.DiGraph,
+    nx.Graph,
+    nx.MultiGraph,
+    nx.MultiDiGraph,
+    nx.OrderedDiGraph,
+    nx.OrderedGraph,
+]
+DirectedGraph = Union[
+    nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph, nx.OrderedMultiDiGraph
+]
 UndirectedGraph = Union[nx.Graph, nx.MultiGraph, nx.OrderedGraph, nx.OrderedMultiGraph]
 
 
-def iter_roots(g: nx.DiGraph) -> Generator[Hashable, None, None]:
+def nx_iter_roots(g: nx.DiGraph) -> Generator[Hashable, None, None]:
     for n in g.nodes():
         if not list(g.predecessors(n)):
             yield n
 
 
-def iter_leaves(g: nx.DiGraph) -> Generator[Hashable, None, None]:
+def nx_iter_leaves(g: nx.DiGraph) -> Generator[Hashable, None, None]:
     for n in g.nodes():
         if not list(g.successors(n)):
             yield n
@@ -52,27 +61,40 @@ def nx_is_undirected(g: Graph) -> bool:
 
 
 def nx_is_directed(g: Graph) -> bool:
-    if g.__class__ in [nx.DiGraph, nx.OrderedDiGraph, nx.MultiDiGraph, nx.OrderedMultiDiGraph]:
+    if g.__class__ in [
+        nx.DiGraph,
+        nx.OrderedDiGraph,
+        nx.MultiDiGraph,
+        nx.OrderedMultiDiGraph,
+    ]:
         return True
     return False
 
 
 @overload
-def nx_copy_to_undirected(g: ..., graph_class: Type[nx.MultiGraph]) -> Type[nx.MultiGraph]:
+def nx_copy_to_undirected(
+    g: ..., graph_class: Type[nx.MultiGraph]
+) -> Type[nx.MultiGraph]:
     ...
 
 
 @overload
-def nx_copy_to_undirected(g: ..., graph_class: Type[nx.OrderedMultiGraph]) -> Type[nx.OrderedMultiGraph]:
+def nx_copy_to_undirected(
+    g: ..., graph_class: Type[nx.OrderedMultiGraph]
+) -> Type[nx.OrderedMultiGraph]:
     ...
 
 
 @overload
-def nx_copy_to_undirected(g: ..., graph_class: Type[nx.OrderedGraph]) -> Type[nx.OrderedGraph]:
+def nx_copy_to_undirected(
+    g: ..., graph_class: Type[nx.OrderedGraph]
+) -> Type[nx.OrderedGraph]:
     ...
 
 
-def nx_copy_to_undirected(g: nx.DiGraph, graph_class: Type[nx.Graph] = nx.Graph) -> Type[nx.Graph]:
+def nx_copy_to_undirected(
+    g: nx.DiGraph, graph_class: Type[nx.Graph] = nx.Graph
+) -> Type[nx.Graph]:
     new_graph = graph_class()
     return nx_deep_copy(g, new_graph)
 
@@ -83,15 +105,21 @@ def nx_to_undirected(g: ..., graph_class: Type[nx.MultiGraph]) -> Type[nx.MultiG
 
 
 @overload
-def nx_to_undirected(g: ..., graph_class: Type[nx.OrderedMultiGraph]) -> Type[nx.OrderedMultiGraph]:
+def nx_to_undirected(
+    g: ..., graph_class: Type[nx.OrderedMultiGraph]
+) -> Type[nx.OrderedMultiGraph]:
     ...
 
 
 @overload
-def nx_to_undirected(g: ..., graph_class: Type[nx.OrderedGraph]) -> Type[nx.OrderedGraph]:
+def nx_to_undirected(
+    g: ..., graph_class: Type[nx.OrderedGraph]
+) -> Type[nx.OrderedGraph]:
     ...
 
 
-def nx_to_undirected(g: nx.DiGraph, graph_class: Type[nx.Graph] = nx.Graph) -> Type[nx.Graph]:
+def nx_to_undirected(
+    g: nx.DiGraph, graph_class: Type[nx.Graph] = nx.Graph
+) -> Type[nx.Graph]:
     new_graph = graph_class()
     return nx_shallow_copy(g, new_graph)

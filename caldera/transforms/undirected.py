@@ -6,7 +6,7 @@ Make graph fully connected
 
 from .base import TransformBase
 from caldera.data import GraphData, GraphBatch
-from caldera.data.utils import add_missing_edges
+from caldera.data.utils import add_edges
 import torch
 from typing import overload
 from caldera.data.utils import edges_difference
@@ -37,4 +37,4 @@ class Undirected(TransformBase):
         ...
 
     def __call__(self, data: GraphBatch) -> GraphBatch:
-        return add_missing_edges(data, self.fill_value, kind="undirected")
+        return add_edges(data, self.fill_value, kind="undirected")

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Type
@@ -9,7 +8,7 @@ import networkx as nx
 import torch
 
 from caldera.data.graph_data import GraphData
-from caldera.data.graph_data import GraphType
+from caldera.utils.nx_utils import DirectedGraph
 from caldera.utils import scatter_group
 from caldera.utils import stable_arg_sort_long
 from caldera.utils import reindex_tensor
@@ -159,8 +158,8 @@ class GraphBatch(GraphData):
         self,
         feature_key: str = "features",
         global_attr_key: str = "data",
-        graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
-    ) -> List[GraphType]:
+        graph_type: Type[DirectedGraph] = nx.OrderedMultiDiGraph,
+    ) -> List[DirectedGraph]:
         graphs = []
         for data in self.to_data_list():
             graphs.append(
@@ -171,7 +170,9 @@ class GraphBatch(GraphData):
         return graphs
 
     @staticmethod
-    def from_networkx_list(graphs: List[GraphType], *args, **kwargs) -> "GraphBatch":
+    def from_networkx_list(
+        graphs: List[DirectedGraph], *args, **kwargs
+    ) -> "GraphBatch":
         data_list = [GraphData.from_networkx(g, *args, **kwargs) for g in graphs]
         return GraphBatch.from_data_list(data_list)
 

@@ -6,7 +6,7 @@ Make graph fully connected
 
 from .base import TransformBase
 from caldera.data import GraphData, GraphBatch
-from caldera.data.utils import add_missing_edges
+from caldera.data.utils import add_edges
 from typing import overload
 
 
@@ -35,4 +35,4 @@ class FullyConnected(TransformBase):
         ...
 
     def __call__(self, data: GraphBatch) -> GraphBatch:
-        return add_missing_edges(data, self.fill_value, kind="complete")
+        return add_edges(data, self.fill_value, kind="complete")

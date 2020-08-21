@@ -8,7 +8,7 @@ Add self loops to graph.
 from .base import TransformBase
 from caldera.data import GraphData, GraphBatch
 from typing import overload
-from caldera.data.utils import add_missing_edges
+from caldera.data.utils import add_edges
 
 
 class AddSelfLoops(TransformBase):
@@ -21,4 +21,4 @@ class AddSelfLoops(TransformBase):
         ...
 
     def __call__(self, data: GraphBatch) -> GraphBatch:
-        return add_missing_edges(data, self.fill_value, kind="self")
+        return add_edges(data, self.fill_value, kind="self")

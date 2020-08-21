@@ -703,11 +703,3 @@ class TestView:
         print(data_view.shape)
         # assert data_view.shape == (5, 3, 5)
         assert data_view.share_storage(data)
-
-
-class TestMask:
-    def test_graph_data_mask(self):
-        data = GraphData.random(5, 4, 3)
-        mask = torch.ones(data.num_edges, dtype=torch.bool)
-        mask[-1] = False
-        data.view_edge_mask(mask)

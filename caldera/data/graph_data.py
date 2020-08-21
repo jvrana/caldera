@@ -7,7 +7,6 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Type
-from typing import TypeVar
 from typing import Union
 
 import networkx as nx
@@ -18,8 +17,7 @@ from caldera.utils import _first
 from caldera.utils import same_storage
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
-
-GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
+from caldera.utils.nx_utils import DirectedGraph
 
 
 def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
@@ -409,7 +407,7 @@ class GraphData:
     @classmethod
     def from_networkx(
         cls,
-        g: GraphType,
+        g: DirectedGraph,
         n_node_feat: Optional[int] = None,
         n_edge_feat: Optional[int] = None,
         n_glob_feat: Optional[int] = None,
@@ -504,8 +502,8 @@ class GraphData:
         self,
         feature_key: str = "features",
         global_attr_key: str = "data",
-        graph_type: Type[GraphType] = nx.OrderedMultiDiGraph,
-    ) -> GraphType:
+        graph_type: Type[DirectedGraph] = nx.OrderedMultiDiGraph,
+    ) -> DirectedGraph:
         g = graph_type()
         for n, ndata in enumerate(self.x):
             g.add_node(n, **{feature_key: ndata})
