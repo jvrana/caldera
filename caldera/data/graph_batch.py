@@ -393,3 +393,24 @@ class GraphBatch(GraphData):
             self.node_idx[:],
             self.edge_idx[e_slice],
         )
+
+    def disjoint_union(self, other: GraphBatch) -> GraphBatch:
+        """
+        Disjoint union between two GraphBatches.
+
+        :param other:
+        :return:
+        """
+        x = torch.cat(self.x, other.x)
+        e = torch.cat(self.e, other.e)
+        g = torch.cat(self.g, other.g)
+
+        n = self.node_idx.max()
+        node_idx = torch.cat(self.node_idx, other.node_idx + n)
+        edge_idx = torch.cat(self.edge_idx, other.edge_idx + n)
+        edges = torch.cat(self.edges, other.edges + n)
+        node_idx, edge_idx, edges = reindex_tensor(node_idx, edge_idx, edges)
+
+        return GraphBatch(
+            x, e, g, edges, node_idx, edge_idx
+        )
