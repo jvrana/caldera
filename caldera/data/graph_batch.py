@@ -12,7 +12,7 @@ from caldera.data.graph_data import GraphData
 from caldera.data.graph_data import GraphType
 from caldera.utils import scatter_group
 from caldera.utils import stable_arg_sort_long
-
+from caldera.utils import reindex_tensor
 
 class GraphBatch(GraphData):
     __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
@@ -226,7 +226,9 @@ class GraphBatch(GraphData):
         g = self._apply_mask(self.g, None, detach, as_view)
         node_idx = self._apply_mask(self.node_idx, node_mask, detach, as_view)
         edge_idx = self._apply_mask(self.edge_idx, edge_mask, detach, as_view)
-        raise ValueError("TODO: reindex node_idx and edge_idx")
+
+        node_idx, edge_idx = reindex_tensor(node_idx, edge_idx)
+
         return self._mask_dispatch_constructor(new_inst, x, e, g, edges,
                                                node_idx=node_idx, edge_idx=edge_idx)
 

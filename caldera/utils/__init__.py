@@ -11,6 +11,7 @@ from caldera.utils.jit import unique_with_counts
 from caldera.utils.torch_utils import deterministic_seed
 from caldera.utils.torch_utils import same_storage
 from caldera.utils.jit import long_isin
+from caldera.utils.torch_utils import empty, reindex_tensor
 
 T = TypeVar("T")
 K = TypeVar("K")

@@ -1,4 +1,4 @@
-name: base
+name: caldera 
 channels:
   - pytorch
   - defaults

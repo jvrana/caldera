@@ -17,7 +17,7 @@ import torch
 from caldera.utils import _first
 from caldera.utils import same_storage
 from caldera.utils import long_isin
-
+from caldera.utils import reindex_tensor
 
 GraphType = TypeVar("GraphType", nx.MultiDiGraph, nx.OrderedMultiDiGraph, nx.DiGraph)
 
@@ -274,17 +274,8 @@ class GraphData:
     def _mask_dispatch_reindex_edges(self, edges, node_mask):
         # remap node indices in edges
         if node_mask is not None and not torch.all(node_mask):
-            # remap edges
             nidx = torch.where(node_mask)[0]
-            new_idx = torch.arange(node_mask.sum(), dtype=torch.long)
-            old_to_new_idx = {}
-            for a, b in zip(nidx, new_idx):
-                old_to_new_idx[a.item()] = b.item()
-            remapped_edges = [[], []]
-            for n1, n2 in edges.T:
-                remapped_edges[0].append(old_to_new_idx[n1.item()])
-                remapped_edges[1].append(old_to_new_idx[n2.item()])
-            edges = torch.LongTensor(remapped_edges)
+            _, edges = reindex_tensor(nidx, edges)
         return edges
 
     def _mask_dispatch_constructor(self, new_inst: bool, *args, **kwargs):
