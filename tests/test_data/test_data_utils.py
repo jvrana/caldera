@@ -156,3 +156,4 @@ def test_k_hop_random_graph(k):
     nodes[0] = True
     node_mask = hop(batch, nodes, k)
     subgraph = batch.apply_node_mask(node_mask)
+    print(subgraph.info())

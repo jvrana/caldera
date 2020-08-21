@@ -687,11 +687,23 @@ class GraphData:
         self.edges = self.edges.flip(1)
 
     def nelement(self) -> int:
+        """Return total number of elements in the
+        :class:`caldera.data.GraphData` instance"""
         x = 0
         for v in self.__slots__:
             t = getattr(self, v)
             if hasattr(t, "nelement"):
                 x += t.nelement()
+        return x
+
+    def memsize(self):
+        """Return total number of bytes in the
+        :class:`caldera.data.GraphData` instance"""
+        x = 0
+        for v in self.__slots__:
+            t = getattr(self, v)
+            if hasattr(t, "nelement"):
+                x += t.element_size() * t.nelement()
         return x
 
     def _get_edge_dict(self):
@@ -701,4 +713,15 @@ class GraphData:
             edge_dict.setdefault(_src, list())
             edge_dict[_src].append(_dest)
         return edge_dict
+
+    def info(self):
+        msg = "{}(\n".format(self.__class__.__name__)
+        msg += "  n_nodes: {}\n".format(self.num_nodes)
+        msg += "  n_edges: {}\n".format(self.num_edges)
+        msg += "  feat_shape: {}\n".format(tuple(self.shape))
+        msg += "  size: {}\n".format(tuple(self.size))
+        msg += "  nelements: {}\n".format(self.nelement())
+        msg += "  bytes: {}\n".format(self.memsize())
+        msg += ")"
+        return msg
 
