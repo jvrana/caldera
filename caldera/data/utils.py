@@ -3,8 +3,9 @@ import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from typing import Union, List, Tuple, Callable, Set
+from typing import Union, List, Tuple, Callable, Set, Optional
 from typing import overload
+from typing import Hashable, Dict
 from caldera.utils import long_isin
 
 
@@ -202,11 +203,11 @@ def neighbors(
 
 
 @overload
-def hop(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
+def tensor_hop(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
     ...
 
 
-def hop(
+def tensor_hop(
     data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int
 ) -> torch.LongTensor:
     if isinstance(nodes, int):
@@ -214,7 +215,7 @@ def hop(
     elif nodes.dtype == torch.long and nodes.ndim == 0:
         nodes = nodes.expand(1)
 
-    visited = nodes.clone()
+    visited = nodes.detach().clone()
     for _k in range(k):
         nodes = neighbors(data, nodes)
         if nodes.dtype == torch.bool:
@@ -226,6 +227,26 @@ def hop(
             if visited.shape[0] >= data.num_nodes:
                 break
     return visited
+
+@overload
+def hop(data: ..., nodes: torch.BoolTensor, k: ...) -> torch.BoolTensor:
+    ...
+
+
+def hop(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int) -> torch.LongTensor:
+    assert nodes.ndim == 1
+    if nodes.dtype == torch.long:
+        visited = bfs_nodes(nodes, data.edges, depth=k)
+        ret = torch.tensor(list(visited), dtype=torch.long)
+        return ret
+    elif nodes.dtype == torch.bool:
+        nidx = torch.where(nodes)[0]
+        visited = bfs_nodes(nidx, data.edges, depth=k)
+        ret = torch.tensor([False] * data.num_nodes)
+        ret[torch.LongTensor(list(visited))] = True
+        return ret
+    else:
+        raise ValueError("{} is not a valid type".format(data.dtype))
 
 
 def nx_random_features(g: nx.DiGraph, n_feat: int, e_feat: int, g_feat: int):
@@ -275,3 +296,55 @@ def in_degree(data: Union[GraphData, GraphBatch]) -> torch.LongTensor:
 
 def out_degree(data: Union[GraphData, GraphBatch]) -> torch.LongTensor:
     return out_degree_matrix_from_edges(data.edges, data.num_nodes)
+
+
+def get_edge_dict(edges: torch.LongTensor) -> Dict[Hashable, Set[Hashable]]:
+    src, dest = edges.tolist()
+    edge_dict = {}
+    for _src, _dest in zip(src, dest):
+        edge_dict.setdefault(_src, set())
+        edge_dict[_src].add(_dest)
+    return edge_dict
+
+
+def bfs_nodes(src: Union[int, List[int], Tuple[int, ...], torch.LongTensor],
+              edges: torch.LongTensor, depth: Optional[int] = None) -> Set[Hashable]:
+    """
+    Return nodes from a breadth-first search. Optionally provide a depth.
+
+    :param src:
+    :param edges:
+    :param depth:
+    :return:
+    """
+    edge_dict = get_edge_dict(edges)
+    if torch.is_tensor(src):
+        nlist = src.tolist()
+    elif isinstance(src, list):
+        nlist = src[:]
+    elif isinstance(src, tuple):
+        nlist = list(src)
+    elif isinstance(src, int):
+        nlist = [src]
+
+    to_visit = nlist[:]
+    depths = [0] * len(nlist)
+    visited = set()
+    discovered = set()
+
+    i = 0
+    while to_visit and (depth is None or i < depth):
+        v = to_visit.pop(0)
+        d = depths.pop(0)
+        if depth is not None and d > depth:
+            continue
+
+        discovered.add(v)
+        if depth is None or d + 1 <= depth:
+            if v in edge_dict:
+                neighbors = edge_dict[v]
+                for n in neighbors:
+                    if n not in discovered:
+                        to_visit.append(n)
+                        depths.append(d + 1)
+    return discovered

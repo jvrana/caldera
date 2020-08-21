@@ -149,6 +149,9 @@ class GraphData:
         instance of GraphData."""
         return self._apply(func, new_inst=False, args=args, kwargs=kwargs, keys=keys)
 
+    def detach(self):
+        return self.apply(lambda x: x.detach())
+
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
 
@@ -622,7 +625,7 @@ class GraphData:
 
     def index_nodes(self, idx: torch.LongTensor) -> GraphData:
         """Apply index to nodes"""
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.index_nodes_(idx)
         return cloned
 
@@ -637,7 +640,7 @@ class GraphData:
 
     def index_edges(self, idx: torch.LongTensor) -> GraphData:
         """Apply index to nodes"""
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.index_edges_(idx)
         return cloned
 
@@ -649,12 +652,12 @@ class GraphData:
         self.e = self.e[idx]
 
     def shuffle_nodes(self) -> GraphData:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_nodes_()
         return cloned
 
     def shuffle_edges(self) -> GraphData:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_edges_()
         return cloned
 
@@ -671,12 +674,12 @@ class GraphData:
         self.shuffle_nodes_()
 
     def shuffle(self) -> GraphData:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_()
         return cloned
 
     def reverse(self) -> GraphData:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.reverse_()
         return cloned
 
@@ -690,3 +693,12 @@ class GraphData:
             if hasattr(t, "nelement"):
                 x += t.nelement()
         return x
+
+    def _get_edge_dict(self):
+        src, dest = self.edges.tolist()
+        edge_dict = {}
+        for _src, _dest in zip(src, dest):
+            edge_dict.setdefault(_src, list())
+            edge_dict[_src].append(_dest)
+        return edge_dict
+

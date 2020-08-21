@@ -422,7 +422,7 @@ class GraphBatch(GraphData):
         self.edge_idx = edge_idx
 
     def shuffle_graphs(self) -> GraphBatch:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_graphs_()
         return cloned
 
@@ -432,6 +432,6 @@ class GraphBatch(GraphData):
         self.shuffle_edges_()
 
     def shuffle(self) -> GraphBatch:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_()
         return cloned
