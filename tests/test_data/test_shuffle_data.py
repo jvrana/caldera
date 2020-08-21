@@ -17,26 +17,24 @@ def data(request):
 def shuffle(request):
     method, inplace = request.param
 
-
     if inplace:
+
         def wrapped(data):
             data1 = data.clone()
             getattr(data, method + "_")()
             return data1, data
 
     else:
+
         def wrapped(data):
             data2 = getattr(data, method)()
             return data, data2
+
     return wrapped
 
 
 @pytest.mark.parametrize(
-    'shuffle', [
-        ("shuffle_nodes", True),
-        ("shuffle_nodes", False),
-    ],
-    indirect=True
+    "shuffle", [("shuffle_nodes", True), ("shuffle_nodes", False),], indirect=True
 )
 def test_shuffle_nodes(data, shuffle):
     data1, data2 = shuffle(data)
@@ -49,11 +47,7 @@ def test_shuffle_nodes(data, shuffle):
 
 
 @pytest.mark.parametrize(
-    'shuffle', [
-        ("shuffle_edges", True),
-        ("shuffle_edges", False),
-    ],
-    indirect=True
+    "shuffle", [("shuffle_edges", True), ("shuffle_edges", False),], indirect=True
 )
 def test_shuffle_edges(data, shuffle):
     data1, data2 = shuffle(data)
@@ -63,12 +57,9 @@ def test_shuffle_edges(data, shuffle):
     assert torch.all(data1.x == data2.x)
     assert not torch.all(data1.edges == data2.edges)
 
+
 @pytest.mark.parametrize(
-    'shuffle', [
-        ("shuffle_graphs", True),
-        ("shuffle_graphs", False),
-    ],
-    indirect=True
+    "shuffle", [("shuffle_graphs", True), ("shuffle_graphs", False),], indirect=True
 )
 def test_shuffle_graphs(shuffle):
     args = (5, 4, 3)
@@ -76,7 +67,7 @@ def test_shuffle_graphs(shuffle):
     data = GraphBatch.random_batch(100, *args, **kwargs)
     data1, data2 = shuffle(data)
     if data.__class__ is GraphData:
-        pytest.xfail('GraphData has no `shuffle_graphs` method')
+        pytest.xfail("GraphData has no `shuffle_graphs` method")
 
     assert torch.all(data1.e == data2.e)
     assert not torch.all(data1.g == data2.g)
@@ -85,12 +76,9 @@ def test_shuffle_graphs(shuffle):
     assert not torch.all(data1.node_idx == data2.node_idx)
     assert not torch.all(data1.edge_idx == data2.edge_idx)
 
+
 @pytest.mark.parametrize(
-    'shuffle', [
-        ("shuffle", True),
-        ("shuffle", False),
-    ],
-    indirect=True
+    "shuffle", [("shuffle", True), ("shuffle", False),], indirect=True
 )
 def test_shuffle(data, shuffle):
     data1, data2 = shuffle(data)

@@ -665,4 +665,3 @@ class GraphData:
         cloned = self.clone()
         cloned.shuffle_()
         return cloned
-

@@ -411,9 +411,7 @@ class GraphBatch(GraphData):
         edges = torch.cat(self.edges, other.edges + n)
         node_idx, edge_idx, edges = reindex_tensor(node_idx, edge_idx, edges)
 
-        return GraphBatch(
-            x, e, g, edges, node_idx, edge_idx
-        )
+        return GraphBatch(x, e, g, edges, node_idx, edge_idx)
 
     def shuffle_graphs_(self) -> None:
         b = torch.unique(self.node_idx)
