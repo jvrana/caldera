@@ -14,8 +14,9 @@ def empty(x: torch.Tensor) -> bool:
     return 0 in x.shape
 
 
-def same_storage(x: torch.Tensor, y: torch.Tensor,
-                 empty_does_not_share_storage: bool = True) -> bool:
+def same_storage(
+    x: torch.Tensor, y: torch.Tensor, empty_does_not_share_storage: bool = True
+) -> bool:
     """
     Checks if two tensors share storage.
 
@@ -57,22 +58,30 @@ def to_one_hot(arr: torch.tensor, mx: int) -> torch.tensor:
         oh[i, a] = 1.0
     return oh
 
+
 @overload
 def unravel_index(index: int, shape: ...) -> Tuple[int]:
     ...
 
-def unravel_index(index: torch.LongTensor, shape: Union[Tuple[int, ...], torch.Size]) -> Tuple[torch.LongTensor, ...]:
+
+def unravel_index(
+    index: torch.LongTensor, shape: Union[Tuple[int, ...], torch.Size]
+) -> Tuple[torch.LongTensor, ...]:
     out = []
     for dim in reversed(shape):
         out.append(index % dim)
         index = index // dim
     return tuple(reversed(out))
 
+
 @overload
 def reindex_tensor(a: torch.Tensor) -> torch.Tensor:
     ...
 
-def reindex_tensor(a: torch.Tensor, *tensors: Tuple[torch.Tensor, ...]) -> Tuple[torch.tensor, ...]:
+
+def reindex_tensor(
+    a: torch.Tensor, *tensors: Tuple[torch.Tensor, ...]
+) -> Tuple[torch.tensor, ...]:
     """
     Reindex a tensor to lowest index. Handles multiple tensors and tensors with
     many dimensions.
@@ -104,9 +113,9 @@ def reindex_tensor(a: torch.Tensor, *tensors: Tuple[torch.Tensor, ...]) -> Tuple
     all_tensors = [a] + list(tensors)
     for t in all_tensors:
         if not t.dtype == a.dtype:
-            raise ValueError("All tensors must be same type. {} != {}".format(
-                t.dtype, a.dtype
-            ))
+            raise ValueError(
+                "All tensors must be same type. {} != {}".format(t.dtype, a.dtype)
+            )
         values_list.append(t.flatten().tolist())
 
     new_tensors = []

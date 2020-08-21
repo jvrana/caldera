@@ -121,7 +121,7 @@ def grid_data(request):
         g = newg(nx.grid_graph([2, 4, 3]))
         return GraphData.from_networkx(g)
     elif request.param is GraphBatch:
-        graphs = [newg(nx.grid_graph([2, 4, 3]))  for _ in range(10)]
+        graphs = [newg(nx.grid_graph([2, 4, 3])) for _ in range(10)]
         return GraphBatch.from_networkx_list(graphs)
     else:
         raise ValueError()
@@ -134,33 +134,25 @@ def test_node_mask_grid_graph(grid_data):
     assert subgraph.__class__ is grid_data.__class__
     print(subgraph.size)
 
+
 def test_node_mask_entire_graph():
     data1 = GraphData(
         torch.randn(5, 3),
         torch.randn(3, 3),
         torch.randn(1, 1),
-        edges=torch.LongTensor([
-            [0, 1, 2],
-            [2, 3, 4]
-        ])
+        edges=torch.LongTensor([[0, 1, 2], [2, 3, 4]]),
     )
     data2 = GraphData(
         torch.randn(5, 3),
         torch.randn(3, 3),
         torch.randn(1, 1),
-        edges=torch.LongTensor([
-            [0, 1, 2],
-            [2, 3, 4]
-        ])
+        edges=torch.LongTensor([[0, 1, 2], [2, 3, 4]]),
     )
     data3 = GraphData(
         torch.randn(5, 3),
         torch.randn(3, 3),
         torch.randn(1, 1),
-        edges=torch.LongTensor([
-            [0, 1, 2],
-            [2, 3, 4]
-        ])
+        edges=torch.LongTensor([[0, 1, 2], [2, 3, 4]]),
     )
 
     batch = GraphBatch.from_data_list([data1, data2, data3])

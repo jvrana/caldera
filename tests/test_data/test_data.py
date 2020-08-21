@@ -7,6 +7,7 @@ from flaky import flaky
 from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.utils import deterministic_seed
+
 random_graph_data = GraphData.random
 
 

@@ -244,11 +244,15 @@ def add_missing_edges(
             edges=edges[:, idx],
         )
 
+
 @overload
 def neighbors(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
     ...
 
-def neighbors(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor) -> torch.LongTensor:
+
+def neighbors(
+    data: Union[GraphData, GraphBatch], nodes: torch.LongTensor
+) -> torch.LongTensor:
     """
     Return the neighbors of the provided nodes.
 
@@ -272,11 +276,15 @@ def neighbors(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor) -> to
         dest = torch.unique(dest, sorted=True)
     return dest
 
+
 @overload
 def hop(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
     ...
 
-def hop(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int) -> torch.LongTensor:
+
+def hop(
+    data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int
+) -> torch.LongTensor:
     if isinstance(nodes, int):
         nodes = torch.LongTensor([nodes])
     elif nodes.dtype == torch.long and nodes.ndim == 0:
@@ -298,10 +306,8 @@ def hop(data: Union[GraphData, GraphBatch], nodes: torch.LongTensor, k: int) -> 
 
 def nx_random_features(g: nx.DiGraph, n_feat: int, e_feat: int, g_feat: int):
     for _, ndata in g.nodes(data=True):
-        ndata['features'] = torch.randn(n_feat)
+        ndata["features"] = torch.randn(n_feat)
     for _, _, edata in g.edges(data=True):
-        edata['features'] = torch.randn(e_feat)
-    g.data = {
-        'features': torch.randn(g_feat)
-    }
+        edata["features"] = torch.randn(e_feat)
+    g.data = {"features": torch.randn(g_feat)}
     return g

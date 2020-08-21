@@ -14,6 +14,7 @@ from caldera.utils import scatter_group
 from caldera.utils import stable_arg_sort_long
 from caldera.utils import reindex_tensor
 
+
 class GraphBatch(GraphData):
     __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
 
@@ -229,8 +230,9 @@ class GraphBatch(GraphData):
 
         node_idx, edge_idx = reindex_tensor(node_idx, edge_idx)
 
-        return self._mask_dispatch_constructor(new_inst, x, e, g, edges,
-                                               node_idx=node_idx, edge_idx=edge_idx)
+        return self._mask_dispatch_constructor(
+            new_inst, x, e, g, edges, node_idx=node_idx, edge_idx=edge_idx
+        )
 
     # def append_edges
     # def collect_and_collate(x1, i1, x2, i2, collate_fn = torch.cat):

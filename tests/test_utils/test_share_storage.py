@@ -31,14 +31,16 @@ def parameterize(n, d):
     return pytest.mark.parametrize(n, args, ids=ids)
 
 
-@pytest.fixture(params=[
-    torch.randn(100),
-    torch.randn((10, 9)),
-    torch.randn((2, 3)),
-    torch.randn((2, 0)),
-    torch.randn((0, 2)),
-    torch.tensor([])
-])
+@pytest.fixture(
+    params=[
+        torch.randn(100),
+        torch.randn((10, 9)),
+        torch.randn((2, 3)),
+        torch.randn((2, 0)),
+        torch.randn((0, 2)),
+        torch.tensor([]),
+    ]
+)
 def example(request):
     return request.param
 

@@ -30,6 +30,7 @@ def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
     else:
         raise ValueError("Must be a {} or {}".format(np.ndarry, torch.Tensor))
 
+
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
 # TODO: support n dim tensors
 # TODO: implicit support for torch.Tensor
@@ -255,9 +256,11 @@ class GraphData:
                 raise ValueError("dim must be 0 or 1")
         return ret
 
-    def _validate_masks(self,
-                        node_mask: Optional[torch.BoolTensor],
-                        edge_mask: Optional[torch.BoolTensor],):
+    def _validate_masks(
+        self,
+        node_mask: Optional[torch.BoolTensor],
+        edge_mask: Optional[torch.BoolTensor],
+    ):
         if node_mask is not None and not node_mask.ndim == 1:
             raise ValueError("Node mask must be 1 dimensional")
         if edge_mask is not None and not edge_mask.ndim == 1:
@@ -551,8 +554,8 @@ class GraphData:
         max_edges: int = 20,
     ) -> GraphData:
 
-        n_nodes = torch.randint(min_nodes, max_nodes+1, torch.Size([])).item()
-        n_edges = torch.randint(min_edges, max_edges+1, torch.Size([])).item()
+        n_nodes = torch.randint(min_nodes, max_nodes + 1, torch.Size([])).item()
+        n_edges = torch.randint(min_edges, max_edges + 1, torch.Size([])).item()
 
         edges = torch.empty((2, 0), dtype=torch.long)
         if n_nodes:
