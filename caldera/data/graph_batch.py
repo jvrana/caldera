@@ -414,3 +414,26 @@ class GraphBatch(GraphData):
         return GraphBatch(
             x, e, g, edges, node_idx, edge_idx
         )
+
+    def shuffle_graphs_(self) -> None:
+        b = torch.unique(self.node_idx)
+        ridx = torch.randperm(b.shape[0])
+        self.g = self.g[ridx]
+        _, node_idx, edge_idx = reindex_tensor(ridx, self.node_idx, self.edge_idx)
+        self.node_idx = node_idx
+        self.edge_idx = edge_idx
+
+    def shuffle_graphs(self) -> GraphBatch:
+        cloned = self.clone()
+        cloned.shuffle_graphs_()
+        return cloned
+
+    def shuffle_(self) -> None:
+        self.shuffle_graphs_()
+        self.shuffle_nodes_()
+        self.shuffle_edges_()
+
+    def shuffle(self) -> GraphBatch:
+        cloned = self.clone()
+        cloned.shuffle_()
+        return cloned

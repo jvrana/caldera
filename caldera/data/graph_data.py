@@ -610,3 +610,59 @@ class GraphData:
         return self.__class__(
             self.x[:, x_slice], self.e[:, e_slice], self.g[:, g_slice], self.edges
         )
+
+    def index_nodes(self, idx: torch.LongTensor) -> GraphData:
+        """Apply index to nodes"""
+        cloned = self.clone()
+        cloned.index_nodes_(idx)
+        return cloned
+
+    def index_nodes_(self, idx: torch.LongTensor) -> None:
+        """In place version of :meth:`caldera.data.GraphData.index_nodes`"""
+        assert idx.ndim == 1
+        assert idx.shape[0] == self.num_nodes
+        _, edges = reindex_tensor(idx, self.edges)
+        x = self.x[idx]
+        self.edges = edges
+        self.x = x
+
+    def index_edges(self, idx: torch.LongTensor) -> GraphData:
+        """Apply index to nodes"""
+        cloned = self.clone()
+        cloned.index_edges_(idx)
+        return cloned
+
+    def index_edges_(self, idx: torch.LongTensor) -> None:
+        """In place version of :meth:`caldera.data.GraphData.index_edges`"""
+        assert idx.ndim == 1
+        assert idx.shape[0] == self.num_edges
+        self.edges = self.edges[:, idx]
+        self.e = self.e[idx]
+
+    def shuffle_nodes(self) -> GraphData:
+        cloned = self.clone()
+        cloned.shuffle_nodes_()
+        return cloned
+
+    def shuffle_edges(self) -> GraphData:
+        cloned = self.clone()
+        cloned.shuffle_edges_()
+        return cloned
+
+    def shuffle_nodes_(self) -> None:
+        idx = torch.randperm(self.num_nodes)
+        self.index_nodes_(idx)
+
+    def shuffle_edges_(self) -> None:
+        idx = torch.randperm(self.num_edges)
+        self.index_edges_(idx)
+
+    def shuffle_(self) -> None:
+        self.shuffle_edges_()
+        self.shuffle_nodes_()
+
+    def shuffle(self) -> GraphData:
+        cloned = self.clone()
+        cloned.shuffle_()
+        return cloned
+
