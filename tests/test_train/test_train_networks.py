@@ -398,7 +398,7 @@ class DataLoaders:
                     g.add_edge(n2, n1)
             cls._default_g(g)
 
-            for n in nx_utils.iter_roots(g):
+            for n in nx_utils.nx_iter_roots(g):
                 ndata = g.nodes[n]
                 ndata["target"] = np.array([1.0])
 
@@ -447,7 +447,7 @@ class DataLoaders:
                     g.add_edge(n2, n1)
             cls._default_g(g)
 
-            for n in nx_utils.iter_roots(g):
+            for n in nx_utils.nx_iter_roots(g):
                 ndata = g.nodes[n]
                 ndata["target"] = np.array(10.0)
 

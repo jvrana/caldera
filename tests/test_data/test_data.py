@@ -6,6 +6,7 @@ from flaky import flaky
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
+from caldera.utils import deterministic_seed
 
 random_graph_data = GraphData.random
 
@@ -14,29 +15,21 @@ def test_random_data():
     random_graph_data(5, 4, 3)
 
 
-@pytest.fixture
-def random_data_example(request):
-    if request.param[0] is GraphData:
-        graph_data = random_graph_data(*request.param[1])
-        return graph_data
-    elif request.param[0] is GraphBatch:
-        datalist = [random_graph_data(*request.param[1]) for _ in range(10)]
-        batch = GraphBatch.from_data_list(datalist)
-        return batch
-    else:
-        raise Exception("Parameter not acceptable: {}".format(request.param))
-
-
-def rndm_data(a=(5, 6, 7), b=(5, 6, 7)):
+def rndm_data():
     return pytest.mark.parametrize(
         "random_data_example",
-        [(GraphData, a), (GraphBatch, b)],
+        [
+            (GraphData, (5, 4, 3)),
+            (GraphData, (5, 7, 10)),
+            (GraphBatch, (10, 5, 6, 7)),
+            (GraphBatch, (100, 5, 6, 7)),
+        ],
         indirect=True,
         ids=lambda x: str(x),
     )
 
 
-@rndm_data()
+# @rndm_data()
 def test_random_data_example(random_data_example):
     print(random_data_example)
 
@@ -219,7 +212,7 @@ class TestGraphData:
         Comparator.data_to_nx(data, g, fkey, gkey)
 
 
-@rndm_data()
+# @rndm_data()
 class TestApply:
     def test_apply_(self, random_data_example):
         data = random_data_example
@@ -675,12 +668,15 @@ def test_graph_batch_random_batch():
     print(batch.shape)
 
 
-@rndm_data()
+# @rndm_data()
 class TestCloneCopy:
     def test_copy(self, random_data_example):
         data = random_data_example
         data2 = data.copy()
         assert id(data) != id(data2)
+        c = data.share_storage(data2, return_dict=True)
+        print(data.size)
+        print(c)
         assert not data.share_storage(data2)
 
     def test_clone(self, random_data_example):
