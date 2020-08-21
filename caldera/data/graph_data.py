@@ -673,3 +673,11 @@ class GraphData:
         cloned = self.clone()
         cloned.shuffle_()
         return cloned
+
+    def nelement(self) -> int:
+        x = 0
+        for v in self.__slots__:
+            t = getattr(self, v)
+            if hasattr(t, "nelement"):
+                x += t.nelement()
+        return x

@@ -29,7 +29,6 @@ def rndm_data():
     )
 
 
-# @rndm_data()
 def test_random_data_example(random_data_example):
     print(random_data_example)
 
