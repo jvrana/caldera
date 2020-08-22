@@ -176,7 +176,10 @@ def neighbors(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
 
 
 def neighbors(
-    data: Union[GraphData, GraphBatch], nodes: torch.LongTensor
+    data: Union[GraphData, GraphBatch],
+    nodes: torch.LongTensor,
+    reverse: bool = False,
+    undirected: bool = False,
 ) -> torch.LongTensor:
     """
     Return the neighbors of the provided nodes.
@@ -193,13 +196,27 @@ def neighbors(
     if nodes.dtype == torch.bool:
         is_bool = True
         nodes = torch.where(nodes)[0]
-    reachable = long_isin(data.edges[0], nodes)
-    dest = data.edges[1][reachable]
-    if is_bool:
-        dest = long_isin(torch.arange(data.num_nodes), dest)
+
+    if undirected:
+        reachable1 = long_isin(data.edges[0], nodes)
+        dest1 = data.edges[1][reachable1]
+        reachable2 = long_isin(data.edges[1], nodes)
+        dest2 = data.edges[0][reachable2]
+        dest = torch.unique(torch.cat([dest1, dest2]))
     else:
-        dest = torch.unique(dest, sorted=True)
-    return dest
+        if reverse:
+            i, j = 1, 0
+        else:
+            i, j = 0, 1
+        reachable = long_isin(data.edges[i], nodes)
+        dest = data.edges[j][reachable]
+
+    if is_bool:
+        ret = torch.full((data.num_nodes,), False, dtype=torch.bool)
+        ret[dest] = True
+    else:
+        ret = torch.unique(dest, sorted=True)
+    return ret
 
 
 @overload

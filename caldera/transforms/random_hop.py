@@ -7,7 +7,7 @@ Choose random nodes, and induce the graph on those nodes to "h" hopes.
 from .base import TransformBase
 from caldera.data import GraphData, GraphBatch
 from typing import overload, Dict, Optional
-from caldera.data.utils import induce
+from caldera.data.utils import tensor_induce, induce
 import torch
 
 

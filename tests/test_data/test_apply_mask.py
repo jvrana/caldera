@@ -160,3 +160,20 @@ def test_node_mask_entire_graph():
     masked = batch.apply_node_mask(node_mask)
     print(masked.node_idx)
     print(masked.edge_idx)
+
+
+@pytest.mark.parametrize(
+    "random_data",
+    [
+        (GraphData, None, (5, 4, 3), {"min_edges": 5, "min_nodes": 10}),
+        (GraphBatch, None, (1000, 5, 4, 3)),
+    ],
+    indirect=True,
+)
+@pytest.mark.parametrize("n_nodes", [0, 1, 5, 10, 100])
+def test_node_mask_random(random_data, n_nodes, seeds):
+    n_nodes = min(n_nodes, random_data.num_nodes)
+    node_mask = torch.full((random_data.num_nodes,), False, dtype=torch.bool)
+    idx = torch.randint(random_data.num_nodes, (n_nodes,))
+    node_mask[idx] = True
+    random_data.apply_node_mask(node_mask)

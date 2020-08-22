@@ -702,3 +702,22 @@ class TestView:
         print(data_view.shape)
         # assert data_view.shape == (5, 3, 5)
         assert data_view.share_storage(data)
+
+
+def test_():
+
+    data1 = GraphData(
+        torch.randn(1, 5),
+        torch.randn(1, 4),
+        torch.randn(1, 3),
+        torch.LongTensor([[0], [0]]),
+    )
+
+    data2 = GraphData(
+        torch.randn(1, 5),
+        torch.randn(0, 4),
+        torch.randn(1, 3),
+        torch.LongTensor([[], []]),
+    )
+
+    batch = GraphBatch.from_data_list([data1, data2])

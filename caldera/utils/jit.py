@@ -107,26 +107,30 @@ def scatter_group(
 
 
 def long_isin(ar1, ar2, assume_unique=False, invert=False):
+    dim = -1
     if ar1.dtype != torch.long or ar2.dtype != torch.long:
         raise ValueError("Arrays be torch.LongTensor")
-    if ar1.ndim > 1 and ar2.ndim > 1:
+    if ar2.ndim > 1:
         raise ValueError(
-            "Unable to broadcast shape {} and {}".format(ar1.shape, ar2.shape)
+            "Unable to broadcast shape {}. Second tensor must be a "
+            "1-dimensional.".format(ar2.shape)
         )
 
     # Otherwise use sorting
     if not assume_unique:
         ar1, rev_idx = torch.unique(ar1, return_inverse=True)
-        ar2 = torch.unique(ar2, dim=1)
-    if ar2.ndim > 1:
-        ar1 = ar1.repeat((ar2.shape[0], 1))
+        ar2 = torch.unique(ar2, dim=None)
+        # TODO: how to handle repeats and unique in multidimensional tensor?
 
-    ar = torch.cat((ar1, ar2))
-    # We need this to be a stable sort, so always use 'mergesort'
-    # here. The values from the first array should always come before
-    # the values from the second array.
+    # if ar2.ndim > 1:
+    #     s = list(ar2.shape)
+    #     s[dim] = 1
+    #     ar1 = ar1.repeat(s)
+    ar = torch.cat((ar1, ar2), axis=dim)
+
+    # We need this to be a stable sort
     order = stable_arg_sort_long(ar)
-    sar = ar[order]
+    sar = torch.gather(ar, dim, order)
     if invert:
         bool_ar = sar[1:] != sar[:-1]
     else:
