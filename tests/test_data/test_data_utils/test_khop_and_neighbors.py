@@ -1,11 +1,12 @@
+import networkx as nx
 import pytest
+import torch
+
 from caldera.data import GraphBatch, GraphData
+from caldera.data.utils import induce, tensor_induce
 from caldera.data.utils import neighbors
-from caldera.data.utils import hop
 from caldera.data.utils import nx_random_features
 from caldera.utils import deterministic_seed
-import networkx as nx
-import torch
 
 
 @pytest.fixture(params=[GraphData, GraphBatch])
@@ -26,28 +27,43 @@ def test_neighbors_runnable(data, n):
 
 
 @pytest.mark.parametrize(
-    ("edges", "source", "expected"),
+    ("edges", "source", "kwargs", "expected"),
     [
-        (torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]), 0, torch.LongTensor([1, 2])),
+        (
+            torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]),
+            0,
+            {},
+            torch.LongTensor([1, 2]),
+        ),
         (
             torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]),
             torch.tensor(0),
+            {},
             torch.LongTensor([1, 2]),
         ),
-        (torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]), 1, torch.LongTensor([2])),
+        (torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]), 1, {}, torch.LongTensor([2])),
+        (
+            torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]),
+            1,
+            {"undirected": True},
+            torch.LongTensor([0, 2]),
+        ),
         (
             torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]),
             torch.tensor(1),
+            {},
             torch.LongTensor([2]),
         ),
         (
             torch.LongTensor([[0, 1, 2, 0], [1, 2, 3, 2]]),
             torch.tensor([0, 1, 2]),
+            {},
             torch.LongTensor([1, 2, 3]),
         ),
         (
             torch.LongTensor([[2, 0, 1, 0], [3, 1, 2, 2]]),
             torch.tensor([0, 1, 2]),
+            {},
             torch.LongTensor([1, 2, 3]),
         ),
         (
@@ -55,6 +71,7 @@ def test_neighbors_runnable(data, n):
             torch.BoolTensor(
                 [True, True, True, False, False, False, False, False, False, False]
             ),
+            {},
             torch.BoolTensor(
                 [False, True, True, True, False, False, False, False, False, False]
             ),
@@ -64,13 +81,14 @@ def test_neighbors_runnable(data, n):
             torch.BoolTensor(
                 [True, False, False, False, False, False, False, False, False, False]
             ),
+            {},
             torch.BoolTensor(
                 [False, True, True, False, False, False, False, False, False, False]
             ),
         ),
     ],
 )
-def test_neighbors(edges, source, expected):
+def test_neighbors(edges, source, kwargs, expected):
     data = GraphData.random(
         5,
         4,
@@ -83,7 +101,7 @@ def test_neighbors(edges, source, expected):
     data.edges = edges
     data.debug()
 
-    res = neighbors(data, source)
+    res = neighbors(data, source, **kwargs)
     print(res)
     assert torch.all(res == expected)
 
@@ -126,7 +144,7 @@ def test_neighbors(edges, source, expected):
     ],
 )
 def test_k_hop(edges, k, source, expected):
-
+    deterministic_seed(0)
     data = GraphData.random(
         5,
         4,
@@ -139,7 +157,7 @@ def test_k_hop(edges, k, source, expected):
     data.edges = edges
     data.debug()
 
-    res = hop(data, source, k)
+    res = induce(data, source, k)
     print(res)
     assert torch.all(res == expected)
 
@@ -154,6 +172,18 @@ def test_k_hop_random_graph(k):
 
     nodes = torch.BoolTensor([False] * batch.num_nodes)
     nodes[0] = True
-    node_mask = hop(batch, nodes, k)
+    node_mask = induce(batch, nodes, k)
     subgraph = batch.apply_node_mask(node_mask)
     print(subgraph.info())
+
+
+def test_k_hop_random_graph_benchmark():
+    k = 2
+    batch = GraphBatch.random_batch(1000, 50, 20, 30)
+
+    for _ in range(100):
+        nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
+        idx = torch.randint(batch.num_nodes, (2,))
+        nodes[idx] = True
+        node_mask = tensor_induce(batch, nodes, k)
+        subgraph = batch.apply_node_mask(node_mask)

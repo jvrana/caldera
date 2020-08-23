@@ -14,8 +14,16 @@ def stable_arg_sort_long(arr):
     assuming we are using integers, call torch.argsort to get a stable
     sort.
     """
-    delta = torch.linspace(0, 0.99, arr.shape[0])
-    return torch.argsort(arr + delta)
+    dim = -1
+    if not (arr.dtype == torch.long or arr.dtype == torch.int):
+        raise ValueError("only torch.Long or torch.Int allowed")
+    if not dim == -1:
+        raise ValueError("only last dimension sort is supported. Try reshaping tensor.")
+    delta_shape = list(arr.shape)
+    delta_shape[dim] = 1
+    delta = torch.linspace(0, 0.99, arr.shape[dim])
+    delta = delta.repeat(delta_shape)
+    return torch.argsort(arr + delta, dim=dim)
 
 
 @torch.jit.script
@@ -99,20 +107,30 @@ def scatter_group(
 
 
 def long_isin(ar1, ar2, assume_unique=False, invert=False):
+    dim = -1
     if ar1.dtype != torch.long or ar2.dtype != torch.long:
         raise ValueError("Arrays be torch.LongTensor")
+    if ar2.ndim > 1:
+        raise ValueError(
+            "Unable to broadcast shape {}. Second tensor must be a "
+            "1-dimensional.".format(ar2.shape)
+        )
 
     # Otherwise use sorting
     if not assume_unique:
         ar1, rev_idx = torch.unique(ar1, return_inverse=True)
-        ar2 = torch.unique(ar2)
+        ar2 = torch.unique(ar2, dim=None)
+        # TODO: how to handle repeats and unique in multidimensional tensor?
 
-    ar = torch.cat((ar1, ar2))
-    # We need this to be a stable sort, so always use 'mergesort'
-    # here. The values from the first array should always come before
-    # the values from the second array.
+    # if ar2.ndim > 1:
+    #     s = list(ar2.shape)
+    #     s[dim] = 1
+    #     ar1 = ar1.repeat(s)
+    ar = torch.cat((ar1, ar2), axis=dim)
+
+    # We need this to be a stable sort
     order = stable_arg_sort_long(ar)
-    sar = ar[order]
+    sar = torch.gather(ar, dim, order)
     if invert:
         bool_ar = sar[1:] != sar[:-1]
     else:

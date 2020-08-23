@@ -53,7 +53,7 @@ class GraphBatch(GraphData):
         if (
             self.node_idx.shape[0]
             and self.edge_idx.shape[0]
-            and self.node_idx.max() != self.edge_idx.max()
+            and self.edge_idx.max() > self.node_idx.max()
         ):
             raise RuntimeError(
                 "Number of graphs in node_idx {} and edge_idx {} mismatch".format(
