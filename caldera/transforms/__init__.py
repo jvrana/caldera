@@ -11,3 +11,4 @@ from .random_hop import RandomHop
 from .random_node_mask import RandomNodeMask
 from .random_edge_mask import RandomEdgeMask
 from .shuffle import Shuffle
+from .base import TransformCallable

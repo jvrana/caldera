@@ -33,6 +33,8 @@ def collate(data_list: List[GraphData]) -> GraphBatch:
                     type(data_list), type(data_list[0]), type(data_list[0][0])
                 )
             )
+    elif isinstance(data_list, list) and len(data_list) == 1:
+        return data_list[0]
     return GraphBatch.from_data_list(data_list)
 
 

@@ -3,6 +3,7 @@ from caldera.utils import deterministic_seed
 from caldera.data import GraphBatch, GraphData
 
 
+# TODO: remove? in main conftest.py
 @pytest.fixture(
     params=[
         (GraphData, (5, 4, 3)),
