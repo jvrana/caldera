@@ -3,6 +3,7 @@ from typing import Tuple
 
 import torch
 
+
 @torch.jit.script
 def stable_arg_sort(arr, mn: float, mx: float):
     dim = -1
@@ -27,7 +28,8 @@ def stable_arg_sort_long(arr):
     dim = -1
     if not (arr.dtype == torch.long or arr.dtype == torch.int):
         raise ValueError("only torch.Long or torch.Int allowed")
-    return stable_arg_sort(arr, 0., 0.99)
+    return stable_arg_sort(arr, 0.0, 0.99)
+
 
 # @torch.jit.script
 # def torch_unique(
@@ -162,26 +164,26 @@ def long_isin(ar1, ar2, assume_unique: bool = False, invert: bool = False):
         return ret[rev_idx]
 
 
-def n_dim_isin(a: torch.LongTensor, b: torch.LongTensor):
-    delta_b = torch.linspace(0., 0.99, b.shape[0])
-    delta_a = delta_b.repeat(a.shape[0]).expand(1, -1)
-
-    c = a.repeat(b.shape[0], 1) + delta_a.T
-    d = b + delta_b.expand(1, -1).T
-
-    dim = -1
-
-    ar1, rev_idx = torch.unique(c, return_inverse=True)
-    ar2 = torch.unique(d, dim=None)
-
-    ar = torch.cat((ar1, ar2), axis=dim)
-    g = 0.99 / b.shape[0]
-    order = stable_arg_sort(ar, g * 0.1, g * 0.99)
-    sar = torch.gather(ar, dim, order)
-    bool_ar = sar[1:] == sar[:-1]
-    flag = torch.cat((bool_ar, torch.tensor([False])))
-
-    ret = torch.empty(ar.shape, dtype=torch.bool)
-    ret[order] = flag
-    ret = ret[rev_idx].reshape(a.shape[0], b.shape[0], -1)
-    return ret
+# def n_dim_isin(a: torch.LongTensor, b: torch.LongTensor):
+#     delta_b = torch.linspace(0.1, 0.9, b.shape[0])
+#     delta_a = delta_b.repeat(a.shape[0]).expand(1, -1)
+#
+#     c = a.repeat(b.shape[0], 1) + delta_a.T
+#     d = b + delta_b.expand(1, -1).T
+#
+#     dim = -1
+#
+#     ar1, rev_idx = torch.unique(c, return_inverse=True)
+#     ar2 = torch.unique(d, dim=None)
+#
+#     ar = torch.cat((ar1, ar2), axis=dim)
+#     g = 0.99 / b.shape[0]
+#     order = stable_arg_sort(ar, 0., 0.99)
+#     sar = torch.gather(ar, dim, order)
+#     bool_ar = sar[1:] == sar[:-1]
+#     flag = torch.cat((bool_ar, torch.tensor([False])))
+#
+#     ret = torch.empty(ar.shape, dtype=torch.bool)
+#     ret[order] = flag
+#     ret = ret[rev_idx].reshape(a.shape[0], b.shape[0], -1)
+#     return ret
