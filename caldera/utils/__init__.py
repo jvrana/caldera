@@ -8,7 +8,7 @@ from caldera.utils.jit import torch_scatter_group
 from caldera.utils.jit import stable_arg_sort_long
 from caldera.utils.torch_utils import deterministic_seed
 from caldera.utils.torch_utils import same_storage
-from caldera.utils.jit import long_isin
+from caldera.utils.jit import long_isin, n_dim_isin
 from caldera.utils.torch_utils import tensor_is_empty, reindex_tensor, unravel_index
 
 T = TypeVar("T")

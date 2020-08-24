@@ -1,9 +1,7 @@
-from caldera.utils import long_isin
+from caldera.utils import long_isin, n_dim_isin
 import torch
 import pytest
 from caldera.utils import deterministic_seed
-
-
 def test_long_isin_explicit():
     a = torch.LongTensor([1, 2, 3, 4])
     b = torch.LongTensor([2, 3, 4, 5])
@@ -146,6 +144,35 @@ def test_broadcast_isin_benchmark(seeds):
     print(c)
 
 
+@pytest.mark.parametrize(('adim', 'bdim'), [
+    ((1, 10), (1, 10)),
+    ((2, 10), (1, 10)),
+    ((3, 10), (1, 10)),
+    ((1, 10), (2, 10)),
+], ids=lambda x: str(x))
+def test_n_dim_isin(adim, bdim):
+    a = torch.randint(10, adim)
+    b = torch.randint(10, bdim)
+    c = n_dim_isin(a, b)
+    print(c)
+    print(c.shape)
+    assert c.shape[0] == a.shape[0]
+    assert c.shape[1] == b.shape[0]
+    assert c.shape[2] == a.shape[1]
+    print()
+    for i in range(c.shape[0]):
+        for j in range(c.shape[1]):
+            expected = torch.BoolTensor(isin(a[i], b[j]))
+            print((i, j))
+            _c = c[i, j]
+            print(a[i])
+            print(b[j])
+            print('expected')
+            print(expected)
+            print(_c)
+            assert expected.shape == torch.Size([a.shape[1]])
+            assert _c.shape == torch.Size([a.shape[1]])
+            assert torch.all(_c == expected)
 # def test_broadcast_isin_2():
 #     a = torch.LongTensor([2, 3, 4, 5])
 #     b = torch.LongTensor([[1, 2, 3, 4], [3, 4, 5, 6]])

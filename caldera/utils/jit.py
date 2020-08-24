@@ -1,8 +1,18 @@
-from typing import Dict
 from typing import List
 from typing import Tuple
 
 import torch
+
+@torch.jit.script
+def stable_arg_sort(arr, mn: float, mx: float):
+    dim = -1
+    if not dim == -1:
+        raise ValueError("only last dimension sort is supported. Try reshaping tensor.")
+    delta_shape = list(arr.shape)
+    delta_shape[dim] = 1
+    delta = torch.linspace(mn, mx, arr.shape[dim])
+    delta = delta.repeat(delta_shape)
+    return torch.argsort(arr + delta, dim=dim)
 
 
 @torch.jit.script
@@ -17,14 +27,7 @@ def stable_arg_sort_long(arr):
     dim = -1
     if not (arr.dtype == torch.long or arr.dtype == torch.int):
         raise ValueError("only torch.Long or torch.Int allowed")
-    if not dim == -1:
-        raise ValueError("only last dimension sort is supported. Try reshaping tensor.")
-    delta_shape = list(arr.shape)
-    delta_shape[dim] = 1
-    delta = torch.linspace(0, 0.99, arr.shape[dim])
-    delta = delta.repeat(delta_shape)
-    return torch.argsort(arr + delta, dim=dim)
-
+    return stable_arg_sort(arr, 0., 0.99)
 
 # @torch.jit.script
 # def torch_unique(
@@ -157,3 +160,28 @@ def long_isin(ar1, ar2, assume_unique: bool = False, invert: bool = False):
         return ret[: len(ar1)]
     else:
         return ret[rev_idx]
+
+
+def n_dim_isin(a: torch.LongTensor, b: torch.LongTensor):
+    delta_b = torch.linspace(0., 0.99, b.shape[0])
+    delta_a = delta_b.repeat(a.shape[0]).expand(1, -1)
+
+    c = a.repeat(b.shape[0], 1) + delta_a.T
+    d = b + delta_b.expand(1, -1).T
+
+    dim = -1
+
+    ar1, rev_idx = torch.unique(c, return_inverse=True)
+    ar2 = torch.unique(d, dim=None)
+
+    ar = torch.cat((ar1, ar2), axis=dim)
+    g = 0.99 / b.shape[0]
+    order = stable_arg_sort(ar, g * 0.1, g * 0.99)
+    sar = torch.gather(ar, dim, order)
+    bool_ar = sar[1:] == sar[:-1]
+    flag = torch.cat((bool_ar, torch.tensor([False])))
+
+    ret = torch.empty(ar.shape, dtype=torch.bool)
+    ret[order] = flag
+    ret = ret[rev_idx].reshape(a.shape[0], b.shape[0], -1)
+    return ret
