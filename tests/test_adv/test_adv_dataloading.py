@@ -6,7 +6,7 @@ from caldera.transforms import RandomHop
 # test on medium sized graphs
 @pytest.mark.parametrize(
     "random_data_list",
-    [(10, GraphData, None, (5, 4, 3), {"min_nodes": 1000,})],
+    [(10, GraphData, None, (5, 4, 3), {"min_nodes": 1000})],
     indirect=True,
 )
 def test_random_k_hop(random_data_list):

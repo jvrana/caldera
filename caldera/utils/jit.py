@@ -26,53 +26,59 @@ def stable_arg_sort_long(arr):
     return torch.argsort(arr + delta, dim=dim)
 
 
-@torch.jit.script
-def unique_with_counts(arr: torch.Tensor, grouped: Dict[int, int]):
-    """Equivalent to `np.unqiue(x, return_counts=True)`
+# @torch.jit.script
+# def torch_unique(
+#     arr: torch.Tensor, return_counts: bool = False, return_inverse: bool = False
+# ):
+#     """A much faster implementation (300X) of `torch.unique` for 1-D tensors.
+#      Approximately equal to `torch.unique(arr)`
+#
+#      .. code-block:: pythong
+#
+#         unique(arr, {}, {}, return_counts=True, return_inverse=True)
+#     """
+#     grouped: Dict[int, int] = {}
+#     idx: Dict[int, int] = {}
+#     for x in arr:
+#         if x.item() not in grouped:
+#             grouped[x.item()] = 1
+#         else:
+#             grouped[x.item()] += 1
+#
+#     values = torch.empty(len(grouped), dtype=arr.dtype)
+#     if return_inverse:
+#         idx_len = len(arr)
+#     else:
+#         idx_len = 0
+#     idxs = torch.empty(idx_len, dtype=torch.long)
+#
+#     if return_counts:
+#         counts_len = len(grouped)
+#     else:
+#         counts_len = 0
+#     counts = torch.zeros(counts_len, dtype=torch.long)
+#     for i, (k, v) in enumerate(grouped.items()):
+#         values[i] = k
+#         if return_counts:
+#             counts[i] = v
+#
+#     a = torch.argsort(values)
+#     values = values[a]
+#     if return_inverse:
+#         for i, v in enumerate(values):
+#             idx[v.item()] = i
+#
+#         for i, _a in enumerate(arr):
+#             idxs[i] = idx[_a.item()]
+#
+#     if return_counts:
+#         counts = counts[a]
+#
+#     return values, idxs, counts
 
-    :param arr:
-    :param grouped:
-    :return:
-    """
-    for x in arr:
-        if x.item() not in grouped:
-            grouped[x.item()] = 1
-        else:
-            grouped[x.item()] += 1
 
-    counts = torch.zeros(len(grouped), dtype=torch.long)
-    values = torch.empty(len(grouped), dtype=arr.dtype)
-    for i, (k, v) in enumerate(grouped.items()):
-        values[i] = k
-        counts[i] = v
-    a = torch.argsort(values)
-
-    return values[a], counts[a]
-
-
-@torch.jit.script
-def jit_scatter_group(
-    x: torch.Tensor, idx: torch.Tensor, d: Dict[int, int]
-) -> Tuple[torch.Tensor, List[torch.Tensor]]:
-    """Assume idx is a sorted index.
-
-    :param x:
-    :param idx:
-    :param d:
-    :return:
-    """
-    arg = stable_arg_sort_long(idx)
-    x = x[arg]
-    groups, b = unique_with_counts(idx, d)
-    i_a = 0
-    arr_list = []
-    for i_b in b:
-        arr_list.append(x[i_a : i_a + i_b.item()])
-        i_a += i_b.item()
-    return groups, arr_list
-
-
-def scatter_group(
+# @torch.jit.script
+def torch_scatter_group(
     x: torch.Tensor, idx: torch.Tensor
 ) -> Tuple[torch.Tensor, List[torch.Tensor]]:
     """Group a tensor by indices. This is equivalent to successive applications
@@ -103,10 +109,18 @@ def scatter_group(
     :param idx: indices
     :return: tuple of unique, sorted indices and a list of tensors corresponding to the groups
     """
-    return jit_scatter_group(x, idx, {})
+    arg = stable_arg_sort_long(idx)
+    x = x[arg]
+    groups, b = torch.unique(idx, return_counts=True)
+    i_a = 0
+    arr_list = []
+    for i_b in b:
+        arr_list.append(x[i_a : i_a + i_b.item()])
+        i_a += i_b.item()
+    return groups, arr_list
 
 
-def long_isin(ar1, ar2, assume_unique=False, invert=False):
+def long_isin(ar1, ar2, assume_unique: bool = False, invert: bool = False):
     dim = -1
     if ar1.dtype != torch.long or ar2.dtype != torch.long:
         raise ValueError("Arrays be torch.LongTensor")

@@ -4,10 +4,8 @@ from typing import Dict
 from typing import List
 from typing import TypeVar
 
-from caldera.utils.jit import jit_scatter_group
-from caldera.utils.jit import scatter_group
+from caldera.utils.jit import torch_scatter_group
 from caldera.utils.jit import stable_arg_sort_long
-from caldera.utils.jit import unique_with_counts
 from caldera.utils.torch_utils import deterministic_seed
 from caldera.utils.torch_utils import same_storage
 from caldera.utils.jit import long_isin

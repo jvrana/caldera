@@ -13,7 +13,7 @@ import torch
 class TestDataset:
     @pytest.mark.parametrize(
         "random_data_list",
-        [(100, GraphData), (1, GraphData), (0, GraphData),],
+        [(100, GraphData), (1, GraphData), (0, GraphData)],
         indirect=True,
         ids=lambda x: str(x[0]) + "_" + x[1].__name__,
     )
@@ -25,7 +25,7 @@ class TestDataset:
 
     @pytest.mark.parametrize(
         "random_data_list",
-        [(300, GraphData),],
+        [(300, GraphData)],
         indirect=True,
         ids=lambda x: str(x[0]) + "_" + x[1].__name__,
     )
@@ -48,7 +48,7 @@ class TestDataset:
 
     @pytest.mark.parametrize(
         "random_data_list",
-        [(300, GraphData),],
+        [(300, GraphData)],
         indirect=True,
         ids=lambda x: str(x[0]) + "_" + x[1].__name__,
     )
@@ -71,7 +71,7 @@ class TestDataset:
 class TestDatasetTransform:
     @pytest.mark.parametrize(
         "random_data_list",
-        [(300, GraphData),],
+        [(300, GraphData)],
         indirect=True,
         ids=lambda x: str(x[0]) + "_" + x[1].__name__,
     )
@@ -88,7 +88,7 @@ class TestDatasetTransform:
 
     @pytest.mark.parametrize(
         "random_data_list",
-        [(300, GraphData),],
+        [(300, GraphData)],
         indirect=True,
         ids=lambda x: str(x[0]) + "_" + x[1].__name__,
     )

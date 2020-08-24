@@ -11,7 +11,7 @@ from caldera.utils.nx_algorithms.floydwarshall import sympy_floyd_warshall
 class TestSympyFloydWarshall:
     @pytest.mark.parametrize("key", ["weight", "cost"])
     @pytest.mark.parametrize(
-        "complete_graph", [1, 100, 200, (100, nx.Graph),], indirect=True
+        "complete_graph", [1, 100, 200, (100, nx.Graph)], indirect=True
     )
     def test_floyd_warshall(self, key, complete_graph):
         g, params, indirect_params = complete_graph
@@ -22,6 +22,6 @@ class TestSympyFloydWarshall:
             edata[key] = random.randint(1, 10)
         expected = nx.floyd_warshall_numpy(g, nodelist=nodelist, weight=key)
         x = sympy_floyd_warshall(
-            g=g, f=lambda x: x, symbols=(key,), accumulators={key: "sum"},
+            g=g, f=lambda x: x, symbols=(key,), accumulators={key: "sum"}
         )
         assert np.allclose(x, expected)

@@ -592,7 +592,7 @@ class GraphData:
 
         if min_edges is None and max_edges is None:
             min_edges = 1
-            max_edges = int(0.5 * max_nodes)
+            max_edges = max(min_edges, int(0.5 * max_nodes))
         elif min_edges is None and max_edges is not None:
             min_edges = min(1, max_edges)
         elif min_edges is not None and max_edges is None:

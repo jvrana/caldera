@@ -143,6 +143,7 @@ def test_broadcast_isin_benchmark(seeds):
     b = torch.randint(1000, (10000,))
 
     c = long_isin(a, b)
+    print(c)
 
 
 # def test_broadcast_isin_2():
