@@ -13,6 +13,12 @@ import torch
 
 class RandomHop(TransformBase):
     def __init__(self, n_nodes: int, n_hops: int):
+        """
+        Choose subgraphs from a graph.
+
+        :param n_nodes:
+        :param n_hops:
+        """
         self.n_nodes = n_nodes
         self.n_hops = n_hops
 

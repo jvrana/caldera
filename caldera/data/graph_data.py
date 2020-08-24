@@ -581,14 +581,22 @@ class GraphData:
         min_edges: int = None,
         max_edges: int = None,
     ) -> GraphData:
-        if max_nodes is None:
+        # initialize defaults
+        if min_nodes is None and max_nodes is None:
+            min_nodes = 1
             max_nodes = 20
-        if max_edges is None:
-            max_edges = 10
-        if min_nodes is None:
+        elif min_nodes is None and max_nodes is not None:
             min_nodes = min(1, max_nodes)
-        if min_edges is None:
+        elif min_nodes is not None and max_nodes is None:
+            max_nodes = max(min_nodes, 10)
+
+        if min_edges is None and max_edges is None:
+            min_edges = 1
+            max_edges = int(0.5 * max_nodes)
+        elif min_edges is None and max_edges is not None:
             min_edges = min(1, max_edges)
+        elif min_edges is not None and max_edges is None:
+            max_edges = max(min_edges, int(0.5 * max_nodes))
 
         n_nodes = torch.randint(min_nodes, max_nodes + 1, torch.Size([])).item()
         n_edges = torch.randint(min_edges, max_edges + 1, torch.Size([])).item()
