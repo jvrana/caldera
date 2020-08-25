@@ -36,8 +36,8 @@ from caldera.data import GraphDataLoader
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
 from caldera.utils import deterministic_seed
-from caldera.utils import nx_utils
-from caldera.utils.torch_utils import to_one_hot
+from caldera.utils.nx import nx_iter_roots
+from caldera.utils.tensor import to_one_hot
 
 SEED = 0
 
@@ -398,7 +398,7 @@ class DataLoaders:
                     g.add_edge(n2, n1)
             cls._default_g(g)
 
-            for n in nx_utils.nx_iter_roots(g):
+            for n in nx_iter_roots(g):
                 ndata = g.nodes[n]
                 ndata["target"] = np.array([1.0])
 
@@ -447,7 +447,7 @@ class DataLoaders:
                     g.add_edge(n2, n1)
             cls._default_g(g)
 
-            for n in nx_utils.nx_iter_roots(g):
+            for n in nx_iter_roots(g):
                 ndata = g.nodes[n]
                 ndata["target"] = np.array(10.0)
 

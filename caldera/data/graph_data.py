@@ -13,11 +13,10 @@ import networkx as nx
 import numpy as np
 import torch
 
-from caldera.utils import _first
-from caldera.utils import same_storage
+from caldera.utils import _first, same_storage
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
-from caldera.utils.nx_utils import DirectedGraph
+from caldera.utils.nx.graph_utils import DirectedGraph
 
 
 def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
@@ -149,6 +148,9 @@ class GraphData:
         instance of GraphData."""
         return self._apply(func, new_inst=False, args=args, kwargs=kwargs, keys=keys)
 
+    def detach(self):
+        return self.apply(lambda x: x.detach())
+
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
 
@@ -237,6 +239,7 @@ class GraphData:
         as_view: bool,
         dim: int = 0,
     ):
+        ret = arr
         if detach:
             ret = arr.detach()
 
@@ -572,11 +575,27 @@ class GraphData:
         e_feat: int,
         g_feat: int,
         requires_grad: Optional[bool] = None,
-        min_nodes: int = 1,
-        max_nodes: int = 10,
-        min_edges: int = 1,
-        max_edges: int = 20,
+        min_nodes: int = None,
+        max_nodes: int = None,
+        min_edges: int = None,
+        max_edges: int = None,
     ) -> GraphData:
+        # initialize defaults
+        if min_nodes is None and max_nodes is None:
+            min_nodes = 1
+            max_nodes = 20
+        elif min_nodes is None and max_nodes is not None:
+            min_nodes = min(1, max_nodes)
+        elif min_nodes is not None and max_nodes is None:
+            max_nodes = max(min_nodes, 10)
+
+        if min_edges is None and max_edges is None:
+            min_edges = 1
+            max_edges = max(min_edges, int(0.5 * max_nodes))
+        elif min_edges is None and max_edges is not None:
+            min_edges = min(1, max_edges)
+        elif min_edges is not None and max_edges is None:
+            max_edges = max(min_edges, int(0.5 * max_nodes))
 
         n_nodes = torch.randint(min_nodes, max_nodes + 1, torch.Size([])).item()
         n_edges = torch.randint(min_edges, max_edges + 1, torch.Size([])).item()
@@ -613,7 +632,7 @@ class GraphData:
 
     def index_nodes(self, idx: torch.LongTensor) -> GraphData:
         """Apply index to nodes"""
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.index_nodes_(idx)
         return cloned
 
@@ -628,7 +647,7 @@ class GraphData:
 
     def index_edges(self, idx: torch.LongTensor) -> GraphData:
         """Apply index to nodes"""
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.index_edges_(idx)
         return cloned
 
@@ -640,12 +659,12 @@ class GraphData:
         self.e = self.e[idx]
 
     def shuffle_nodes(self) -> GraphData:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_nodes_()
         return cloned
 
     def shuffle_edges(self) -> GraphData:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_edges_()
         return cloned
 
@@ -662,6 +681,57 @@ class GraphData:
         self.shuffle_nodes_()
 
     def shuffle(self) -> GraphData:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_()
         return cloned
+
+    def reverse(self) -> GraphData:
+        cloned = self.detach().clone()
+        cloned.reverse_()
+        return cloned
+
+    def reverse_(self):
+        self.edges = self.edges.flip(1)
+
+    def nelement(self) -> int:
+        """Return total number of elements in the
+        :class:`caldera.data.GraphData` instance"""
+        x = 0
+        for v in self.__slots__:
+            t = getattr(self, v)
+            if hasattr(t, "nelement"):
+                x += t.nelement()
+        return x
+
+    def memsize(self):
+        """Return total number of bytes in the
+        :class:`caldera.data.GraphData` instance"""
+        x = 0
+        for v in self.__slots__:
+            t = getattr(self, v)
+            if hasattr(t, "nelement"):
+                x += t.element_size() * t.nelement()
+        return x
+
+    def density(self):
+        """Return density of the graph"""
+        return self.num_edges / (self.num_nodes * (self.num_nodes - 1))
+
+    def _get_edge_dict(self):
+        src, dest = self.edges.tolist()
+        edge_dict = {}
+        for _src, _dest in zip(src, dest):
+            edge_dict.setdefault(_src, list())
+            edge_dict[_src].append(_dest)
+        return edge_dict
+
+    def info(self):
+        msg = "{}(\n".format(self.__class__.__name__)
+        msg += "  n_nodes: {}\n".format(self.num_nodes)
+        msg += "  n_edges: {}\n".format(self.num_edges)
+        msg += "  feat_shape: {}\n".format(tuple(self.shape))
+        msg += "  size: {}\n".format(tuple(self.size))
+        msg += "  nelements: {}\n".format(self.nelement())
+        msg += "  bytes: {}\n".format(self.memsize())
+        msg += ")"
+        return msg

@@ -1,7 +1,6 @@
-from caldera.utils import long_isin
+from caldera.utils import long_isin, deterministic_seed
 import torch
 import pytest
-from caldera.utils import deterministic_seed
 
 
 def test_long_isin_explicit():
@@ -111,3 +110,81 @@ def test_double_isin(x, y, does_raise):
             long_isin(a, b)
     else:
         long_isin(a, b)
+
+
+def test_broadcast_isin():
+    a = torch.LongTensor([[8, 1, 2, 3, 4, 4, 7], [1, 1, 3, 4, 5, 6, 3]])
+    b = torch.LongTensor([4, 3, 5, 2])
+    ret = long_isin(a, b)
+    c, d = ret[0], ret[1]
+    expected_c = torch.LongTensor(isin(a[0], b))
+    expected_d = torch.LongTensor(isin(a[1], b))
+    print(c)
+    print(d)
+    assert torch.all(c == expected_c)
+    assert torch.all(d == expected_d)
+
+
+def test_broadcast_isin_random(seeds):
+    a = torch.randint(10, (5, 10))
+    b = torch.randint(20, (5,))
+
+    c = long_isin(a, b)
+    assert c.shape == a.shape
+    for i, _a in enumerate(a):
+        expected = torch.LongTensor(isin(_a, b))
+        _c = c[i]
+        assert torch.all(c[i] == expected)
+
+
+def test_broadcast_isin_benchmark(seeds):
+    a = torch.randint(1000, (5, 10000))
+    b = torch.randint(1000, (10000,))
+
+    c = long_isin(a, b)
+    print(c)
+
+
+# @pytest.mark.parametrize(('adim', 'bdim'), [
+#     ((1, 10), (1, 10)),
+#     ((2, 10), (1, 10)),
+#     ((3, 10), (1, 10)),
+#     ((1, 10), (2, 10)),
+#     ((2, 5), (2, 5)),
+#     ((5, 10), (5, 10)),
+# ], ids=lambda x: str(x))
+# def test_n_dim_isin(adim, bdim):
+#     a = torch.randint(10, adim)
+#     b = torch.randint(10, bdim)
+#     c = n_dim_isin(a, b)
+#     print(c)
+#     print(c.shape)
+#     assert c.shape[0] == a.shape[0]
+#     assert c.shape[1] == b.shape[0]
+#     assert c.shape[2] == a.shape[1]
+#     print()
+#     for i in range(c.shape[0]):
+#         for j in range(c.shape[1]):
+#             expected = torch.BoolTensor(isin(a[i], b[j]))
+#             print((i, j))
+#             _c = c[i, j]
+#             print(a[i])
+#             print(b[j])
+#             print('expected')
+#             print(expected)
+#             print(_c)
+#             assert expected.shape == torch.Size([a.shape[1]])
+#             assert _c.shape == torch.Size([a.shape[1]])
+#             assert torch.all(_c == expected)
+# # def test_broadcast_isin_2():
+# #     a = torch.LongTensor([2, 3, 4, 5])
+# #     b = torch.LongTensor([[1, 2, 3, 4], [3, 4, 5, 6]])
+# #     ret = long_isin(a, b)
+# #     print(ret)
+#
+# # c, d = ret[0], ret[1]
+# # expected_c = torch.LongTensor(isin(a[0], b))
+# # expected_d = torch.LongTensor(isin(a[1], b))
+# #
+# # assert torch.all(c == expected_c)
+# # assert torch.all(d == expected_d)

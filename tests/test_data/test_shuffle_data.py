@@ -34,7 +34,7 @@ def shuffle(request):
 
 
 @pytest.mark.parametrize(
-    "shuffle", [("shuffle_nodes", True), ("shuffle_nodes", False),], indirect=True
+    "shuffle", [("shuffle_nodes", True), ("shuffle_nodes", False)], indirect=True
 )
 def test_shuffle_nodes(data, shuffle):
     data1, data2 = shuffle(data)
@@ -47,7 +47,7 @@ def test_shuffle_nodes(data, shuffle):
 
 
 @pytest.mark.parametrize(
-    "shuffle", [("shuffle_edges", True), ("shuffle_edges", False),], indirect=True
+    "shuffle", [("shuffle_edges", True), ("shuffle_edges", False)], indirect=True
 )
 def test_shuffle_edges(data, shuffle):
     data1, data2 = shuffle(data)
@@ -59,7 +59,7 @@ def test_shuffle_edges(data, shuffle):
 
 
 @pytest.mark.parametrize(
-    "shuffle", [("shuffle_graphs", True), ("shuffle_graphs", False),], indirect=True
+    "shuffle", [("shuffle_graphs", True), ("shuffle_graphs", False)], indirect=True
 )
 def test_shuffle_graphs(shuffle):
     args = (5, 4, 3)
@@ -78,7 +78,7 @@ def test_shuffle_graphs(shuffle):
 
 
 @pytest.mark.parametrize(
-    "shuffle", [("shuffle", True), ("shuffle", False),], indirect=True
+    "shuffle", [("shuffle", True), ("shuffle", False)], indirect=True
 )
 def test_shuffle(data, shuffle):
     data1, data2 = shuffle(data)

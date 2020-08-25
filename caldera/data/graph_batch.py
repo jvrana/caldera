@@ -8,8 +8,8 @@ import networkx as nx
 import torch
 
 from caldera.data.graph_data import GraphData
-from caldera.utils.nx_utils import DirectedGraph
-from caldera.utils import scatter_group
+from caldera.utils.nx import DirectedGraph
+from caldera.utils import torch_scatter_group
 from caldera.utils import stable_arg_sort_long
 from caldera.utils import reindex_tensor
 
@@ -53,7 +53,7 @@ class GraphBatch(GraphData):
         if (
             self.node_idx.shape[0]
             and self.edge_idx.shape[0]
-            and self.node_idx.max() != self.edge_idx.max()
+            and self.edge_idx.max() > self.node_idx.max()
         ):
             raise RuntimeError(
                 "Number of graphs in node_idx {} and edge_idx {} mismatch".format(
@@ -127,9 +127,9 @@ class GraphBatch(GraphData):
         )
 
     def to_data_list(self) -> List[GraphData]:
-        gidx_n, node_attr = scatter_group(self.x, self.node_idx)
-        gidx_e, edge_attr = scatter_group(self.e, self.edge_idx)
-        gidx_edge, edges = scatter_group(self.edges.T, self.edge_idx)
+        gidx_n, node_attr = torch_scatter_group(self.x, self.node_idx)
+        gidx_e, edge_attr = torch_scatter_group(self.e, self.edge_idx)
+        gidx_edge, edges = torch_scatter_group(self.edges.T, self.edge_idx)
 
         def to_dict(a, b):
             return dict(zip([x.item() for x in a], b))
@@ -178,7 +178,7 @@ class GraphBatch(GraphData):
 
     def append_nodes(self, node_attr: torch.Tensor, node_idx: torch.Tensor):
         datalist = self.to_data_list()
-        idx, groups = scatter_group(node_attr, node_idx)
+        idx, groups = torch_scatter_group(node_attr, node_idx)
         for i, g in zip(idx, groups):
             data = datalist[i.item()]
             data.append_nodes(g)
@@ -422,7 +422,7 @@ class GraphBatch(GraphData):
         self.edge_idx = edge_idx
 
     def shuffle_graphs(self) -> GraphBatch:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_graphs_()
         return cloned
 
@@ -432,6 +432,6 @@ class GraphBatch(GraphData):
         self.shuffle_edges_()
 
     def shuffle(self) -> GraphBatch:
-        cloned = self.clone()
+        cloned = self.detach().clone()
         cloned.shuffle_()
         return cloned
