@@ -1,23 +1,22 @@
 import random
-from typing import overload, Union
 from typing import List
+from typing import overload
 from typing import Tuple
+from typing import Union
+
 import numpy
 import torch
 
 
 def tensor_is_empty(x: torch.Tensor) -> bool:
-    """
-    Return whether the tensor is empty.
-    """
+    """Return whether the tensor is empty."""
     return 0 in x.shape
 
 
 def same_storage(
     x: torch.Tensor, y: torch.Tensor, empty_does_not_share_storage: bool = True
 ) -> bool:
-    """
-    Checks if two tensors share storage.
+    """Checks if two tensors share storage.
 
     :param x: first tensor
     :param y: second tensor
@@ -80,9 +79,8 @@ def reindex_tensor(a: torch.Tensor) -> torch.Tensor:
 def reindex_tensor(
     a: torch.Tensor, *tensors: Tuple[torch.Tensor, ...]
 ) -> Tuple[torch.tensor, ...]:
-    """
-    Reindex a tensor to lowest index. Handles multiple tensors and tensors with
-    many dimensions.
+    """Reindex a tensor to lowest index. Handles multiple tensors and tensors
+    with many dimensions.
 
     .. code-block:: python
 
@@ -158,7 +156,6 @@ def stable_arg_sort_long(arr):
     assuming we are using integers, call torch.argsort to get a stable
     sort.
     """
-    dim = -1
     if not (arr.dtype == torch.long or arr.dtype == torch.int):
         raise ValueError("only torch.Long or torch.Int allowed")
     return stable_arg_sort(arr, 0.0, 0.99)

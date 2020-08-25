@@ -1,9 +1,11 @@
-from caldera.data import GraphData, GraphBatch
-import torch
-from caldera.utils import deterministic_seed
 import networkx as nx
 import pytest
-from caldera.data.utils import nx_random_features
+import torch
+
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.utils import deterministic_seed
+from caldera.utils.testing import nx_random_features
 
 
 def test_mask_all_nodes():

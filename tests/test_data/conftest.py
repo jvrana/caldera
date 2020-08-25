@@ -1,6 +1,8 @@
 import pytest
+
+from caldera.data import GraphBatch
+from caldera.data import GraphData
 from caldera.utils import deterministic_seed
-from caldera.data import GraphBatch, GraphData
 
 
 # TODO: remove? in main conftest.py

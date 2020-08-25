@@ -2,11 +2,13 @@ import networkx as nx
 import pytest
 import torch
 
-from caldera.data import GraphBatch, GraphData
-from caldera.data.utils import induce, tensor_induce
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.data.utils import induce
 from caldera.data.utils import neighbors
-from caldera.data.utils import nx_random_features
+from caldera.data.utils import tensor_induce
 from caldera.utils import deterministic_seed
+from caldera.utils.testing import nx_random_features
 
 
 @pytest.fixture(params=[GraphData, GraphBatch])

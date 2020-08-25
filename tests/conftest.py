@@ -1,13 +1,14 @@
+from functools import partial
 from os.path import abspath
 from os.path import dirname
 from os.path import join
 
 import torch
 
-from caldera.utils.tensorboard import new_writer as new_summary_writer
+from caldera.data import GraphBatch
+from caldera.data import GraphData
 from caldera.utils import deterministic_seed
-from caldera.data import GraphData, GraphBatch
-from functools import partial
+from caldera.utils.tensorboard import new_writer as new_summary_writer
 
 
 #############################
@@ -132,8 +133,7 @@ def new_writer():
 
 @pytest.fixture(params=list(range(3)), ids=lambda x: "seed" + str(x))
 def seeds(request):
-    """
-    Example usage of fixture
+    """Example usage of fixture.
 
     .. code-block:: python
 

@@ -2,7 +2,7 @@ from os.path import isdir
 
 try:
     from torch.utils.tensorboard import SummaryWriter
-except ImportError as e:
+except ImportError:
     SummaryWriter = None
 
 if SummaryWriter is None:

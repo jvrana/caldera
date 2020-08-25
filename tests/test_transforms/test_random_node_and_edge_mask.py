@@ -1,6 +1,9 @@
 import pytest
-from caldera.transforms import RandomNodeMask, RandomEdgeMask
-from caldera.data import GraphData, GraphBatch
+
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.transforms import RandomEdgeMask
+from caldera.transforms import RandomNodeMask
 
 
 parametrize_dropout = pytest.mark.parametrize(

@@ -1,6 +1,7 @@
-from caldera.data.utils import bfs_nodes
-import torch
 import pytest
+import torch
+
+from caldera.data.utils import bfs_nodes
 from caldera.utils import deterministic_seed
 
 

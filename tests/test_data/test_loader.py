@@ -1,7 +1,8 @@
+import torch
+
 from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
-import torch
 
 
 def test_loader():
