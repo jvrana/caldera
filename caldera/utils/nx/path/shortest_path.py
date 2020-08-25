@@ -1,14 +1,14 @@
-from .path_utils import PathAccumulator, PathSymbol, PathNpSum
+from .path_utils import PathSymbol, PathNpSum
 from typing import Hashable, Union, Tuple, List, Optional, Callable, Dict, overload
 from heapq import heappop
 from heapq import heappush
 from itertools import count
 import numpy as np
 import networkx as nx
-from caldera.utils.nx.utils import Graph
+from caldera.utils.nx.graph_utils import Graph
 
 
-def _weight_function(v, u, e, k):
+def _weight_function(e, k):
     if e is None:
         return None
     return e[k]
@@ -85,7 +85,7 @@ def _multisource_dijkstra(
             break
         for u, e in g_succ[v].items():
             # vu cost breakdown for  each symbol
-            costs = np.array([_weight_function(v, u, e, sym.name) for sym in symbols])
+            costs = np.array([_weight_function(e, sym.name) for sym in symbols])
 
             # vu_dist break down using accumulating function
             x = np.stack([dist_parts[v], costs])

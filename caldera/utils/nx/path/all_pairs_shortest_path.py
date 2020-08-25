@@ -1,13 +1,13 @@
 import numpy as np
-import networkx as nx
-from typing import Union, Callable, Type, List, Hashable
+from typing import Callable, Type, List, Hashable
 from collections import OrderedDict
 from caldera.utils.np import replace_nan_with_inf
 from .path_utils import PathSymbol, PathSum
+from caldera.utils.nx.graph_utils import Graph
 
 
 def floyd_warshall(
-    g: Union[nx.DiGraph, nx.Graph],
+    g: Graph,
     symbols: List[PathSymbol],
     func: Callable = None,
     nodelist: List[Hashable] = None,
@@ -15,7 +15,8 @@ def floyd_warshall(
     dtype: Type = np.float64,
 ):
     """
-    Usage:
+    Run the floyd-warshall algorithm (all pairs shortest path) with arbitrary
+    cost functions.
 
     .. code-block:: python
 

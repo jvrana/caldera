@@ -16,7 +16,7 @@ import torch
 from caldera.utils import _first, same_storage
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
-from caldera.utils.nx.utils import DirectedGraph
+from caldera.utils.nx.graph_utils import DirectedGraph
 
 
 def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
