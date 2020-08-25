@@ -8,7 +8,7 @@ import networkx as nx
 import torch
 
 from caldera.data.graph_data import GraphData
-from caldera.utils.nx_utils import DirectedGraph
+from caldera.utils.nx import DirectedGraph
 from caldera.utils import torch_scatter_group
 from caldera.utils import stable_arg_sort_long
 from caldera.utils import reindex_tensor
