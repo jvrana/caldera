@@ -713,6 +713,10 @@ class GraphData:
                 x += t.element_size() * t.nelement()
         return x
 
+    def density(self):
+        """Return density of the graph"""
+        return self.num_edges / (self.num_nodes * (self.num_nodes - 1))
+
     def _get_edge_dict(self):
         src, dest = self.edges.tolist()
         edge_dict = {}
