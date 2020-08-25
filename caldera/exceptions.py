@@ -1,2 +1,2 @@
-class CalderaNetsException(Exception):
+class CalderaException(Exception):
     """Generic exception."""

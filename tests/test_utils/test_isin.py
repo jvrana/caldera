@@ -1,7 +1,6 @@
-from caldera.utils import long_isin
+from caldera.utils import long_isin, deterministic_seed
 import torch
 import pytest
-from caldera.utils import deterministic_seed
 
 
 def test_long_isin_explicit():

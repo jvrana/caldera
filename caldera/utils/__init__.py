@@ -4,12 +4,11 @@ from typing import Dict
 from typing import List
 from typing import TypeVar
 
-from caldera.utils.jit import torch_scatter_group
-from caldera.utils.jit import stable_arg_sort_long
-from caldera.utils.torch_utils import deterministic_seed
-from caldera.utils.torch_utils import same_storage
-from caldera.utils.jit import long_isin
-from caldera.utils.torch_utils import tensor_is_empty, reindex_tensor, unravel_index
+from caldera.utils.tensor import torch_scatter_group
+from caldera.utils.tensor import stable_arg_sort_long
+from caldera.utils.tensor import long_isin
+from caldera.utils.tensor import reindex_tensor, unravel_index
+from caldera.utils.tensor import tensor_is_empty, same_storage, deterministic_seed
 
 T = TypeVar("T")
 K = TypeVar("K")

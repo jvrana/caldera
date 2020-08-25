@@ -1,5 +1,4 @@
 import networkx as nx
-import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
@@ -7,6 +6,11 @@ from typing import Union, List, Tuple, Callable, Set, Optional
 from typing import overload
 from typing import Hashable, Dict
 from caldera.utils import long_isin
+
+from scipy.sparse import coo_matrix
+import torch
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import floyd_warshall
 
 
 def _create_all_edges(start: int, n_nodes: int) -> torch.LongTensor:
@@ -272,6 +276,17 @@ def induce(
         raise ValueError("{} is not a valid type".format(data.dtype))
 
 
+def graph_data_to_coo_matrix(
+    data: Union[GraphData, GraphBatch],
+    fill_value=1,
+    tensor_type=torch.sparse.FloatTensor,
+):
+    ij = data.edges
+    v = torch.full(data.edges[0].shape, fill_value=fill_value, dtype=torch.float)
+    size = torch.Size([data.num_nodes] * 2)
+    return tensor_type(ij, v, size)
+
+
 def nx_random_features(g: nx.DiGraph, n_feat: int, e_feat: int, g_feat: int):
     for _, ndata in g.nodes(data=True):
         ndata["features"] = torch.randn(n_feat)
@@ -282,10 +297,31 @@ def nx_random_features(g: nx.DiGraph, n_feat: int, e_feat: int, g_feat: int):
 
 
 def adj_matrix_from_edges(edges: torch.LongTensor, n_nodes: int) -> torch.LongTensor:
-    A = torch.zeros(n_nodes, dtype=torch.long)
+    A = torch.zeros((n_nodes, n_nodes), dtype=torch.long)
     for i in edges.T:
         A[i[0], i[1]] += 1
     return A
+
+
+def graph_matrix(
+    g: GraphData,
+    dtype=torch.float,
+    include_edge_attr: bool = True,
+    fill_value: Union[int, float, torch.Tensor] = 0,
+    edge_value: Union[int, float, torch.Tensor] = 1,
+):
+    edges = g.edges
+    if include_edge_attr:
+        shape = (g.num_nodes, g.num_nodes, g.e.shape[1])
+    else:
+        shape = (g.num_nodes, g.num_nodes)
+    M = torch.full(shape, fill_value=fill_value, dtype=dtype)
+    if include_edge_attr:
+        v = g.e
+    else:
+        v = edge_value
+    M[edges.unbind()] = v
+    return M
 
 
 def _degree_matrix_from_edges(
@@ -311,6 +347,10 @@ def out_degree_matrix_from_edges(
 
 def adj_matrix(data: Union[GraphData, GraphBatch]) -> torch.LongTensor:
     return adj_matrix_from_edges(data.edges, data.num_nodes)
+
+
+# TODO: data directly to csr matrix
+# TODO: data directly to coo matrix
 
 
 def in_degree(data: Union[GraphData, GraphBatch]) -> torch.LongTensor:
@@ -376,3 +416,65 @@ def bfs_nodes(
                         to_visit.append(n)
                         depths.append(d + 1)
     return discovered
+
+
+# def torch_floyd_warshall(data: Union[GraphData, GraphBatch],):
+#     """
+#     Run the floyd-warshall algorithm (all pairs shortest path) with arbitrary
+#     cost functions.
+#
+#     .. code-block:: python
+#
+#         W = floyd_warshall2(g, symbols=[
+#                 PathSymbol("A", SumPath),
+#                 PathSymbol("B", MulPath)
+#             ], func: lambda a, b: a / b
+#         )
+#
+#     .. code-block:: python
+#
+#         W = floyd_warshall2(g, key="weight")
+#
+#     :param g:
+#     :param symbols:
+#     :param func:
+#     :param nodelist:
+#     :param return_all:
+#     :param dtype:
+#     :return:
+#     """
+#
+#     A = graph_matrix(
+#         data,
+#         include_edge_attr=False,
+#         dtype=torch.float,
+#         fill_value=float("inf"),
+#         edge_value=1,
+#     )
+#
+#     n, m = list(A.shape)
+#
+#     I = torch.eye(n)
+#     A[I == 1] = 0  # diagonal elements should be zero
+#     for i in range(n):
+#         B = A[0, :].expand(1, -1) + A[:, 0].expand(1, -1).T
+#         torch.masked_scatter(A, B<A, B)
+#     return A
+
+from caldera.utils.sparse import torch_coo_to_scipy_coo
+from scipy.sparse.csgraph import floyd_warshall as cs_graph_floyd_warshall
+
+
+def floyd_warshall(data: Union[GraphData, GraphBatch], **kwargs):
+    """
+    Run the floyd-warshall algorithm
+    """
+
+    m = graph_data_to_coo_matrix(data, fill_value=1).coalesce()
+    m._values()[:] = 1
+    A = torch_coo_to_scipy_coo(m)
+    graph = csr_matrix(A)
+
+    default_kwargs = dict(directed=True)
+    default_kwargs.update(kwargs)
+    return cs_graph_floyd_warshall(graph, **default_kwargs)

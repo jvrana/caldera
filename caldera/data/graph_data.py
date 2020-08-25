@@ -13,11 +13,10 @@ import networkx as nx
 import numpy as np
 import torch
 
-from caldera.utils import _first
-from caldera.utils import same_storage
+from caldera.utils import _first, same_storage
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
-from caldera.utils.nx_utils import DirectedGraph
+from caldera.utils.nx.graph_utils import DirectedGraph
 
 
 def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
@@ -713,6 +712,10 @@ class GraphData:
             if hasattr(t, "nelement"):
                 x += t.element_size() * t.nelement()
         return x
+
+    def density(self):
+        """Return density of the graph"""
+        return self.num_edges / (self.num_nodes * (self.num_nodes - 1))
 
     def _get_edge_dict(self):
         src, dest = self.edges.tolist()
