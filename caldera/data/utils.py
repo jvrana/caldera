@@ -282,10 +282,31 @@ def nx_random_features(g: nx.DiGraph, n_feat: int, e_feat: int, g_feat: int):
 
 
 def adj_matrix_from_edges(edges: torch.LongTensor, n_nodes: int) -> torch.LongTensor:
-    A = torch.zeros(n_nodes, dtype=torch.long)
+    A = torch.zeros((n_nodes, n_nodes), dtype=torch.long)
     for i in edges.T:
         A[i[0], i[1]] += 1
     return A
+
+
+def graph_matrix(
+    g: GraphData,
+    dtype=torch.float,
+    include_edge_attr: bool = True,
+    fill_value: Union[int, float, torch.Tensor] = 0,
+    edge_value: Union[int, float, torch.Tensor] = 1,
+):
+    edges = g.edges
+    if include_edge_attr:
+        shape = (g.num_nodes, g.num_nodes, g.e.shape[1])
+    else:
+        shape = (g.num_nodes, g.num_nodes)
+    M = torch.full(shape, fill_value=fill_value, dtype=dtype)
+    if include_edge_attr:
+        v = g.e
+    else:
+        v = edge_value
+    M[edges.unbind()] = v
+    return M
 
 
 def _degree_matrix_from_edges(
@@ -376,3 +397,48 @@ def bfs_nodes(
                         to_visit.append(n)
                         depths.append(d + 1)
     return discovered
+
+
+def torch_floyd_warshall(data: Union[GraphData, GraphBatch],):
+    """
+    Run the floyd-warshall algorithm (all pairs shortest path) with arbitrary
+    cost functions.
+
+    .. code-block:: python
+
+        W = floyd_warshall2(g, symbols=[
+                PathSymbol("A", SumPath),
+                PathSymbol("B", MulPath)
+            ], func: lambda a, b: a / b
+        )
+
+    .. code-block:: python
+
+        W = floyd_warshall2(g, key="weight")
+
+    :param g:
+    :param symbols:
+    :param func:
+    :param nodelist:
+    :param return_all:
+    :param dtype:
+    :return:
+    """
+
+    A = graph_matrix(
+        data,
+        include_edge_attr=False,
+        dtype=torch.float,
+        fill_value=float("inf"),
+        edge_value=1,
+    )
+
+    n, m = list(A.shape)
+
+    I = torch.eye(n)
+    A[I == 1] = 0  # diagonal elements should be zero
+    for i in range(n):
+        B = A[0, :].expand(1, -1) + A[:, 0].expand(1, -1).T
+        idx = torch.where(B < A)
+        A[idx] = B[idx]
+    return A
