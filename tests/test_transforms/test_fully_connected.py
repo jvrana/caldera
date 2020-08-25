@@ -1,8 +1,10 @@
-from caldera.data import GraphBatch, GraphData
+import torch
+
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.data.utils._utils import _edges_to_tuples_set
 from caldera.transforms import FullyConnected
 from caldera.utils import deterministic_seed
-from caldera.data.utils import _edges_to_tuples_set
-import torch
 
 
 def test_fully_connected_singe_graph_batch_manual():

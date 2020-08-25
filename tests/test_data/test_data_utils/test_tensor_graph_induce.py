@@ -1,7 +1,8 @@
-from caldera.data.utils import tensor_induce
 import pytest
-from caldera.data import GraphBatch
 import torch
+
+from caldera.data import GraphBatch
+from caldera.data.utils import tensor_induce
 
 
 @pytest.mark.parametrize(

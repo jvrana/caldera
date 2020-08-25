@@ -1,7 +1,12 @@
-from caldera.data import GraphData, GraphBatch, GraphDataset, GraphBatchDataset
-from caldera.transforms import RandomNodeMask, RandomEdgeMask
 import pytest
 import torch
+
+from caldera.data import GraphBatch
+from caldera.data import GraphBatchDataset
+from caldera.data import GraphData
+from caldera.data import GraphDataset
+from caldera.transforms import RandomEdgeMask
+from caldera.transforms import RandomNodeMask
 
 
 @pytest.mark.incremental

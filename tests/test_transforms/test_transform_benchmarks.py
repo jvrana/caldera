@@ -1,15 +1,14 @@
-from caldera.transforms import (
-    AddSelfLoops,
-    FullyConnected,
-    RandomNodeMask,
-    RandomEdgeMask,
-    RandomHop,
-    Reverse,
-    Undirected,
-    Shuffle,
-)
 import pytest
+
 from caldera.data import GraphBatch
+from caldera.transforms import AddSelfLoops
+from caldera.transforms import FullyConnected
+from caldera.transforms import RandomEdgeMask
+from caldera.transforms import RandomHop
+from caldera.transforms import RandomNodeMask
+from caldera.transforms import Reverse
+from caldera.transforms import Shuffle
+from caldera.transforms import Undirected
 
 
 transforms = [

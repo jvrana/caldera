@@ -1,7 +1,9 @@
-from caldera.transforms import RandomHop
-from caldera.data import GraphBatch, GraphData
-from caldera.data.utils import get_edge_dict
 import pytest
+
+from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.data.utils import get_edge_dict
+from caldera.transforms import RandomHop
 
 
 @pytest.mark.parametrize(

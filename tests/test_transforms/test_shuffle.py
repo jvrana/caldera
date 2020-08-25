@@ -1,6 +1,7 @@
 import torch
-from caldera.transforms import Shuffle
+
 from caldera.data import GraphBatch
+from caldera.transforms import Shuffle
 from caldera.utils import deterministic_seed
 
 

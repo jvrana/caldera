@@ -1,8 +1,10 @@
-from caldera.data import GraphBatch, GraphData
+import pytest
+import torch
+
+from caldera.data import GraphBatch
+from caldera.data import GraphData
 from caldera.transforms import Undirected
 from caldera.utils import deterministic_seed
-import torch
-import pytest
 
 
 @pytest.fixture(params=[GraphData, GraphBatch])

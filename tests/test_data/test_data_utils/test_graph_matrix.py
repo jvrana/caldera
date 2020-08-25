@@ -1,5 +1,6 @@
-from caldera.data.utils import graph_matrix
 import pytest
+
+from caldera.data.utils import graph_matrix
 
 
 @pytest.mark.parametrize("include_edge_attr", [True, False])
