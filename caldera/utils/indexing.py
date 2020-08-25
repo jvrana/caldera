@@ -3,12 +3,15 @@ from functools import reduce
 from typing import Generator
 from typing import overload
 from typing import Tuple
+from typing import Type
 from typing import Union
 
 import torch
 
+SizeType = Union[torch.Size, Tuple[int, ...]]
 
-def repeat_roll(shape: Tuple[int, ...], dim: int) -> torch.Tensor:
+
+def repeat_roll(shape: SizeType, dim: int) -> torch.Tensor:
     """Roll over shape, rolling the repeat over different dimension."""
     torch.arange(shape[dim])
 
@@ -26,11 +29,13 @@ def repeat_roll(shape: Tuple[int, ...], dim: int) -> torch.Tensor:
     return torch.repeat_interleave(torch.arange(shape[dim]), n).repeat(m)
 
 
-def unroll_index(shape: Tuple[int, ...]) -> Tuple[torch.LongTensor, ...]:
+def unroll_index(
+    shape: SizeType, dtype: Type = torch.long
+) -> Tuple[torch.LongTensor, ...]:
     idx = tuple()
     for dim in range(len(shape)):
-        idx = idx + (repeat_roll(shape, dim),)
-    return idx.to(torch.long)
+        idx = idx + (repeat_roll(shape, dim).to(dtype),)
+    return idx
 
 
 @overload
@@ -39,7 +44,7 @@ def unravel_index(index: int, shape: ...) -> Tuple[int]:
 
 
 def unravel_index(
-    index: torch.LongTensor, shape: Union[Tuple[int, ...], torch.Size]
+    index: torch.LongTensor, shape: SizeType
 ) -> Tuple[torch.LongTensor, ...]:
     out = []
     for dim in reversed(shape):

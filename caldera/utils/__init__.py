@@ -6,6 +6,10 @@ from typing import TypeVar
 
 from caldera.utils.indexing import reindex_tensor
 from caldera.utils.indexing import unravel_index
+from caldera.utils.sparse import scatter_coo
+from caldera.utils.sparse import scatter_coo_fill
+from caldera.utils.sparse import scatter_indices
+from caldera.utils.sparse import torch_coo_to_scipy_coo
 from caldera.utils.tensor import deterministic_seed
 from caldera.utils.tensor import long_isin
 from caldera.utils.tensor import same_storage
