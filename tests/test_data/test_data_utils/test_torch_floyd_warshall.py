@@ -1,5 +1,5 @@
-from caldera.data.utils import floyd_warshall
 from caldera.data import GraphData
+from caldera.data.utils import floyd_warshall
 
 
 def test_floyd_warshall():

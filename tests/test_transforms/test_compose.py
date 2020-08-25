@@ -1,5 +1,8 @@
-from caldera.transforms import Compose, RandomNodeMask, RandomHop, Shuffle
 from caldera.data import GraphBatch
+from caldera.transforms import Compose
+from caldera.transforms import RandomHop
+from caldera.transforms import RandomNodeMask
+from caldera.transforms import Shuffle
 
 
 def test_compose(seeds):

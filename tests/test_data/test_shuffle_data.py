@@ -1,6 +1,8 @@
-from caldera.data import GraphData, GraphBatch
-import torch
 import pytest
+import torch
+
+from caldera.data import GraphBatch
+from caldera.data import GraphData
 
 
 @pytest.fixture(params=[GraphData, GraphBatch])
