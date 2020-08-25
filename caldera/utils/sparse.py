@@ -83,6 +83,7 @@ def _coo_tensor(
     return torch.sparse_coo_tensor(indices, source, **kwargs)
 
 
+# TODO: infer size from index sizes
 def scatter_coo(
     indices: torch.LongTensor,
     source: torch.FloatTensor,
