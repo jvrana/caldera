@@ -1,5 +1,4 @@
 import random
-from itertools import product
 
 import networkx as nx
 import numpy as np
@@ -22,6 +21,6 @@ class TestSympyFloydWarshall:
             edata[key] = random.randint(1, 10)
         expected = nx.floyd_warshall_numpy(g, nodelist=nodelist, weight=key)
         x = sympy_floyd_warshall(
-            g=g, f=lambda x: x, symbols=(key,), accumulators={key: "sum"}
+            g=g, f=lambda x: x, symbols=(key,), accumulator_map={key: "sum"}
         )
         assert np.allclose(x, expected)

@@ -1,12 +1,11 @@
 from heapq import heappop
 from heapq import heappush
 from itertools import count
-from typing import List
+from typing import List, Tuple
 
 import networkx as nx
 import numpy as np
 from more_itertools import pairwise
-from .exceptions import NetworkxUtilsException
 
 
 def sort_cycle(arr, key=None):
@@ -121,7 +120,7 @@ def _multisource_dijkstra(
         elif accumulators.get(sym, "product"):
             init.setdefault(sym, 1.0)
         else:
-            raise NetworkxUtilsException("Accumulator '{}' not recognized".format(sym))
+            raise ValueError("Accumulator '{}' not recognized".format(sym))
     init = np.array([init[x] for x in symbols])
 
     # accumulator functions to each for each symbol

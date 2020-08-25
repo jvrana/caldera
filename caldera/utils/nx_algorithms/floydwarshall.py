@@ -2,79 +2,71 @@ import numpy as np
 import networkx as nx
 from typing import Union, Callable, Any, Dict, Type, Tuple, List
 from collections import OrderedDict
+import inspect
 
 
-def sympy_multisource_dijkstras(
-    g, sources, f, accumulators=None, init=None, target=None, cutoff=None
-):
-    if sources is None or not len(sources):
-        raise ValueError("sources must not be empty")
-    if target in sources:
-        return (0, [target])
-    paths = {source: [source] for source in sources}  # dictionary of paths
-    dist = _multisource_dijkstra(
-        g,
-        sources,
-        f,
-        target=target,
-        accumulators=accumulators,
-        init=init,
-        paths=paths,
-        cutoff=cutoff,
-    )
-    if target is None:
-        return (dist, paths)
-    try:
-        return (dist[target], paths[target])
-    except KeyError:
-        raise nx.NetworkXNoPath("No path to {}.".format(target))
+class PathAccumulator(object):
+
+    all = {}
+
+    def __init__(self, name: str, func: Callable[[np.ndarray, np.ndarray], np.ndarray], i_fill: float):
+        self.name = name
+        self.func = func
+        if self.name in self.all:
+            raise ValueError("{} already defined".format(name))
+        self.all[self.name] = self
+        self.i_fill
+
+    def __call__(self, arr1: np.ndarray, arr2: np.ndarray) -> np.ndarray:
+        return self.func(arr1, arr2)
+
+    @classmethod
+    def get(cls, name, default: str = None):
+        if default is None:
+            return cls.all[name]
+        else:
+            if name not in cls.all:
+                name = default
+            return cls.all.get(name)
 
 
-def sympy_dijkstras(
-    g, source, f, target=None, accumulators=None, init=None, cutoff=None
-):
-    """Computes the shortest path distance and path for a graph using an
-    arbitrary function.
-
-    :param g:
-    :param source:
-    :param f:
-    :param target:
-    :param accumulators:
-    :param init:
-    :param cutoff:
-    :return:
-    """
-    dist, path = sympy_multisource_dijkstras(
-        g,
-        [source],
-        f,
-        target=target,
-        accumulators=accumulators,
-        init=init,
-        cutoff=cutoff,
-    )
-    return dist, path
+Product = PathAccumulator("product", np.multiply, 1.0)
+Sum = PathAccumulator("sum", lambda a, b: a + b, 0.0)
+Min = PathAccumulator('min', np.minimum, 0.0)
+Max = PathAccumulator('max', np.maximum, 0.0)
 
 
-PRODUCT = "product"
-SUM = "sum"
-MAX = "max"
-MIN = "min"
+class PathCostSignature(object):
 
+    def __init__(self, symbols: Union[List[str], Tuple[str, ...]],
+                 function: Callable,
+                 accumulator_map: Dict[str, Union[Callable, PathAccumulator]]):
+        self.symbols = symbols
+        self.function = function
+        self.accumulator_map = accumulator_map
+        self.validate_accumulator_map()
+        self.validate_function()
 
-# TODO: implement MIN and MAX
-def accumulate_helper(key, m1, m2):
-    if key == SUM:
-        return m1 + m2
-    elif key == PRODUCT:
-        return np.multiply(m1, m2)
-    else:
-        raise ValueError(
-            "Key '{}' not in accumulator dictionary. Options are '{}' or '{}'".format(
-                key, PRODUCT, SUM
-            )
-        )
+    def validate_function(self):
+        spec = inspect.getfullargspec(self.function)
+        if len(spec.args) != len(self.symbols):
+            raise ValueError("Function signature has {} args, but only {} symbols were provided".format(
+                len(spec.args), len(self.symbols)
+            ))
+
+    def validate_accumulator_map(self):
+        for k, v in self.accumulator_map.items():
+            if k not in self.symbols:
+                raise ValueError("Symbol '{}' is present in accumulator_map, but abset from list of symbols".format(
+                    self.symbols
+                ))
+            if isinstance(v, str):
+                if v not in PathAccumulator.all:
+                    raise ValueError("Accumulator '{}' is not a valid name")
+            elif not issubclass(v.__class__, PathAccumulator) and not callable(v):
+                raise ValueError("Accumulator map values must be either a callable or Accumulator, not {}".format(
+                    v.__class__
+                ))
 
 
 def replace_nan_with_inf(m):
@@ -82,11 +74,23 @@ def replace_nan_with_inf(m):
     return m
 
 
+def init_matrix(g, nodelist, key, multigraph_weight_func, nonedge_fill, dtype)
+    W = nx.to_numpy_matrix(
+        g,
+        nodelist=nodelist,
+        multigraph_weight=multigraph_weight_func,
+        weight=key,
+        nonedge=nonedge_fill,
+        dtype=dtype,
+    )
+    return W
+
+
 def sympy_floyd_warshall(
     g: Union[nx.DiGraph, nx.Graph],
     f: Callable[[Tuple[Union[int, float], ...]], Union[int, float]],
     symbols: Union[Tuple[str, ...], List[str]],
-    accumulators: dict,
+    accumulator_map: dict,
     nonedge: dict = None,
     nodelist: list = None,
     multigraph_weight: Callable = None,
@@ -118,7 +122,7 @@ def sympy_floyd_warshall(
 
     :param g: the graph
     :param f: the function string that represents SymPy function to compute the weights
-    :param accumulators: diciontary of symbols to accumulator functions (choose from
+    :param accumulator_map: diciontary of symbols to accumulator functions (choose from
                          ["PRODUCT" - :math:`\\prod`,
                          "SUM" - :math:`\\sum`]
                          to use for accumulation of weights through
@@ -148,6 +152,7 @@ def sympy_floyd_warshall(
 
     func = f
 
+    # initialize weight matrices
     matrix_dict = OrderedDict()
 
     for name in symbols:
@@ -169,19 +174,16 @@ def sympy_floyd_warshall(
     identity = np.identity(n)
     for key, matrix in matrix_dict.items():
         # set accumulators
-        if accumulators.get(key, SUM) == SUM:
+        accumulator_name = accumulator_map.get(key, Sum.name)
+        accumulator = PathAccumulator.get(accumulator_name)
+        if accumulator.name == 'sum':
             d = 0.0
-        elif accumulators[key] == PRODUCT:
+        elif accumulator.name == 'product':
             d = 1.0
-        elif accumulators[key] in [MAX, MIN]:
+        elif accumulator.name in ['max', 'min']:
             d = 0.0
         else:
-            raise ValueError(
-                "Accumulator key {} must either be '{}' or '{}' or a callable with two "
-                "arguments ('M' a numpy matrix and 'i' a node index as an int)".format(
-                    key, SUM, PRODUCT
-                )
-            )
+            raise ValueError("Accumulator '{}' not recognized".format(key))
 
         # set diagonal
         matrix[identity == 1] = identity_subs.get(key, d)
@@ -191,9 +193,7 @@ def sympy_floyd_warshall(
         parts_dict = OrderedDict()
         for key, M in matrix_dict.items():
             M = matrix_dict[key]
-            parts_dict[key] = accumulate_helper(
-                accumulators.get(key, SUM), M[i, :], M[:, i]
-            )
+            parts_dict[key] = PathAccumulator.get(key, 'sum')(M[i, :], M[:, i])
 
         # get total cost
         m_arr = [np.asarray(m) for m in matrix_dict.values()]
