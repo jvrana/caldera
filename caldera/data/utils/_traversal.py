@@ -73,6 +73,7 @@ def neighbors(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
     ...
 
 
+# TODO: dispatch method with multidim neighbors and floyd-warshall
 def neighbors(
     data: Union[GraphData, GraphBatch],
     nodes: torch.LongTensor,
