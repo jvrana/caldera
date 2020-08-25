@@ -134,7 +134,9 @@ def multisource_dijkstras(
     func: Callable = lambda x: x,
     target: Hashable = None,
     cutoff: Optional[Union[float, int]] = None,
-) -> Union[Tuple[Union[float, int], List[Hashable]],]:
+) -> Union[
+    Tuple[Union[float, int], List[Hashable]],
+]:
     if sources is None or not len(sources):
         raise ValueError("sources must not be empty")
     if target in sources:
