@@ -7,13 +7,13 @@ from scipy.sparse.csgraph._shortest_path import (
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.data.utils import to_coo_matrix
+from caldera.data.utils import to_sparse_coo_matrix
 from caldera.utils.sparse import torch_coo_to_scipy_coo
 
 
 def floyd_warshall(data: Union[GraphData, GraphBatch], **kwargs):
     """Run the floyd-warshall algorithm."""
-    m = to_coo_matrix(data, fill_value=1).coalesce()
+    m = to_sparse_coo_matrix(data, fill_value=1).coalesce()
     m._values()[:] = 1
 
     A = torch_coo_to_scipy_coo(m)
