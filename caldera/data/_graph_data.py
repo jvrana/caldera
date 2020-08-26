@@ -125,7 +125,7 @@ class GraphData:
         :return:
         """
         if keys is None:
-            keys = self.__slots__
+            keys = [k for k, _ in self._tensors]
         if kwargs is None:
             kwargs = {}
         init_args = []
@@ -155,6 +155,14 @@ class GraphData:
     def to(self, device: str, *args, **kwargs):
         return self.apply(lambda x: x.to(device, *args, **kwargs))
 
+    @property
+    def _tensors(self):
+        for k in self.__slots__:
+            if not k.startswith("__"):
+                v = getattr(self, k)
+                if torch.is_tensor(v):
+                    yield k, v
+
     def share_storage(
         self, other: GraphData, return_dict: Optional[bool] = False
     ) -> Union[Dict[str, bool], bool]:
@@ -166,7 +174,7 @@ class GraphData:
         :return:
         """
         d = {}
-        for k in self.__slots__:
+        for k, _ in self._tensors:
             a = getattr(self, k)
             b = getattr(other, k)
             if 0 in a.shape or 0 in b.shape:
@@ -332,6 +340,12 @@ class GraphData:
         return self._mask_dispatch(
             None, mask, as_view=False, detach=True, new_inst=True
         )
+
+    def _get_edge_mask_from_nodes(self, nodes: torch.LongTensor):
+        idx = self._gather(self._node_to_edge_idx, nodes)
+        mask = torch.BoolTensor([True] * self.num_edges)
+        mask[idx] = False
+        return mask
 
     def _apply_node_mask_dispatch(
         self, node_mask, as_view: bool, detach: bool, new_inst: bool
@@ -696,8 +710,7 @@ class GraphData:
         :class:`caldera.data.GraphData` instance
         """
         x = 0
-        for v in self.__slots__:
-            t = getattr(self, v)
+        for _, t in self._tensors:
             if hasattr(t, "nelement"):
                 x += t.nelement()
         return x
@@ -708,8 +721,7 @@ class GraphData:
         :class:`caldera.data.GraphData` instance
         """
         x = 0
-        for v in self.__slots__:
-            t = getattr(self, v)
+        for _, t in self._tensors:
             if hasattr(t, "nelement"):
                 x += t.element_size() * t.nelement()
         return x

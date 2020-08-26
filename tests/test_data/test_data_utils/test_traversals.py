@@ -182,15 +182,48 @@ def test_k_hop_random_graph(k):
 
 
 def test_k_hop_random_graph_benchmark():
+    """Bench mark for using tensor_induce for k-hop.
+
+    :return:
+    """
     k = 2
     batch = GraphBatch.random_batch(1000, 50, 20, 30)
 
-    for _ in range(100):
+    for _ in range(1000):
         nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
-        idx = torch.randint(batch.num_nodes, (2,))
+        idx = torch.randint(batch.num_nodes, (10,))
         nodes[idx] = True
         node_mask = tensor_induce(batch, nodes, k)
         subgraph = batch.apply_node_mask(node_mask)
+
+
+def test_k_hop_random_graph_benchmark2():
+    """Benchmark for using floydwarshall for k-hop.
+
+    :return:
+    """
+    k = 2
+    batch = GraphBatch.random_batch(1000, 50, 20, 30)
+
+    nodes_list = []
+    for _ in range(1000):
+        nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
+        idx = torch.randint(batch.num_nodes, (10,))
+        nodes[idx] = True
+        nodes_list.append(nodes)
+    nodes_list = tuple(nodes_list)
+
+    masks = floyd_warshall_neighbors(batch, nodes_list, depth=k)
+
+    for mask in masks:
+        subgraph = batch.apply_node_mask(mask)
+    # for _ in range(100):
+    #     nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
+    #     idx = torch.randint(batch.num_nodes, (2,))
+    #     nodes[idx] = True
+    #
+    #     node_mask = tensor_induce(batch, nodes, k)
+    #     subgraph = batch.apply_node_mask(node_mask)
 
 
 @pytest.mark.parametrize(

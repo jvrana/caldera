@@ -10,10 +10,6 @@ def test_floyd_warshall():
     assert torch.is_tensor(W)
 
 
-import numpy as np
-
-
-# TODO: fast find neighbors
 def test_find_neighbors():
     data = GraphData.random(5, 4, 3, min_nodes=1000, min_edges=1000)
     W = floyd_warshall(data)

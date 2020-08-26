@@ -55,7 +55,6 @@ def to_one_hot(arr: torch.tensor, mx: int) -> torch.tensor:
     return oh
 
 
-@torch.jit.script
 def stable_arg_sort(arr, mn: float, mx: float):
     dim = -1
     if not dim == -1:
@@ -67,7 +66,6 @@ def stable_arg_sort(arr, mn: float, mx: float):
     return torch.argsort(arr + delta, dim=dim)
 
 
-@torch.jit.script
 def stable_arg_sort_long(arr):
     """Stable sort of long tensors.
 

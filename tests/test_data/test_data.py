@@ -235,11 +235,9 @@ class TestApply:
             assert not data2.share_storage(
                 data
             ), "apply `gpu()` should not share the same storage"
-            for k in data.__slots__:
-                v = getattr(data, k)
+            for k, v in data._tensors:
                 assert v.device.type == "cpu"
-            for k in data2.__slots__:
-                v = getattr(data2, k)
+            for k, v in data2._tensors:
                 assert v.device.type == "cuda"
 
     def test_to_cuda(self, random_data_example):
@@ -250,11 +248,9 @@ class TestApply:
             assert id(data2) != id(data)
             assert not data.share_storage(data2)
             assert not data2.share_storage(data)
-            for k in data.__slots__:
-                v = getattr(data, k)
+            for k, v in data._tensors:
                 assert v.device.type == "cpu"
-            for k in data2.__slots__:
-                v = getattr(data2, k)
+            for k, v in data2._tensors:
                 assert v.device.type == "cuda"
 
     @pytest.mark.parametrize("req", [True, False])
