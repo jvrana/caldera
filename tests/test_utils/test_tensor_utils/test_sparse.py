@@ -31,7 +31,7 @@ class TestScatterCoo:
 
         if expected_size is not None:
             assert result.size() == expected_size
-        assert torch.all(result.to_dense() == expected)
+        assert torch.allclose(result.to_dense(), expected)
 
     def test_scatter_coo_2D(self):
         indices = torch.LongTensor([[0, 1, 2, 3], [4, 3, 2, 1]])
