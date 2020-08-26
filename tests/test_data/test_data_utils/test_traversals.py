@@ -4,9 +4,11 @@ import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
+from caldera.data.utils import bfs_nodes
 from caldera.data.utils import induce
 from caldera.data.utils import neighbors
 from caldera.data.utils import tensor_induce
+from caldera.data.utils._traversal import floyd_warshall_neighbors
 from caldera.utils import deterministic_seed
 from caldera.utils.testing import nx_random_features
 
@@ -197,3 +199,90 @@ def test_k_hop_random_graph_benchmark():
 def test_tensor_induce(random_data):
     nodes = torch.LongTensor([0])
     tensor_induce(random_data, nodes, 1)
+
+
+class TestFloydWarshallNeighbors:
+    @pytest.mark.parametrize(
+        "nodes",
+        [
+            0,
+            torch.tensor(0),
+            torch.LongTensor([0, 1, 2, 3, 4]),
+            (torch.LongTensor([0, 1, 2, 3]), torch.LongTensor([0, 1, 2, 30])),
+            (
+                torch.LongTensor([0, 1, 2, 3]),
+                torch.LongTensor([0, 1, 2, 30]),
+                0,
+                torch.tensor(20),
+            ),
+        ],
+        ids=[
+            "integer",
+            "0D-tensor",
+            "LongTensor",
+            "Tuple[LongTensor, ...]",
+            "Tuple[Union[LongTensor, int]]",
+        ],
+    )
+    @pytest.mark.parametrize("depth", [1, 4], ids=lambda x: "depth=" + str(x))
+    @pytest.mark.parametrize("return_matrix", [False, True], ids=["", "return_matrix"])
+    def test_floyd_warshall_neighbors(self, nodes, depth, return_matrix):
+        data = GraphData.random(5, 4, 3, min_edges=300, min_nodes=100)
+        print(data.density())
+        x = floyd_warshall_neighbors(data, nodes, depth, return_matrix=return_matrix)
+        print(x)
+
+    @pytest.mark.parametrize(
+        "nodes",
+        [
+            torch.LongTensor([0, 1, 2, 3, 4]),
+            (torch.LongTensor([0, 1, 2, 3]), torch.LongTensor([0, 1, 30])),
+        ],
+    )
+    @pytest.mark.parametrize("depth", [1, 4], ids=lambda x: "depth=" + str(x))
+    @pytest.mark.parametrize(
+        "return_matrix", [False, True], ids=[None, "return_matrix"]
+    )
+    def test_floyd_warshall_neighbors_bool(self, nodes, depth, return_matrix):
+
+        data = GraphData.random(5, 4, 3, min_edges=300, min_nodes=100)
+        if isinstance(nodes, tuple):
+            bool_nodes = []
+            for n in nodes:
+                _bool_nodes = torch.BoolTensor([False] * data.num_nodes)
+                _bool_nodes[n] = True
+                bool_nodes.append(_bool_nodes)
+            bool_nodes = tuple(bool_nodes)
+        else:
+            bool_nodes = torch.BoolTensor([False] * data.num_nodes)
+            bool_nodes[nodes] = True
+
+        x = floyd_warshall_neighbors(
+            data, bool_nodes, return_matrix=return_matrix, depth=depth
+        )
+        print(x)
+
+
+class TestCompareNeighborImplementations:
+    @pytest.fixture(
+        params=[(1000, 10000), (1000, 1000), (100, 100), (100, 1000),],
+        ids=["large-dense", "large-sparse", "small-sparse", "small-dense"],
+    )
+    def data(self, request):
+        n, e = request.param
+        return GraphData.random(5, 3, 2, min_nodes=n, min_edges=e)
+
+    @pytest.fixture(params=[100, 1000], ids=lambda x: str(x) + "_evals")
+    def nodes(self, request):
+        return torch.randint(0, 10, (request.param, 10))
+
+    def test_tensor_neighbors(self, nodes, data):
+        for n in nodes:
+            x = neighbors(data, n)
+
+    def test_FW_neighbors(self, nodes, data):
+        floyd_warshall_neighbors(data, nodes, depth=3)
+
+    def test_bfs_nodes(self, nodes, data):
+        for n in nodes:
+            bfs_nodes(n, data.edges, depth=3)
