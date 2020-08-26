@@ -11,18 +11,19 @@ import torch
 SizeType = Union[torch.Size, Tuple[int, ...]]
 
 
+def prod(x):
+    if not x:
+        return 1
+    else:
+        return reduce(operator.mul, x)
+
+
 def repeat_roll(shape: SizeType, dim: int) -> torch.Tensor:
     """Roll over shape, rolling the repeat over different dimension."""
     torch.arange(shape[dim])
 
     repeat_dims = list(shape)[:dim]
     interleave_dims = list(shape[dim + 1 :])
-
-    def prod(x):
-        if not x:
-            return 1
-        else:
-            return reduce(operator.mul, x)
 
     n = prod(interleave_dims)
     m = prod(repeat_dims)

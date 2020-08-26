@@ -1,11 +1,12 @@
+from typing import Optional
 from typing import Union
 
 import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from typing import Optional
 from caldera.utils.sparse import scatter_coo
+
 
 def to_full_coo_matrix(
     data: Union[GraphData, GraphBatch], fill_value=1, dtype=torch.float,

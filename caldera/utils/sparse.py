@@ -4,6 +4,7 @@ from typing import Type
 import torch
 from scipy.sparse import coo_matrix
 
+from .indexing import prod
 from .indexing import SizeType
 from .indexing import unroll_index
 
@@ -46,13 +47,15 @@ def scatter_indices(indices: torch.LongTensor, shape: SizeType):
     """
     if not shape:
         return indices
-    idx = torch.cat(unroll_index(shape))
+    idx = torch.stack(unroll_index(shape))
 
-    r = list([1] * indices.ndim)
-    r[-1] = idx.shape[0]
+    a_repeat = [1] * indices.ndim
+    a_repeat[-1] = idx.shape[-1]
+    b_repeat = [1] * indices.ndim
+    b_repeat[-1] = indices.shape[-1]
 
-    a = indices.repeat(r)
-    b = idx.repeat(indices.shape[-1]).unsqueeze(0)
+    a = torch.repeat_interleave(indices, idx.shape[-1], dim=1)
+    b = idx.repeat(b_repeat)
     return torch.cat((a, b))
 
 
@@ -82,6 +85,7 @@ def _coo_tensor(
         kwargs = dict(dtype=dtype)
     return torch.sparse_coo_tensor(indices, source, **kwargs)
 
+
 # TODO: infer size from index sizes
 def scatter_coo(
     indices: torch.LongTensor,
@@ -97,7 +101,6 @@ def scatter_coo(
     :return:
     """
 
-
     indices = _expand_idx(indices)
 
     if not torch.is_tensor(source):
@@ -105,16 +108,25 @@ def scatter_coo(
 
     if expand:
         shape = source.shape
-        flattened = source.view(-1).repeat(indices.shape[1])
+        # r = prod(shape[:-1]) * indices.shape[1]
+        r = indices.shape[1]
+        flattened = source.view(-1).repeat(r)
     else:
         shape = source.shape[1:]
         flattened = source.view(-1)
 
     if size is not None and size[-1] is ...:
+        if not len(size) - 1 == indices.shape[0]:
+            raise ValueError(
+                "Provided dims ({}) must match number of index dims ({})".format(
+                    len(size) - 1, indices.shape[0]
+                )
+            )
         size = tuple(list(size)[:-1]) + shape
 
     sidx = scatter_indices(indices, shape)
     return _coo_tensor(sidx, flattened, size=size, dtype=dtype)
+
 
 #
 # def scatter_coo_fill(
