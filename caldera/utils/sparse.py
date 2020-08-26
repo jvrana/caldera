@@ -82,12 +82,12 @@ def _coo_tensor(
         kwargs = dict(dtype=dtype)
     return torch.sparse_coo_tensor(indices, source, **kwargs)
 
-
 # TODO: infer size from index sizes
 def scatter_coo(
     indices: torch.LongTensor,
     source: torch.FloatTensor,
     size: Optional[SizeType] = None,
+    expand: bool = False,
     dtype: Optional[Type] = None,
 ) -> torch.sparse.FloatTensor:
     """Scatter the provided source tensor to the provided indices.
@@ -96,26 +96,46 @@ def scatter_coo(
     :param source:
     :return:
     """
+
+
     indices = _expand_idx(indices)
-    sidx = scatter_indices(indices, tuple(list(source.shape)[1:]))
-    return _coo_tensor(sidx, source.view(-1), size=size, dtype=dtype)
 
+    if not torch.is_tensor(source):
+        source = torch.tensor(source)
 
-def scatter_coo_fill(
-    indices: torch.LongTensor,
-    source: torch.FloatTensor,
-    size: Optional[SizeType] = None,
-    dtype: Optional[Type] = None,
-) -> torch.sparse.FloatTensor:
-    """Fill sparse coo matrix with the provided tensor at the provided indices.
+    if expand:
+        shape = source.shape
+        flattened = source.view(-1).repeat(indices.shape[1])
+    else:
+        shape = source.shape[1:]
+        flattened = source.view(-1)
 
-    :param indices:
-    :param source:
-    :return:
-    """
-    indices = _expand_idx(indices)
-    source = torch.tensor(source)
-    sidx = scatter_indices(indices, source.shape)
-    return _coo_tensor(
-        sidx, source.view(-1).repeat(indices.shape[1]), size=size, dtype=dtype
-    )
+    if size is not None and size[-1] is ...:
+        size = tuple(list(size)[:-1]) + shape
+
+    sidx = scatter_indices(indices, shape)
+    return _coo_tensor(sidx, flattened, size=size, dtype=dtype)
+
+#
+# def scatter_coo_fill(
+#     indices: torch.LongTensor,
+#     source: torch.FloatTensor,
+#     size: Optional[SizeType] = None,
+#     dtype: Optional[Type] = None,
+# ) -> torch.sparse.FloatTensor:
+#     """Fill sparse coo matrix with the provided tensor at the provided indices.
+#
+#     :param indices:
+#     :param source:
+#     :return:
+#     """
+#     indices = _expand_idx(indices)
+#     source = torch.tensor(source)
+#     sidx = scatter_indices(indices, source.shape)
+#     if size is not None and size[-1] is ...:
+#         size = tuple(list(size)[:-1])
+#         if torch.is_tensor():
+#             size += source.shape
+#     return _coo_tensor(
+#         sidx, source.view(-1).repeat(indices.shape[1]), size=size, dtype=dtype
+#     )

@@ -4,7 +4,8 @@ import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-
+from typing import Optional
+from caldera.utils.sparse import scatter_coo
 
 def to_full_coo_matrix(
     data: Union[GraphData, GraphBatch], fill_value=1, dtype=torch.float,
@@ -32,6 +33,11 @@ def to_edge_attr_coo_matrix(data: Union[GraphData, GraphBatch]):
 
     size = (data.num_nodes, data.num_nodes, edge_attr.shape[1])
     return torch.sparse_coo_tensor(ij, v, size=size, dtype=edge_attr.dtype)
+
+
+# TODO:
+def to_coo_matrix():
+    pass
 
 
 def graph_data_to_coo_matrix(
