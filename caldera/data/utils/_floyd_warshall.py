@@ -5,9 +5,9 @@ from scipy.sparse.csgraph._shortest_path import (
     floyd_warshall as cs_graph_floyd_warshall,
 )
 
+from ._sparse import to_sparse_coo_matrix
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.data.utils import to_sparse_coo_matrix
 from caldera.utils.sparse import torch_coo_to_scipy_coo
 
 
