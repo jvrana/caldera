@@ -33,11 +33,12 @@ from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
+from caldera.data.utils import in_degree
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
 from caldera.utils import deterministic_seed
-from caldera.utils import nx_utils
-from caldera.utils.torch_utils import to_one_hot
+from caldera.utils.nx import nx_iter_roots
+from caldera.utils.tensor import to_one_hot
 
 SEED = 0
 
@@ -370,7 +371,7 @@ class DataLoaders:
 
             for n, ndata in g.nodes(data=True):
                 ndata["features"] = np.random.randn(1)
-                ndata["target"] = np.array([g.in_degree(n)])
+                ndata["target"] = np.array([in_degree(n)])
 
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
@@ -398,7 +399,7 @@ class DataLoaders:
                     g.add_edge(n2, n1)
             cls._default_g(g)
 
-            for n in nx_utils.iter_roots(g):
+            for n in nx_iter_roots(g):
                 ndata = g.nodes[n]
                 ndata["target"] = np.array([1.0])
 
@@ -447,7 +448,7 @@ class DataLoaders:
                     g.add_edge(n2, n1)
             cls._default_g(g)
 
-            for n in nx_utils.iter_roots(g):
+            for n in nx_iter_roots(g):
                 ndata = g.nodes[n]
                 ndata["target"] = np.array(3.0)
 
@@ -886,7 +887,7 @@ cases = [
 # a function of number of nodes, in degree
 # boolean network that depends on multiple passes
 # sigmoid circuit
-# shortest path example
+# shortest _path example
 visited_cases = set()
 
 

@@ -1,4 +1,4 @@
-name: caldera
+name: caldera 
 channels:
   - pytorch
   - defaults
@@ -138,7 +138,7 @@ dependencies:
   - pandocfilters=1.4.2=py37_1
   - parso=0.3.4=py37_0
   - partd=0.3.10=py37_1
-  - path.py=11.5.0=py37_0
+  - _path.py=11.5.0=py37_0
   - pathlib2=2.3.3=py37_0
   - patsy=0.5.1=py37_0
   - pcre=8.43=h0a44026_0

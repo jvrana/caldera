@@ -679,4 +679,7 @@ healthchecksdb
 MigrationBackup/
 
 tests/pytest_runs/**/*
-**/wandb
+experiments/wandb/**/*
+experiments/runs/**/*
+experiments/crn/wandb/**/*
+tmp

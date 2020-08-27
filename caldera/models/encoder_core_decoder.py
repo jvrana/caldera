@@ -1,5 +1,3 @@
-from functools import partial
-
 import torch
 
 from caldera.blocks import AggregatingEdgeBlock

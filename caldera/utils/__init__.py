@@ -4,12 +4,14 @@ from typing import Dict
 from typing import List
 from typing import TypeVar
 
-from caldera.utils.jit import jit_scatter_group
-from caldera.utils.jit import scatter_group
-from caldera.utils.jit import stable_arg_sort_long
-from caldera.utils.jit import unique_with_counts
-from caldera.utils.torch_utils import deterministic_seed
-from caldera.utils.torch_utils import same_storage
+from caldera.utils.tensor import deterministic_seed
+from caldera.utils.tensor import long_isin
+from caldera.utils.tensor import reindex_tensor
+from caldera.utils.tensor import same_storage
+from caldera.utils.tensor import stable_arg_sort_long
+from caldera.utils.tensor import tensor_is_empty
+from caldera.utils.tensor import torch_scatter_group
+from caldera.utils.tensor import unravel_index
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -31,6 +33,7 @@ def _first(i):
 def dict_collate(
     d1: Dict[K, T], d2: Dict[K, T], collate_fn: Callable[[List[T]], V]
 ) -> Dict[K, V]:
+    """Apply a collation function to a pair dictionaries."""
     d = {}
     for k, v in d1.items():
         if k not in d:

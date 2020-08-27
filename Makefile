@@ -1,8 +1,24 @@
-install:
-	echo "Make sure your activated in your conda environment"
-	poetry export --dev -f requirements.txt > requirements.txt
-	pip install -r requirements.txt > requirements.txt
-	conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
-	CUDA="cu101"
-	pip install torch-scatter==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-1.6.0.html
-	rm requirements.txt
+init:
+	conda env create -f environment.yml
+
+lock:
+	conda env export > environment.yml
+
+activate:
+	conda activate caldera
+
+check:
+	echo "Python environment"
+	which python
+	python check.py
+
+docs:
+	@echo "Updating docs"
+
+	rm -rf docs
+	cd docsrc && poetry run make html
+	find docs -type f -exec chmod 444 {} \;
+	@echo "\033[95m\n\nBuild successful! View the docs homepage at docs/html/index.html.\n\033[0m"
+
+	touch docs/.nojekyll
+	open ./docs/index.html
