@@ -217,13 +217,6 @@ def test_k_hop_random_graph_benchmark2():
 
     for mask in masks:
         subgraph = batch.apply_node_mask(mask)
-    # for _ in range(100):
-    #     nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
-    #     idx = torch.randint(batch.num_nodes, (2,))
-    #     nodes[idx] = True
-    #
-    #     node_mask = tensor_induce(batch, nodes, k)
-    #     subgraph = batch.apply_node_mask(node_mask)
 
 
 @pytest.mark.parametrize(
