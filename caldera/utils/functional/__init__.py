@@ -116,14 +116,47 @@ class Functional(object):
 
     @classmethod
     def zip_each_with(cls, *arrs, first: bool = False):
+        """
 
-        def _zip(a, *arrs):
+        .. warning::
+
+            If provided with generators or generator functions,
+            calling this function will consume all the provided iterables during
+            iteration. The provided generators should never
+            be used again elsewhere.
+
+        :param arrs:
+        :return:
+        """
+        def wrapped(a):
             if first:
-                return zip(a, *arrs)
+                for x in zip(a, *arrs):
+                    yield x
             else:
-                return zip(*arrs, a)
+                for x in zip(*arrs, a):
+                    yield x
+        return wrapped
 
-        return cls.map_all(_zip, *arrs)
+    @staticmethod
+    def cat(*arrs):
+        """
+
+        .. warning::
+
+            If provided with generators or generator functions,
+            calling this function will consume all the provided iterables
+            immediately. The provided generators should never
+            be used again elsewhere.
+
+        :param arrs:
+        :return:
+        """
+        arrs = [list(a) for a in arrs]
+        def wrapped(a):
+            yield a
+            for _a in arrs:
+                yield _a
+        return wrapped
 
     @classmethod
     def zipmap_each_with(cls, *funcs, first: bool = True):
@@ -256,11 +289,16 @@ class Functional(object):
             i += 1
 
     @classmethod
-    def enumerate_each(cls):
+    def enumerate_each(cls, *, reverse: bool = False):
         """Non-tee version of enumerate."""
-        def wrapped(arr):
-            return cls.zip_each_with(cls.counter())(arr)
-        return wrapped
+        def _enumerate_each(arr):
+            if not reverse:
+                for i, a in enumerate(arr):
+                    yield i, a
+            else:
+                for i, a in enumerate(arr):
+                    yield a, i
+        return _enumerate_each
 
     @classmethod
     def iter_count(cls, n: int = 1):
@@ -362,6 +400,22 @@ class Functional(object):
             return cls.map_each(lambda x: x.get(i))
         else:
             return cls.map_each(lambda x: x.get(i, default))
+
+    @staticmethod
+    def _reverse(x):
+        if isinstance(x, tuple):
+            return tuple(list(x)[::-1])
+        elif isinstance(x, list):
+            return x[::-1]
+        else:
+            return list(x)[::-1]
+
+    @classmethod
+    def reverse_each(cls):
+        def _reverse_each(arr):
+            for a in arr:
+                yield cls._reverse(a)
+        return _reverse_each
 
     @staticmethod
     def ignore_each_count(n: int = 1) -> Callable[[Iterable[T]], Generator[T, None, None]]:
@@ -519,6 +573,21 @@ class Functional(object):
 
     @staticmethod
     def star(f):
+        """
+        Return a function equivalent to `lambda args: f(*args)`
+
+        :param f:
+        :return:
+        """
+
         def _star(arr):
             return f(*arr)
+
         return _star
+
+    @staticmethod
+    def apply(func):
+        def wrapped(arr):
+            func(arr)
+            return arr
+        return wrapped
