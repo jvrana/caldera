@@ -1,11 +1,11 @@
 import itertools
-from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Optional
+from typing import Tuple
 from typing import TypeVar
+from typing import Union
 
 from caldera.utils.indexing import reindex_tensor
 from caldera.utils.indexing import unravel_index
@@ -20,50 +20,33 @@ from caldera.utils.tensor import tensor_is_empty
 from caldera.utils.tensor import torch_scatter_group
 
 T = TypeVar("T")
+S = TypeVar("S")
 K = TypeVar("K")
 V = TypeVar("V")
 
 
-def pairwise(iterable):
+def pairwise(iterable: Iterable[T]) -> Iterable[Tuple[T, T]]:
     """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
     a, b = itertools.tee(iterable)
     next(b, None)
     return zip(a, b)
 
 
-def _first(i):
+def _first(i: Iterable[T]) -> T:
     """Select the first element in an iterable."""
     return next(x for x in itertools.tee(i)[0])
 
 
-def dict_collate(
-    d1: Dict[K, T], d2: Dict[K, T], collate_fn: Callable[[List[T]], V]
-) -> Dict[K, V]:
-    """Apply a collation function to a pair dictionaries."""
-    d = {}
-    for k, v in d1.items():
-        if k not in d:
-            d[k] = [v]
-        else:
-            d[k].append(v)
-    for k, v in d2.items():
-        if k not in d:
-            d[k] = [v]
-        else:
-            d[k].append(v)
-    return {k: collate_fn(v) for k, v in d.items()}
-
-
 def dict_join(
-    a=Dict,
-    b=Dict,
+    a: Dict[K, T],
+    b: Dict[K, S],
     out: Optional[Dict] = None,
-    join_fn: Callable[[Any, Any], Any] = None,
-    default_a: Any = ...,
-    default_b=...,
-    keys: Optional[Iterable[str]] = None,
-    mode: str = "union",
-):
+    join_fn: Callable[[T, S], V] = None,
+    default_a: T = ...,
+    default_b: S = ...,
+    keys: Optional[Iterable[K]] = None,
+    mode: str = "union",  # Literal["union", "left", "right", "intersection"]
+) -> Dict[K, Union[T, S, V]]:
     """Join two dictionaries. This function merges two dictionaries is various
     ways. For example, a dictionary of `Dict[str, List]` can be merged such
     that, if the two dictionaries share the same key, the lists are

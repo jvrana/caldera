@@ -31,12 +31,14 @@ import itertools
 from collections import OrderedDict
 from typing import Any
 from typing import Callable
+from typing import Dict
 from typing import Generator
 from typing import Iterable
+from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import List
 from typing import TypeVar
+
 
 T = TypeVar("T")
 S = TypeVar("S")
@@ -57,8 +59,7 @@ def _validate_positive_int(n: int):
             )
 
 
-class Functional(object):
-
+class Functional:
     @staticmethod
     def compose(*funcs: Tuple[Callable[[GT], GS], ...]) -> Callable[[GT], GS]:
         """Create a function composition.
@@ -70,15 +71,18 @@ class Functional(object):
         def _compose(data):
             result = data
             for i, f in enumerate(funcs):
-                result = f(result)
-                # try:
-                #     result = f(result)
-                # except Exception as e:
-                #     msg = str(e)
-                #     msg += "\nduring composition:"
-                #     msg += "\n ({}) f: {}".format(i, f)
-                #     msg += "\n args: {} {}".format(result, result.__class__)
-                #     raise type(e)(msg) from e
+
+                def _composition_part(r):
+                    try:
+                        return f(result)
+                    except Exception as e:
+                        msg = str(e)
+                        msg += "\nduring composition:"
+                        msg += "\n ({}) f: {}".format(i, f)
+                        msg += "\n args: {} {}".format(result, result.__class__)
+                        raise type(e)(msg) from e
+
+                result = _composition_part(result)
             return result
 
         return _compose
@@ -88,6 +92,7 @@ class Functional(object):
         def _map_each(arr):
             for a in arr:
                 yield f(a, *args, **kwargs)
+
         return _map_each
 
     @classmethod
@@ -95,11 +100,13 @@ class Functional(object):
         """Apply the function to the iterator itself.
 
         .. note::     Of course, this could be done just as easily by
-        supplying the provided     function itself. This keeps the syntax
-        common with other methods.
+        supplying the provided     function itself. This keeps the
+        syntax common with other methods.
         """
+
         def _map_all(arr: GT) -> GS:
             return f(arr, *args, **kwargs)
+
         return _map_all
 
     @staticmethod
@@ -112,13 +119,12 @@ class Functional(object):
                     yield else_func(a)
                 else:
                     yield a
+
         return _map_all_if
 
     @classmethod
     def zip_each_with(cls, *arrs, first: bool = False):
-        """
-
-        .. warning::
+        """.. warning::
 
             If provided with generators or generator functions,
             calling this function will consume all the provided iterables during
@@ -128,20 +134,18 @@ class Functional(object):
         :param arrs:
         :return:
         """
-        def wrapped(a):
+
+        def _zip_each_with(a):
             if first:
-                for x in zip(a, *arrs):
-                    yield x
+                yield from zip(a, *arrs)
             else:
-                for x in zip(*arrs, a):
-                    yield x
-        return wrapped
+                yield from zip(*arrs, a)
+
+        return _zip_each_with
 
     @staticmethod
     def cat(*arrs):
-        """
-
-        .. warning::
+        """.. warning::
 
             If provided with generators or generator functions,
             calling this function will consume all the provided iterables
@@ -152,18 +156,23 @@ class Functional(object):
         :return:
         """
         arrs = [list(a) for a in arrs]
-        def wrapped(a):
+
+        def _cat(a):
             yield a
-            for _a in arrs:
-                yield _a
-        return wrapped
+            yield from arrs
+
+        return _cat
 
     @classmethod
     def zipmap_each_with(cls, *funcs, first: bool = True):
-        return cls.compose(
-            cls.zip_each_with(funcs, first=first),
-            cls.map_each(lambda x: x[1](x[0]))
-        )
+        def _zipmap_each_with(arr):
+
+            yield from cls.compose(
+                cls.zip_each_with(funcs, first=first),
+                cls.map_each(lambda x: x[1](x[0])),
+            )(arr)
+
+        return _zipmap_each_with
 
     @staticmethod
     def iter_each_unique():
@@ -173,42 +182,51 @@ class Functional(object):
                 if a not in seen:
                     seen.add(a)
                     yield a
+
         return _iter_each_unique
 
     @staticmethod
     def iter_reverse():
-        def wrapped(arr):
-            return iter(list(arr)[::-1])
-        return wrapped
+        def _iter_reverse(arr):
+            yield from iter(list(arr)[::-1])(arr)
+
+        return _iter_reverse
 
     @staticmethod
     def zip_all(reverse: bool = False):
-        def wrapped(arr):
+        def _zip_all(arr):
             if reverse:
-                return zip(*list(arr)[::-1])
+                yield from zip(*list(arr)[::-1])
             else:
-                return zip(*arr)
-        return wrapped
+                yield from zip(*arr)
+
+        return _zip_all
 
     @classmethod
     def reduce_each(cls, f):
-        def _reduce(arr):
+        def reducer(arr):
             return functools.reduce(f, arr)
 
-        return cls.map_each(_reduce)
+        def _reduce_each(arr):
+            yield from cls.map_each(reducer)(arr)
+
+        return _reduce_each
 
     @classmethod
     def reduce_all(cls, f):
-        def _reduce(arr):
+        def reducer(arr):
             return functools.reduce(f, arr)
-        return cls.map_all(_reduce)
 
+        def _reduce_all(arr):
+            yield from cls.map_all(reducer)(arr)
+
+        return _reduce_all
 
     # iter_map_items = functools.partial(map_each, zipped=True)
 
     @staticmethod
     def group_each_consecutive(condition: Callable[[T], bool]):
-        def wrapped(arr):
+        def _group_each_consecutive(arr):
             chunk = []
             v = ...
             for a in arr:
@@ -222,13 +240,15 @@ class Functional(object):
             if len(chunk):
                 yield chunk
 
-        return wrapped
+        return _group_each_consecutive
 
     @staticmethod
-    def group_each_until(condition: Callable[[List[T]], bool],
-                         group_if: Optional[Callable[[T], bool]] = None,
-                         yield_final: bool = True) -> Callable[[GT], Generator[List[T], None, None]]:
-        def wrapped(arr):
+    def group_each_until(
+        condition: Callable[[List[T]], bool],
+        group_if: Optional[Callable[[T], bool]] = None,
+        yield_final: bool = True,
+    ) -> Callable[[GT], Generator[List[T], None, None]]:
+        def _group_each_until(arr):
             chunk = []
             for a in arr:
                 if group_if:
@@ -244,15 +264,14 @@ class Functional(object):
             if yield_final or condition(chunk):
                 yield chunk
 
-        return wrapped
+        return _group_each_until
 
     @classmethod
     def group_each_into_chunks(
-            cls,
-        chunk_size: int,
+        cls, chunk_size: int,
     ) -> Callable[[Iterable[T]], Generator[T, None, None]]:
-        """Returns a new function the groups iterables by chunks of the specified
-        size. Last chunk is returned by default.
+        """Returns a new function the groups iterables by chunks of the
+        specified size. Last chunk is returned by default.
 
         .. doctest::
 
@@ -265,14 +284,20 @@ class Functional(object):
         :param chunk_size: size of each chunk
         :return: generator of chunks
         """
-        return cls.group_each_until(lambda g: len(g) >= chunk_size and len(g), yield_final=True)
+
+        def _group_each_into_chunks(arr):
+            yield from cls.group_each_until(
+                lambda g: len(g) >= chunk_size and len(g), yield_final=True
+            )(arr)
+
+        return _group_each_into_chunks
 
     @staticmethod
     def repeat_all(n: Optional[int]) -> Callable[[GT], GT]:
         if n is not None:
             _validate_positive_int(n)
 
-        def wrapped(arr: Iterable[T]) -> Generator[T, None, None]:
+        def _repeat_all(arr: Iterable[T]) -> Generator[T, None, None]:
             c = itertools.tee(arr, 1)[0]
             i = 0
             while n is None or i < n:
@@ -280,7 +305,7 @@ class Functional(object):
                 yield from b
                 i += 1
 
-        return wrapped
+        return _repeat_all
 
     @staticmethod
     def counter(i: Optional[int] = 0) -> Generator[int, None, None]:
@@ -291,6 +316,7 @@ class Functional(object):
     @classmethod
     def enumerate_each(cls, *, reverse: bool = False):
         """Non-tee version of enumerate."""
+
         def _enumerate_each(arr):
             if not reverse:
                 for i, a in enumerate(arr):
@@ -298,6 +324,7 @@ class Functional(object):
             else:
                 for i, a in enumerate(arr):
                     yield a, i
+
         return _enumerate_each
 
     @classmethod
@@ -305,11 +332,15 @@ class Functional(object):
         if n == 0:
             return cls.empty_generator
         _validate_positive_int(n)
-        return cls.compose(
-            cls.enumerate_each(),
-            cls.until(lambda x: x[0] < n - 1, yield_last=True),
-            cls.index_each(1)
-        )
+
+        def _iter_count(arr):
+            yield from cls.compose(
+                cls.enumerate_each(),
+                cls.until(lambda x: x[0] < n - 1, yield_last=True),
+                cls.index_each(1),
+            )(arr)
+
+        return _iter_count
 
     @classmethod
     def iter_next(cls):
@@ -323,11 +354,11 @@ class Functional(object):
         :return:
         """
 
-        def wrapped(arr):
+        def _consume(arr):
             list(f(arr))
             return arr
 
-        return wrapped
+        return _consume
 
     @staticmethod
     def empty_generator(*_):
@@ -336,8 +367,8 @@ class Functional(object):
 
     @classmethod
     def tee_pipe(cls, *funcs: Tuple[Callable[[GT], GS], ...]) -> Callable[[GT], GT]:
-        """Tee the iterator and apply a new series of functions without affecting
-        the primary iterator.
+        """Tee the iterator and apply a new series of functions without
+        affecting the primary iterator.
 
         .. code-blocK:
 
@@ -356,50 +387,83 @@ class Functional(object):
 
         piped = cls.compose(*funcs)
 
-        def _wrapped(arr):
+        def _tee_pipe(arr):
             a, b = itertools.tee(arr)
             piped(a)
             return b
 
-        return _wrapped
+        return _tee_pipe
 
     @classmethod
     def tee_pipe_yield(cls, *funcs):
         piped = cls.compose(*funcs)
-        def _wrapped(arr):
+
+        def _tee_pipe_yield(arr):
             a, b = itertools.tee(arr)
             yield piped(a)
             yield b
-        return _wrapped
+
+        return _tee_pipe_yield
 
     @classmethod
     def tee_consume(cls, *funcs):
         piped = cls.compose(*funcs)
 
-        def _wrapped(arr):
+        def _tee_consume(arr):
             list(piped(arr))
             return arr
 
-        return _wrapped
+        return _tee_consume
 
     @staticmethod
     def apply_each(func):
-        def wrapped(arr):
+        def _apply_each(arr):
             for a in arr:
                 func(a)
                 yield a
-        return wrapped
+
+        return _apply_each
 
     @classmethod
     def index_each(cls, i: int) -> Callable[[GT], GS]:
-        return cls.map_each(lambda x: x[i])
+        def _index_each(arr):
+            yield from cls.map_each(lambda x: x[i])(arr)
+
+        return _index_each
+
+    @classmethod
+    def index_from(cls, d: Dict) -> Callable[[GT], GS]:
+        def _index_from(arr):
+            yield from cls.map_each(lambda x: d[x])(arr)
+
+        return _index_from
 
     @classmethod
     def get_each(cls, i: int, default=...) -> Callable[[GT], GT]:
-        if default is ...:
-            return cls.map_each(lambda x: x.get(i))
-        else:
-            return cls.map_each(lambda x: x.get(i, default))
+        def _get_each(arr):
+            if default is ...:
+                yield from cls.map_each(lambda x: x.get(i))(arr)
+            else:
+                yield from cls.map_each(lambda x: x.get(i, default))(arr)
+
+        return _get_each
+
+    @classmethod
+    def getattr_each(cls, k: str):
+        def _getattr_each(arr):
+            yield from cls.map_each(lambda x: getattr(x, k))(arr)
+
+        return _getattr_each
+
+    @classmethod
+    def get_from(cls, d: Dict, default=...) -> Callable[[GT], GT]:
+        def _get_from(arr):
+            if default is ...:
+                yield from cls.map_each(lambda x: d.get(x))(arr)
+            else:
+                yield from cls.map_each(lambda x: d.get(x, default))(arr)
+
+        return _get_from
 
     @staticmethod
     def _reverse(x):
@@ -415,38 +479,42 @@ class Functional(object):
         def _reverse_each(arr):
             for a in arr:
                 yield cls._reverse(a)
+
         return _reverse_each
 
     @staticmethod
-    def ignore_each_count(n: int = 1) -> Callable[[Iterable[T]], Generator[T, None, None]]:
+    def ignore_each_count(
+        n: int = 1,
+    ) -> Callable[[Iterable[T]], Generator[T, None, None]]:
         """pipe( fn_side_effect(fn_next(n)) )
 
         :param n:
         :return:
         """
 
-        def wrapped(arr: Iterable[T]) -> Generator[T, None, None]:
+        def _ignore_each_count(arr: Iterable[T]) -> Generator[T, None, None]:
             for i, a in enumerate(arr):
                 if i >= n:
                     yield a
 
-        return wrapped
+        return _ignore_each_count
 
     @staticmethod
     def yield_all(*funcs: Tuple[Callable, ...]):
-        def wrapped(arr):
+        def _yield_all(arr):
             if not funcs:
                 yield arr
             else:
                 for _f in funcs:
                     yield _f(arr)
-        return wrapped
+
+        return _yield_all
 
     @staticmethod
     def ignore_each_until(
         f: Callable[[T], bool]
     ) -> Callable[[Iterable[T]], Generator[T, None, None]]:
-        def wrapped(arr: Iterable[T]) -> Generator[T, None, None]:
+        def _ignore_each_until(arr: Iterable[T]) -> Generator[T, None, None]:
             start = False
             for a in arr:
                 if not start and f(a):
@@ -454,37 +522,40 @@ class Functional(object):
                 if start:
                     yield a
 
-        return wrapped
+        return _ignore_each_until
 
     @staticmethod
     def iter_each_until(
         f: Callable[[T], bool]
     ) -> Callable[[Iterable[T]], Generator[T, None, None]]:
-        def wrapped(arr: Iterable[T]) -> Generator[T, None, None]:
+        def _iter_each_until(arr: Iterable[T]) -> Generator[T, None, None]:
             for a in arr:
                 if f(a):
                     yield a
                     return
                 yield a
 
-        return wrapped
+        return _iter_each_until
 
     @staticmethod
-    def iter_step(step_size: int = 1) -> Callable[[Iterable[T]], Generator[T, None, None]]:
+    def iter_step(
+        step_size: int = 1,
+    ) -> Callable[[Iterable[T]], Generator[T, None, None]]:
         _validate_positive_int(step_size)
 
-        def wrapped(arr):
+        def _iter_step(arr):
             for i, a in enumerate(arr):
                 if i % step_size == 0:
                     yield a
-        return wrapped
+
+        return _iter_step
 
     @staticmethod
     def tee_all(n: int = 2):
-        def wrapped(arr: Iterable[T]) -> Generator[T, None, None]:
+        def _tee_all(arr: Iterable[T]) -> Generator[T, None, None]:
             yield from itertools.tee(arr, n)
 
-        return wrapped
+        return _tee_all
 
     @staticmethod
     def trycatch(*exceptions, catch_yields=...):
@@ -497,7 +568,7 @@ class Functional(object):
         :return:
         """
 
-        def wrapped(arr):
+        def _trycath(arr):
             while True:
                 try:
                     yield next(arr)
@@ -509,20 +580,22 @@ class Functional(object):
                             return
                     raise e
 
-        return wrapped
+        return _trycath
 
     @staticmethod
     def pairwise_each() -> Callable[[GT], Generator[Tuple[T, T], None, None]]:
-        def wrapped(arr: GT) -> Generator[Tuple[T, T], None, None]:
+        def _pairwise_each(arr: GT) -> Generator[Tuple[T, T], None, None]:
             a, b = itertools.tee(arr)
             next(b)
             return zip(a, b)
 
-        return wrapped
+        return _pairwise_each
 
     @staticmethod
-    def filter_each(f: Callable[[T], bool], inverse: bool = False) -> Callable[[GT], GT]:
-        def wrapped(arr: GT) -> GT:
+    def filter_each(
+        f: Callable[[T], bool], inverse: bool = False
+    ) -> Callable[[GT], GT]:
+        def _filter_each(arr: GT) -> GT:
             for a in arr:
                 v = f(a)
                 if not inverse and v:
@@ -530,13 +603,13 @@ class Functional(object):
                 elif inverse and not v:
                     yield a
 
-        return wrapped
+        return _filter_each
 
     @staticmethod
     def until(
         f: Callable[[T], bool], inverse: bool = False, yield_last: bool = False
     ) -> Callable[[GT], GT]:
-        def wrapped(arr: GT) -> GT:
+        def _until(arr: GT) -> GT:
             for a in arr:
                 v = f(a)
                 if not inverse and v:
@@ -547,21 +620,22 @@ class Functional(object):
                     if yield_last:
                         yield a
                     return
-            return wrapped
 
-        return wrapped
-
+        return _until
 
     @staticmethod
     def chain_each() -> Callable[[Generator[GT, None, None]], GT]:
-        def wrapped(arr: Generator[GT, None, None]) -> GT:
+        def _chain_each(arr: Generator[GT, None, None]) -> GT:
             for a in arr:
                 yield from a
-        return wrapped
+
+        return _chain_each
 
     @staticmethod
-    def group_each_by_key(f: Callable[[T], Any]) -> Callable[[GT], Generator[Iterable[T], None, None]]:
-        def wrapped(arr):
+    def group_each_by_key(
+        f: Callable[[T], Any]
+    ) -> Callable[[GT], Generator[Iterable[T], None, None]]:
+        def _group_each_by_key(arr):
             a, b = itertools.tee(arr)
             data = OrderedDict()
             for _a in a:
@@ -569,12 +643,12 @@ class Functional(object):
                 data.setdefault(k, list())
                 data[k].append(_a)
             yield from data.items()
-        return wrapped
+
+        return _group_each_by_key
 
     @staticmethod
     def star(f):
-        """
-        Return a function equivalent to `lambda args: f(*args)`
+        """Return a function equivalent to `lambda args: f(*args)`
 
         :param f:
         :return:
@@ -586,8 +660,17 @@ class Functional(object):
         return _star
 
     @staticmethod
+    def count_each():
+        def _count_each(arr):
+            for i, arr in enumerate(arr):
+                yield i
+
+        return _count_each
+
+    @staticmethod
     def apply(func):
-        def wrapped(arr):
+        def _apply(arr):
             func(arr)
             return arr
-        return wrapped
+
+        return _apply
