@@ -7,9 +7,7 @@ from typing import Type
 
 import networkx as nx
 
-from .types import DirectedGraph
 from .types import Graph
-from .types import UndirectedGraph
 
 
 def nx_iter_roots(g: nx.DiGraph) -> Generator[Hashable, None, None]:
