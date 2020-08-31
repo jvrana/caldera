@@ -1,8 +1,11 @@
 import itertools
+from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import Iterable
 from typing import List
-from typing import TypeVar, Any, Optional, Iterable
+from typing import Optional
+from typing import TypeVar
 
 from caldera.utils.indexing import reindex_tensor
 from caldera.utils.indexing import unravel_index
@@ -51,17 +54,23 @@ def dict_collate(
     return {k: collate_fn(v) for k, v in d.items()}
 
 
-def dict_join(a=Dict, b=Dict, out: Optional[Dict]=None,
-              join_fn: Callable[[Any, Any], Any]=None,
-              default_a: Any=..., default_b=...,
-              keys: Optional[Iterable[str]]=None,
-              mode: str = 'union'):
-    """
-    Join two dictionaries. This function merges two dictionaries is various ways. For example,
-    a dictionary of `Dict[str, List]` can be merged such that, if the two dictionaries share the same key,
-    the lists are concatenated. The join function can be applied to the union of all keys (default) by
-    (`mode="union"`), the intersection of the dictionary (`mode="intersection"), only the keys
-    in the left dictionary (`mode="left"`), or keys only in the right dictionary (`mode="right"`).
+def dict_join(
+    a=Dict,
+    b=Dict,
+    out: Optional[Dict] = None,
+    join_fn: Callable[[Any, Any], Any] = None,
+    default_a: Any = ...,
+    default_b=...,
+    keys: Optional[Iterable[str]] = None,
+    mode: str = "union",
+):
+    """Join two dictionaries. This function merges two dictionaries is various
+    ways. For example, a dictionary of `Dict[str, List]` can be merged such
+    that, if the two dictionaries share the same key, the lists are
+    concatenated. The join function can be applied to the union of all keys
+    (default) by (`mode="union"`), the intersection of the dictionary
+    (`mode="intersection"), only the keys in the left dictionary
+    (`mode="left"`), or keys only in the right dictionary (`mode="right"`).
 
     .. code-block:: python
 
@@ -104,6 +113,7 @@ def dict_join(a=Dict, b=Dict, out: Optional[Dict]=None,
         out = dict()
 
     if join_fn is None:
+
         def join_fn(v1, v2):
             if v2 is not ...:
                 return v2
@@ -111,13 +121,13 @@ def dict_join(a=Dict, b=Dict, out: Optional[Dict]=None,
                 return v1
 
     if keys is None:
-        if mode == 'union':
+        if mode == "union":
             keys = set(a).union(set(b))
-        elif mode == 'intersection':
+        elif mode == "intersection":
             keys = set(a).intersection(set(b))
-        elif mode == 'left':
+        elif mode == "left":
             keys = set(a)
-        elif mode == 'right':
+        elif mode == "right":
             keys = set(b)
         else:
             raise ValueError("mode '{}' not recognized.".format(mode))
