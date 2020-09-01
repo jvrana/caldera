@@ -289,8 +289,7 @@ class TestCollectIterables:
         assert np_same(g.edges[(2, 3)]["x"], np.array([1, 2, 3, 1, 2, 3]))
 
 
-class TestShortestPathExample():
-
+class TestShortestPathExample:
     def test_shorted_path(self):
         g = nx.DiGraph()
-        from caldera.utils.nx
+        nx.generators.gnm_random_graph(10, 10)
