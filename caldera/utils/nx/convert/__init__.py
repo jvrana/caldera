@@ -1,10 +1,8 @@
 """convert.
 
-Networkx Graph to
+Methods to work with :module:`networkx` instances.
 """
-from ._add_defaults import add_default_edge_data
-from ._add_defaults import add_default_global_data
-from ._add_defaults import add_default_node_data
+from ._add_defaults import add_default
 from ._modifiers import flatten_edges
 from ._modifiers import flatten_global
 from ._modifiers import flatten_nodes

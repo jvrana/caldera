@@ -34,6 +34,7 @@ from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
 from caldera.data.utils import in_degree
+from caldera.defaults import CalderaDefaults
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
 from caldera.utils import deterministic_seed
@@ -253,7 +254,7 @@ class DataLoaders:
         return GraphDataLoader(datalist, batch_size)
 
     @staticmethod
-    def _default_g(g: nx.DiGraph):
+    def _default_g(g: nx.DiGraph, global_key: str = None):
         for _, data in g.nodes(data=True):
             data["features"] = np.zeros((1,))
             data["target"] = np.zeros((1,))
@@ -262,7 +263,7 @@ class DataLoaders:
             data["features"] = np.zeros((1,))
             data["target"] = np.zeros((1,))
 
-        g.data = {"features": np.zeros((1,)), "target": np.zeros((1,))}
+        g.set_global({"features": np.zeros((1,)), "target": np.zeros((1,))}, global_key)
         return g
 
     @classmethod

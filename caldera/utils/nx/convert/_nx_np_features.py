@@ -17,6 +17,7 @@ from typing import Union
 import networkx as nx
 import numpy as np
 
+from caldera.defaults import CalderaDefaults
 from caldera.utils import dict_join
 from caldera.utils.functional import Functional as Fn
 from caldera.utils.nx.types import Graph
@@ -26,7 +27,6 @@ T = TypeVar("T")
 K = TypeVar("K")
 S = TypeVar("S")
 V = TypeVar("V")
-GLOBAL = "data"
 
 
 def _raise_if_not_graph(x):
@@ -38,10 +38,10 @@ def _raise_if_not_graph(x):
         )
 
 
-def get_global_data(graphs, global_key: str = GLOBAL):
+def get_global_data(graphs, global_key: str = None):
     return Fn.compose(
         Fn.apply_each(_raise_if_not_graph),
-        Fn.getattr_each(global_key),
+        Fn.map_each(lambda g: g.get_global(global_key)),
         Fn.enumerate_each(),
         list,
     )(graphs)
@@ -70,10 +70,19 @@ def values_to_one_hot(
     """
     assert len(set(classes)) == len(classes)
     d = {k: i for i, k in enumerate(classes)}
-    v = [d[_v] for _v in values]
+    _values = []
+    for v in values:
+        try:
+            _values.append(d[v])
+        except KeyError:
+            raise KeyError(
+                "Value '{}' not found in list of available one-hot classes: {}".format(
+                    v, d
+                )
+            )
     if num_classes is None:
         num_classes = len(d)
-    return to_one_hot(np.array(v), mx=num_classes)
+    return to_one_hot(np.array(_values), mx=num_classes)
 
 
 def merge_update(data, key, to_key, join_fn, process_fn):
@@ -101,7 +110,7 @@ def nx_collect_features(
     processing_func=None,
     processing_kwargs=None,
     join_func: str = "hstack",
-    global_key: str = GLOBAL,
+    global_key: str = None,
     **kwargs
 ):
     if processing_kwargs is None:
@@ -124,13 +133,18 @@ def nx_collect_features(
         def join_func(a, b):
             return np.vstack([a, b])
 
-    if feature == "node":
+    _NODE, _EDGE, _GLOBAL = "node", "edge", "global"
+    if feature == _NODE:
         data = g.nodes(data=True)
-    elif feature == "edge":
+    elif feature == _EDGE:
         data = g.edges(data=True)
-    elif feature == "global":
-        data = get_global_data([g], global_key)
+    elif feature == _GLOBAL:
+        data = [(0, g.get_global(global_key))]
     else:
-        raise ValueError("feature '{}' not recognized.".format(feature))
+        raise ValueError(
+            "feature '{}' not recognized. Select from {}.".format(
+                feature, [_NODE, _EDGE, _GLOBAL]
+            )
+        )
 
     merge_update(data, from_key, to_key, join_fn=join_func, process_fn=processing_func)

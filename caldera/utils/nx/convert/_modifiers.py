@@ -1,4 +1,4 @@
-from caldera.utils.nx.convert._nx_np_features import GLOBAL
+from caldera.defaults import CalderaDefaults
 from caldera.utils.nx.types import Graph
 
 
@@ -18,5 +18,5 @@ def flatten_edges(g: Graph):
     _flatten_values([x[-1] for x in g.edges(data=True)])
 
 
-def flatten_global(g: Graph, global_key: str = GLOBAL):
-    _flatten_values([getattr(g, global_key)])
+def flatten_global(g: Graph, global_key: str = None):
+    _flatten_values([g.get_global(global_key)])

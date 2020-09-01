@@ -2,10 +2,9 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from caldera.utils.nx.convert import add_default_edge_data
-from caldera.utils.nx.convert import add_default_global_data
-from caldera.utils.nx.convert import add_default_node_data
 from caldera.utils.nx.convert import nx_collect_features
+from caldera.utils.nx.convert._add_defaults import add_default_edge_data
+from caldera.utils.nx.convert._add_defaults import add_default_node_data
 
 
 def np_same(a, b):
@@ -185,8 +184,8 @@ class TestOneHot:
     # TODO: test global
     def test_graphs_global_to_one_hot_hstack(self):
         graphs = [nx.DiGraph(), nx.DiGraph()]
-        graphs[0].data = {"features": True}
-        graphs[1].data = {"features": False}
+        graphs[0].set_global({"features": True})
+        graphs[1].set_global({"features": False})
 
         for g in graphs:
             for _ in range(2):
@@ -200,13 +199,13 @@ class TestOneHot:
                     num_classes=3,
                 )
 
-        assert np_same(graphs[0].data["x"], np.array([1, 0, 0, 1, 0, 0]))
-        assert np_same(graphs[1].data["x"], np.array([0, 1, 0, 0, 1, 0]))
+        assert np_same(graphs[0].get_global()["x"], np.array([1, 0, 0, 1, 0, 0]))
+        assert np_same(graphs[1].get_global()["x"], np.array([0, 1, 0, 0, 1, 0]))
 
     def test_graphs_global_to_one_hot_vstack(self):
         graphs = [nx.DiGraph(), nx.DiGraph()]
-        graphs[0].data = {"features": True}
-        graphs[1].data = {"features": False}
+        graphs[0].get_global()["features"] = True
+        graphs[1].get_global()["features"] = False
 
         for g in graphs:
             for _ in range(2):
@@ -221,8 +220,8 @@ class TestOneHot:
                     num_classes=3,
                 )
 
-        assert np_same(graphs[0].data["x"], np.array([[1, 0, 0]] * 2))
-        assert np_same(graphs[1].data["x"], np.array([[0, 1, 0]] * 2))
+        assert np_same(graphs[0].get_global()["x"], np.array([[1, 0, 0]] * 2))
+        assert np_same(graphs[1].get_global()["x"], np.array([[0, 1, 0]] * 2))
 
 
 class TestCollectIterables:
@@ -291,5 +290,8 @@ class TestCollectIterables:
 
 class TestShortestPathExample:
     def test_shorted_path(self):
-        g = nx.DiGraph()
-        nx.generators.gnm_random_graph(10, 10)
+        g = nx.generators.gnm_random_graph(10, 10)
+
+        import random
+
+        random.choice(list(g.nodes()))

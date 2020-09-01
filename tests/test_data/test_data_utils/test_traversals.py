@@ -9,8 +9,8 @@ from caldera.data.utils import induce
 from caldera.data.utils import neighbors
 from caldera.data.utils import tensor_induce
 from caldera.data.utils._traversal import floyd_warshall_neighbors
+from caldera.testing import nx_random_features
 from caldera.utils import deterministic_seed
-from caldera.utils.testing import nx_random_features
 
 
 @pytest.fixture(params=[GraphData, GraphBatch])

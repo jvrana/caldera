@@ -52,8 +52,7 @@ class Comparator:
             assert fkey in edata
 
         # ensure feature key is in global data
-        assert hasattr(g, gkey)
-        gdata = torch.tensor(getattr(g, gkey)[fkey], dtype=torch.float)
+        gdata = torch.tensor(g.get_global(gkey)[fkey], dtype=torch.float)
         assert gdata is not None
 
         # check edges
@@ -142,7 +141,7 @@ class TestGraphData:
         assert g.number_of_edges() == 5
 
         fkey = kwargs.get("feature_key", "features")
-        gkey = kwargs.get("global_attr_key", "data")
+        gkey = kwargs.get("global_attr_key", None)
 
         Comparator.data_to_nx(data, g, fkey, gkey)
 
@@ -162,14 +161,14 @@ class TestGraphData:
             del kwargs["global_attr_key"]
 
         fkey = kwargs.get("feature_key", "features")
-        gkey = kwargs.get("global_attr_key", "data")
+        gkey = kwargs.get("global_attr_key", global_attr_key)
 
         g = nx.OrderedMultiDiGraph()
         g.add_node("node1", **{fkey: np.random.randn(5)})
         g.add_node("node2", **{fkey: np.random.randn(5)})
         g.add_edge("node1", "node2", **{fkey: np.random.randn(4)})
         g.ordered_edges = [("node1", "node2", 0)]
-        setattr(g, gkey, {fkey: np.random.randn(3)})
+        g.set_global({fkey: np.random.randn(3)}, gkey)
 
         data = GraphData.from_networkx(g, **kwargs)
 
@@ -196,15 +195,14 @@ class TestGraphData:
             del kwargs["global_attr_key"]
 
         fkey = kwargs.get("feature_key", "features")
-        gkey = kwargs.get("global_attr_key", "data")
+        gkey = kwargs.get("global_attr_key", None)
 
         g = nx.OrderedMultiDiGraph()
         g.add_node("node1", **{fkey: np.random.randn(5)})
         g.add_node("node2", **{fkey: np.random.randn(5)})
         g.ordered_edges = []
         # g.add_edge('node1', 'node2', **{fkey: torch.randn(4)})
-
-        setattr(g, gkey, {fkey: np.random.randn(3)})
+        g.set_global({fkey: np.random.randn(3)}, gkey)
 
         data = GraphData.from_networkx(g, **kwargs)
 

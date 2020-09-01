@@ -1,14 +1,16 @@
 from typing import Dict
+from typing import Optional
 from typing import TypeVar
 from typing import Union
 
+from caldera.defaults import CalderaDefaults
 from caldera.utils import dict_join
 from caldera.utils.nx.types import Graph
+
 
 T = TypeVar("T")
 S = TypeVar("S")
 K = TypeVar("K")
-GLOBAL = "data"
 
 
 def setdefault_inplace(d1: Dict[K, T], d2: Dict[K, S]) -> Dict[K, Union[T, S]]:
@@ -33,7 +35,9 @@ def add_default_edge_data(g: Graph, data: Dict):
         setdefault_inplace(edata, data)
 
 
-def add_default_global_data(g: Graph, data: Dict, global_key: str = GLOBAL):
+def add_default_global_data(
+    g: Graph, data: Dict, global_key: str = CalderaDefaults.nx_global_key
+):
     """Update set default glboal data.
 
     Will not update if key exists in data.
@@ -41,3 +45,19 @@ def add_default_global_data(g: Graph, data: Dict, global_key: str = GLOBAL):
     if not hasattr(g, global_key):
         setattr(g, global_key, dict())
     setdefault_inplace(getattr(g, global_key), data)
+
+
+def add_default(
+    g: Graph,
+    *,
+    node_data: Optional[Dict] = None,
+    edge_data: Optional[Dict] = None,
+    global_data: Optional[Dict] = None,
+    global_key: str = None
+):
+    if node_data:
+        add_default_node_data(g, node_data)
+    if edge_data:
+        add_default_edge_data(g, edge_data)
+    if global_data:
+        add_default_global_data(g, global_data, global_key)

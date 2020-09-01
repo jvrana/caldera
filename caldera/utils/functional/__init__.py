@@ -76,10 +76,12 @@ class Functional:
                     try:
                         return f(result)
                     except Exception as e:
+                        raise e
                         msg = str(e)
                         msg += "\nduring composition:"
                         msg += "\n ({}) f: {}".format(i, f)
                         msg += "\n args: {} {}".format(result, result.__class__)
+                        print(msg)
                         raise type(e)(msg) from e
 
                 result = _composition_part(result)
@@ -633,8 +635,8 @@ class Functional:
 
     @staticmethod
     def group_each_by_key(
-        f: Callable[[T], Any]
-    ) -> Callable[[GT], Generator[Iterable[T], None, None]]:
+        f: Callable[[T], S]
+    ) -> Callable[[GT], Generator[Tuple[S, T], None, None]]:
         def _group_each_by_key(arr):
             a, b = itertools.tee(arr)
             data = OrderedDict()
