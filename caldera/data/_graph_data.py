@@ -28,7 +28,7 @@ def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
     elif issubclass(arr.__class__, np.ndarray):
         return arr.size
     else:
-        raise ValueError("Must be a {} or {}".format(np.ndarry, torch.Tensor))
+        raise ValueError("Must be a {} or {}".format(np.ndarray, torch.Tensor))
 
 
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
