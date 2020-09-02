@@ -122,7 +122,7 @@ def annotate_shortest_path(
     target_key: str = "target",
     path_key: str = "shortest_path",
     source: str = None,
-    target: str = None
+    target: str = None,
 ) -> nx.Graph:
     """
 
