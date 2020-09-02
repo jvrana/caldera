@@ -13,11 +13,13 @@ import networkx as nx
 import numpy as np
 import torch
 
+from caldera.defaults import CalderaDefaults
 from caldera.utils import _first
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
 from caldera.utils import same_storage
-from caldera.utils.nx._tools import DirectedGraph
+from caldera.utils.nx import nx_is_directed
+from caldera.utils.nx.types import DirectedGraph
 
 
 def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
@@ -427,8 +429,9 @@ class GraphData:
         n_node_feat: Optional[int] = None,
         n_edge_feat: Optional[int] = None,
         n_glob_feat: Optional[int] = None,
+        *,
         feature_key: str = "features",
-        global_attr_key: str = "data",
+        global_attr_key: str = None,
         requires_grad: Optional[bool] = None,
         dtype: str = torch.float32,
     ):
@@ -442,10 +445,13 @@ class GraphData:
         :param global_attr_key: Key to look for global data.
         :return:
         """
-        if hasattr(g, global_attr_key):
-            gdata = getattr(g, global_attr_key)
-        else:
-            gdata = {}
+        if not isinstance(g, nx.Graph) or not nx_is_directed(g):
+            raise TypeError(
+                "Graph must be a directed graph instance, not a '{}'. Convert to directed graph first.".format(
+                    g.__class__.__name__
+                )
+            )
+        gdata = g.get_global(global_attr_key)
 
         if n_node_feat is None:
             try:
@@ -516,7 +522,7 @@ class GraphData:
     def to_networkx(
         self,
         feature_key: str = "features",
-        global_attr_key: str = "data",
+        global_attr_key: str = None,
         graph_type: Type[DirectedGraph] = nx.OrderedMultiDiGraph,
     ) -> DirectedGraph:
         g = graph_type()
@@ -526,7 +532,7 @@ class GraphData:
         for i, e in enumerate(self.edges.T):
             n = g.add_edge(e[0].item(), e[1].item(), **{feature_key: self.e[i]})
             g.ordered_edges.append((e[0].item(), e[1].item(), n))
-        setattr(g, global_attr_key, {feature_key: self.g.clone()})
+        g.set_global({feature_key: self.g.clone()}, global_attr_key)
         return g
 
     def __repr__(self):

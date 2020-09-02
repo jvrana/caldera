@@ -1,8 +1,11 @@
 import itertools
 from typing import Callable
 from typing import Dict
-from typing import List
-from typing import TypeVar, Any, Optional, Iterable
+from typing import Iterable
+from typing import Optional
+from typing import Tuple
+from typing import TypeVar
+from typing import Union
 
 from caldera.utils.indexing import reindex_tensor
 from caldera.utils.indexing import unravel_index
@@ -17,51 +20,40 @@ from caldera.utils.tensor import tensor_is_empty
 from caldera.utils.tensor import torch_scatter_group
 
 T = TypeVar("T")
+S = TypeVar("S")
 K = TypeVar("K")
 V = TypeVar("V")
 
 
-def pairwise(iterable):
+def pairwise(iterable: Iterable[T]) -> Iterable[Tuple[T, T]]:
     """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
     a, b = itertools.tee(iterable)
     next(b, None)
     return zip(a, b)
 
 
-def _first(i):
+def _first(i: Iterable[T]) -> T:
     """Select the first element in an iterable."""
     return next(x for x in itertools.tee(i)[0])
 
 
-def dict_collate(
-    d1: Dict[K, T], d2: Dict[K, T], collate_fn: Callable[[List[T]], V]
-) -> Dict[K, V]:
-    """Apply a collation function to a pair dictionaries."""
-    d = {}
-    for k, v in d1.items():
-        if k not in d:
-            d[k] = [v]
-        else:
-            d[k].append(v)
-    for k, v in d2.items():
-        if k not in d:
-            d[k] = [v]
-        else:
-            d[k].append(v)
-    return {k: collate_fn(v) for k, v in d.items()}
-
-
-def dict_join(a=Dict, b=Dict, out: Optional[Dict]=None,
-              join_fn: Callable[[Any, Any], Any]=None,
-              default_a: Any=..., default_b=...,
-              keys: Optional[Iterable[str]]=None,
-              mode: str = 'union'):
-    """
-    Join two dictionaries. This function merges two dictionaries is various ways. For example,
-    a dictionary of `Dict[str, List]` can be merged such that, if the two dictionaries share the same key,
-    the lists are concatenated. The join function can be applied to the union of all keys (default) by
-    (`mode="union"`), the intersection of the dictionary (`mode="intersection"), only the keys
-    in the left dictionary (`mode="left"`), or keys only in the right dictionary (`mode="right"`).
+def dict_join(
+    a: Dict[K, T],
+    b: Dict[K, S],
+    out: Optional[Dict] = None,
+    join_fn: Callable[[T, S], V] = None,
+    default_a: T = ...,
+    default_b: S = ...,
+    keys: Optional[Iterable[K]] = None,
+    mode: str = "union",  # Literal["union", "left", "right", "intersection"]
+) -> Dict[K, Union[T, S, V]]:
+    """Join two dictionaries. This function merges two dictionaries is various
+    ways. For example, a dictionary of `Dict[str, List]` can be merged such
+    that, if the two dictionaries share the same key, the lists are
+    concatenated. The join function can be applied to the union of all keys
+    (default) by (`mode="union"`), the intersection of the dictionary
+    (`mode="intersection"), only the keys in the left dictionary
+    (`mode="left"`), or keys only in the right dictionary (`mode="right"`).
 
     .. code-block:: python
 
@@ -104,6 +96,7 @@ def dict_join(a=Dict, b=Dict, out: Optional[Dict]=None,
         out = dict()
 
     if join_fn is None:
+
         def join_fn(v1, v2):
             if v2 is not ...:
                 return v2
@@ -111,13 +104,13 @@ def dict_join(a=Dict, b=Dict, out: Optional[Dict]=None,
                 return v1
 
     if keys is None:
-        if mode == 'union':
+        if mode == "union":
             keys = set(a).union(set(b))
-        elif mode == 'intersection':
+        elif mode == "intersection":
             keys = set(a).intersection(set(b))
-        elif mode == 'left':
+        elif mode == "left":
             keys = set(a)
-        elif mode == 'right':
+        elif mode == "right":
             keys = set(b)
         else:
             raise ValueError("mode '{}' not recognized.".format(mode))

@@ -9,8 +9,9 @@ from caldera.data.utils import induce
 from caldera.data.utils import neighbors
 from caldera.data.utils import tensor_induce
 from caldera.data.utils._traversal import floyd_warshall_neighbors
+from caldera.testing import nx_random_features
 from caldera.utils import deterministic_seed
-from caldera.utils.testing import nx_random_features
+from caldera.utils.nx import nx_to_directed
 
 
 @pytest.fixture(params=[GraphData, GraphBatch])
@@ -170,6 +171,8 @@ def test_k_hop(edges, k, source, expected):
 def test_k_hop_random_graph(k):
     g1 = nx.grid_graph(dim=[2, 3, 4])
     g2 = nx.grid_graph(dim=[2, 3, 4])
+    g1 = nx_to_directed(g1)
+    g2 = nx_to_directed(g2)
     nx_random_features(g1, 5, 4, 3)
     nx_random_features(g2, 5, 4, 3)
     batch = GraphBatch.from_networkx_list([g1, g2])
@@ -291,7 +294,7 @@ class TestFloydWarshallNeighbors:
 
 class TestCompareNeighborImplementations:
     @pytest.fixture(
-        params=[(1000, 10000), (1000, 1000), (100, 100), (100, 1000),],
+        params=[(1000, 10000), (1000, 1000), (100, 100), (100, 1000)],
         ids=["large-dense", "large-sparse", "small-sparse", "small-dense"],
     )
     def data(self, request):
