@@ -445,9 +445,11 @@ class GraphData:
         :param global_attr_key: Key to look for global data.
         :return:
         """
-        if not nx_is_directed(g):
-            raise ValueError(
-                "Graph must be a directed graph. Convert to directed graph first."
+        if not isinstance(g, nx.Graph) or not nx_is_directed(g):
+            raise TypeError(
+                "Graph must be a directed graph instance, not a '{}'. Convert to directed graph first.".format(
+                    g.__class__.__name__
+                )
             )
         gdata = g.get_global(global_attr_key)
 

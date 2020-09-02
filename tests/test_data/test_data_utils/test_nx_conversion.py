@@ -252,16 +252,16 @@ class TestCollectIterables:
 
     def test_vstack_globals(self):
         graphs = [nx.DiGraph(), nx.DiGraph()]
-        graphs[0].data = {"features": [0, 1, 2]}
-        graphs[1].data = {"features": np.array([1, 2, 3])}
+        graphs[0].set_global({"features": [0, 1, 2]})
+        graphs[1].set_global({"features": np.array([1, 2, 3])})
 
         for g in graphs:
             for _ in range(2):
                 nx_collect_features(g, "global", "features", "x", join_func="vstack")
 
-        print(graphs[0].data)
-        assert np_same(graphs[0].data["x"], np.array([[0, 1, 2], [0, 1, 2]]))
-        assert np_same(graphs[1].data["x"], np.array([[1, 2, 3], [1, 2, 3]]))
+        print(graphs[0].get_global())
+        assert np_same(graphs[0].get_global()["x"], np.array([[0, 1, 2], [0, 1, 2]]))
+        assert np_same(graphs[1].get_global()["x"], np.array([[1, 2, 3], [1, 2, 3]]))
 
     def test_hstack_nodes(self):
         g = nx.DiGraph()

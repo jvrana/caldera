@@ -52,14 +52,9 @@ def test_shortest_path():
         encoding="onehot",
         classes=[False, True],
     )
-    print()
     pprint(feature_info(g))
 
-    import networkx as nx
-
-    pprint(nx.info(g))
     g = nx_to_directed(g)
-    GraphData.from_networkx(g, feature_key="_target")
-    import networkx as nx
-
-    pprint(nx.info(g))
+    data = GraphData.from_networkx(g, feature_key="_target")
+    assert data
+    print(data)

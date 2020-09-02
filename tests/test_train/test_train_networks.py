@@ -349,7 +349,7 @@ class DataLoaders:
             g = nx.to_directed(nx.random_tree(n_size))
             cls._default_g(g)
 
-            gdata = g.data
+            gdata = g.get_global()
             gdata["features"] = np.random.randn(1)
             gdata["target"] = np.array([nx.density(g)])
 

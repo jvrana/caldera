@@ -18,6 +18,16 @@ class GlobalDict(dict):
         self._obj = obj
         self._obj_set = False
 
+    def update(self, d):
+        if not self._obj_set:
+            setattr(self._obj, _global_key, self)
+        super().__setitem__(d)
+
+    def setdefault(self, k, v):
+        if not self._obj_set:
+            setattr(self._obj, _global_key, self)
+        super().__setitem__(k, v)
+
     def __setitem__(self, k, v):
         if not self._obj_set:
             setattr(self._obj, _global_key, self)

@@ -1,4 +1,5 @@
 import networkx as nx
+import pytest
 
 
 def test_global_access():
@@ -28,3 +29,21 @@ def test_set_global():
     g.get_global()["k"] = 2
     g.set_global({"k": 1})
     assert g.get_global() == {"k": 1}
+
+
+def test_get_global_and_update():
+    g = nx.DiGraph()
+    g.get_global().update({"k": 1})
+    assert g.get_global() == {"k": 1}
+
+
+def test_get_global_and_setdefault():
+    g = nx.DiGraph()
+    g.get_global().setdefault("k", 1)
+    assert g.get_global() == {"k": 1}
+
+
+def test_set_global_raises_type_error():
+    g = nx.DiGraph()
+    with pytest.raises(TypeError):
+        g.set_global(1)

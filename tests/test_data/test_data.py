@@ -174,6 +174,19 @@ class TestGraphData:
 
         Comparator.data_to_nx(data, g, fkey, gkey)
 
+    @pytest.mark.parametrize(
+        "cls",
+        [
+            nx.DiGraph,
+            pytest.param(
+                nx.Graph, marks=pytest.mark.xfail(raises=TypeError, strict=True)
+            ),
+        ],
+    )
+    def test_from_networkx_types(self, cls):
+        g = cls()
+        GraphData.from_networkx(g)
+
     def test_empty_networkx(self):
         """Empty graphs should be OK."""
         g = nx.DiGraph()

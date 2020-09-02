@@ -270,7 +270,7 @@ class Functional:
 
     @classmethod
     def group_each_into_chunks(
-        cls, chunk_size: int,
+        cls, chunk_size: int
     ) -> Callable[[Iterable[T]], Generator[T, None, None]]:
         """Returns a new function the groups iterables by chunks of the
         specified size. Last chunk is returned by default.
