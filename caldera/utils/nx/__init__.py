@@ -9,6 +9,7 @@ from ._path_utils import PathSum
 from ._path_utils import PathSymbol
 from ._shortest_path import multisource_dijkstras
 from ._tools import nx_copy
+from ._tools import nx_copy_to_directed
 from ._tools import nx_copy_to_undirected
 from ._tools import nx_deep_copy
 from ._tools import nx_is_directed
@@ -16,4 +17,5 @@ from ._tools import nx_is_undirected
 from ._tools import nx_iter_leaves
 from ._tools import nx_iter_roots
 from ._tools import nx_shallow_copy
+from ._tools import nx_to_directed
 from ._tools import nx_to_undirected

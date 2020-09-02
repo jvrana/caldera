@@ -1,10 +1,10 @@
 repos:
 -   repo: https://github.com/psf/black
-    rev: stable
+    rev: 20.8b1
     hooks:
     - id: black
 -   repo: https://gitlab.com/pycqa/flake8
-    rev: ''
+    rev: 3.8.3
     hooks:
     -   id: flake8
         exclude: (^tests/)|(^docsrc/)|(^experiments)
@@ -13,7 +13,7 @@ repos:
     hooks:
     -   id: forbid-new-submodules
 -   repo: https://github.com/myint/docformatter
-    rev: v1.3
+    rev: v1.3.1
     hooks:
     -   id: docformatter
 -   repo: https://github.com/asottile/pyupgrade

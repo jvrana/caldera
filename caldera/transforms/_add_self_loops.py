@@ -19,5 +19,5 @@ class AddSelfLoops(TransformBase):
     def __call__(self, data: GraphData) -> GraphData:
         ...
 
-    def __call__(self, data: GraphBatch) -> GraphBatch:
+    def __call__(self, data: GraphBatch) -> GraphBatch:  # noqa: E811
         return add_edges(data, self.fill_value, kind="self")

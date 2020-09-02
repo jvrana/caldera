@@ -9,10 +9,12 @@ from typing import Union
 
 import torch
 
+from ._floyd_warshall import floyd_warshall
 from ._utils import get_edge_dict
 from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.utils import long_isin
+from caldera.utils import torch_scatter_group
 
 
 @overload
@@ -73,6 +75,7 @@ def neighbors(data: ..., nodes: torch.BoolTensor) -> torch.BoolTensor:
     ...
 
 
+# TODO: dispatch method with multidim neighbors and floyd-warshall
 def neighbors(
     data: Union[GraphData, GraphBatch],
     nodes: torch.LongTensor,
@@ -160,3 +163,67 @@ def bfs_nodes(
                         to_visit.append(n)
                         depths.append(d + 1)
     return discovered
+
+
+def _fw_neighbors(m, n, depth):
+    x = m[n]
+    reachable = torch.logical_and(x != float("inf"), x <= depth)
+    if n.dtype == torch.bool:
+        return reachable
+    idx = torch.where(reachable)
+    return idx
+
+
+@overload
+def floyd_warshall_neighbors(
+    data: ...,
+    nodes: Tuple[torch.LongTensor, ...],
+    depth: ...,
+    matrix: ...,
+    return_matrix: ...,
+) -> Union[torch.LongTensor, Tuple[torch.LongTensor, torch.FloatTensor]]:
+    ...
+
+
+@overload
+def floyd_warshall_neighbors(
+    data: ...,
+    nodes: Tuple[torch.BoolTensor, ...],
+    depth: ...,
+    matrix: ...,
+    return_matrix: ...,
+) -> Union[torch.BoolTensor, Tuple[torch.BoolTensor, torch.FloatTensor]]:
+    ...
+
+
+def floyd_warshall_neighbors(
+    data: Union[GraphData, GraphBatch],
+    nodes: Union[torch.LongTensor, int],
+    depth: int = 1,
+    matrix: Optional[torch.FloatTensor] = None,
+    return_matrix: bool = False,
+) -> Union[torch.LongTensor, Tuple[torch.LongTensor, torch.FloatTensor]]:
+    if matrix is None:
+        matrix = floyd_warshall(data)
+
+    if isinstance(nodes, int):
+        nodes = torch.LongTensor(nodes)
+
+    if not isinstance(nodes, tuple) and not nodes.ndim <= 2:
+        raise ValueError("`nodes` must be a 0, 1, or 2-dimensional tensor")
+
+    if isinstance(nodes, tuple):
+        ret = []
+        for n in nodes:
+            ret.append(floyd_warshall_neighbors(data, n, depth=depth, matrix=matrix))
+        ret = tuple(ret)
+    else:
+        idx = _fw_neighbors(matrix, nodes, depth)
+        if torch.is_tensor(nodes) and nodes.ndim == 2:
+            ret = torch_scatter_group(idx[-1], idx[0])
+        else:
+            ret = idx[-1]
+
+    if return_matrix:
+        ret = (ret, matrix)
+    return ret

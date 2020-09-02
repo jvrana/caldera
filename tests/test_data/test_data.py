@@ -52,8 +52,7 @@ class Comparator:
             assert fkey in edata
 
         # ensure feature key is in global data
-        assert hasattr(g, gkey)
-        gdata = torch.tensor(getattr(g, gkey)[fkey], dtype=torch.float)
+        gdata = torch.tensor(g.get_global(gkey)[fkey], dtype=torch.float)
         assert gdata is not None
 
         # check edges
@@ -142,7 +141,7 @@ class TestGraphData:
         assert g.number_of_edges() == 5
 
         fkey = kwargs.get("feature_key", "features")
-        gkey = kwargs.get("global_attr_key", "data")
+        gkey = kwargs.get("global_attr_key", None)
 
         Comparator.data_to_nx(data, g, fkey, gkey)
 
@@ -162,18 +161,31 @@ class TestGraphData:
             del kwargs["global_attr_key"]
 
         fkey = kwargs.get("feature_key", "features")
-        gkey = kwargs.get("global_attr_key", "data")
+        gkey = kwargs.get("global_attr_key", global_attr_key)
 
         g = nx.OrderedMultiDiGraph()
         g.add_node("node1", **{fkey: np.random.randn(5)})
         g.add_node("node2", **{fkey: np.random.randn(5)})
         g.add_edge("node1", "node2", **{fkey: np.random.randn(4)})
         g.ordered_edges = [("node1", "node2", 0)]
-        setattr(g, gkey, {fkey: np.random.randn(3)})
+        g.set_global({fkey: np.random.randn(3)}, gkey)
 
         data = GraphData.from_networkx(g, **kwargs)
 
         Comparator.data_to_nx(data, g, fkey, gkey)
+
+    @pytest.mark.parametrize(
+        "cls",
+        [
+            nx.DiGraph,
+            pytest.param(
+                nx.Graph, marks=pytest.mark.xfail(raises=TypeError, strict=True)
+            ),
+        ],
+    )
+    def test_from_networkx_types(self, cls):
+        g = cls()
+        GraphData.from_networkx(g)
 
     def test_empty_networkx(self):
         """Empty graphs should be OK."""
@@ -196,15 +208,14 @@ class TestGraphData:
             del kwargs["global_attr_key"]
 
         fkey = kwargs.get("feature_key", "features")
-        gkey = kwargs.get("global_attr_key", "data")
+        gkey = kwargs.get("global_attr_key", None)
 
         g = nx.OrderedMultiDiGraph()
         g.add_node("node1", **{fkey: np.random.randn(5)})
         g.add_node("node2", **{fkey: np.random.randn(5)})
         g.ordered_edges = []
         # g.add_edge('node1', 'node2', **{fkey: torch.randn(4)})
-
-        setattr(g, gkey, {fkey: np.random.randn(3)})
+        g.set_global({fkey: np.random.randn(3)}, gkey)
 
         data = GraphData.from_networkx(g, **kwargs)
 
@@ -235,11 +246,9 @@ class TestApply:
             assert not data2.share_storage(
                 data
             ), "apply `gpu()` should not share the same storage"
-            for k in data.__slots__:
-                v = getattr(data, k)
+            for k, v in data._tensors:
                 assert v.device.type == "cpu"
-            for k in data2.__slots__:
-                v = getattr(data2, k)
+            for k, v in data2._tensors:
                 assert v.device.type == "cuda"
 
     def test_to_cuda(self, random_data_example):
@@ -250,11 +259,9 @@ class TestApply:
             assert id(data2) != id(data)
             assert not data.share_storage(data2)
             assert not data2.share_storage(data)
-            for k in data.__slots__:
-                v = getattr(data, k)
+            for k, v in data._tensors:
                 assert v.device.type == "cpu"
-            for k in data2.__slots__:
-                v = getattr(data2, k)
+            for k, v in data2._tensors:
                 assert v.device.type == "cuda"
 
     @pytest.mark.parametrize("req", [True, False])
