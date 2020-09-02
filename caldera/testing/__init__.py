@@ -100,16 +100,16 @@ def feature_info(g, global_key: str = None):
     }
 
 
-def random_node(g, n=1):
-    nodes = [random.choice(list(g.nodes)) for _ in range(n)]
-    if n == 1:
+def random_node(g, n=None):
+    nodes = [random.choice(list(g.nodes)) for _ in range(n or 1)]
+    if n is None:
         nodes = nodes[0]
     return nodes
 
 
-def random_edge(g, n=1):
-    edges = [random.choice(list(g.edges)) for _ in range(n)]
-    if n == 1:
+def random_edge(g, n=None):
+    edges = [random.choice(list(g.edges)) for _ in range(n or 1)]
+    if n is None:
         edges = edges[0]
     return edges
 
@@ -121,10 +121,25 @@ def annotate_shortest_path(
     source_key: str = "source",
     target_key: str = "target",
     path_key: str = "shortest_path",
+    source: str = None,
+    target: str = None,
 ) -> nx.Graph:
+    """
+
+    :param g:
+    :param annotate_nodes:
+    :param annotate_edges:
+    :param source_key:
+    :param target_key:
+    :param path_key:
+    :param source:
+    :param target:
+    :return:
+    """
     if not annotate_edges and not annotate_nodes:
         raise ValueError("Must annotate either nodes or edges (or both)")
-    source, target = random_node(g, 2)
+    source = source or random_node(g)
+    target = target or random_node(g)
 
     g.nodes[source][source_key] = True
     g.nodes[target][target_key] = True
