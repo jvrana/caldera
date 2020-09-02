@@ -39,9 +39,11 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import TypeVar
+from typing import Union
 
 T = TypeVar("T")
 S = TypeVar("S")
+U = TypeVar("U")
 
 GT = Generator[T, None, None]
 GS = Generator[S, None, None]
@@ -635,14 +637,16 @@ class Functional:
 
     @staticmethod
     def group_each_by_key(
-        f: Callable[[T], S]
-    ) -> Callable[[GT], Generator[Tuple[S, T], None, None]]:
+        f: Callable[[T], S], value_func: Optional[Callable[[S], U]] = None
+    ) -> Callable[[GT], Generator[Tuple[S, Union[T, U]], None, None]]:
         def _group_each_by_key(arr):
             a, b = itertools.tee(arr)
             data = OrderedDict()
             for _a in a:
                 k = f(_a)
                 data.setdefault(k, list())
+                if value_func:
+                    _a = value_func(_a)
                 data[k].append(_a)
             yield from data.items()
 

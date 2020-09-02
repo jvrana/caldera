@@ -107,3 +107,9 @@ class GraphWithGlobal(nx.Graph):
         if not isinstance(value, dict):
             raise TypeError("Value must be a `dict`")
         return setattr(self, self.get_global_key(global_key), value)
+
+    def globals(self, data: bool = False, global_key: str = None):
+        if data is True:
+            yield self.get_global_key(global_key), self.get_global(global_key)
+        else:
+            yield self.get_global(global_key)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+from functools import reduce
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -18,6 +19,7 @@ from caldera.utils import _first
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
 from caldera.utils import same_storage
+from caldera.utils.functional import Functional as Fn
 from caldera.utils.nx import nx_is_directed
 from caldera.utils.nx.types import DirectedGraph
 
@@ -412,7 +414,6 @@ class GraphData:
 
         :return:
         """
-        """Unlike clone, copies the data *without the computation graph*"""
         return self.apply(
             lambda x: torch.empty_like(x, *emtpy_like_args, **emtpy_like_kwargs).copy_(
                 x, non_blocking=non_blocking
@@ -422,6 +423,53 @@ class GraphData:
     # TODO: docstrings
     # TODO: handle undirected and hypergraphs
     # TODO: check that features are NUMPY rather than TORCH
+
+    @staticmethod
+    def _get_nx_feature_size(g: DirectedGraph, key: str, global_key: str = None):
+        def collect_feature_shapes(datalist):
+            shapes = []
+            for x in datalist:
+                data = x[-1]
+                if key not in data:
+                    shape = None
+                else:
+                    shape = tuple(data[key].shape)
+                shapes.append(shape)
+            return shapes
+
+        def get_feature_shape(arr, m):
+            shapes = set(collect_feature_shapes(arr))
+            if arr is ...:
+                return 0
+            if len(shapes) > 1:
+                if None in shapes:
+                    raise RuntimeError(
+                        "{} features shapes must be the same. Found {}. "
+                        "At least one {} is missing a feature..".format(m, shapes, m)
+                    )
+                else:
+                    raise RuntimeError(
+                        "{} features shapes must be the same. Found {}.".format(
+                            m, shapes
+                        )
+                    )
+            elif len(shapes) == 0:
+                return 0
+            elif list(shapes)[0] is None:
+                return 0
+            return reduce(lambda a, b: a * b, list(shapes)[0])
+
+        n_feat = get_feature_shape(g.nodes(data=True), "node")
+        e_feat = get_feature_shape(g.edges(data=True), "edge")
+        g_feat = get_feature_shape(
+            g.globals(data=True, global_key=global_key), "global"
+        )
+
+        return n_feat, e_feat, g_feat
+
+    # TODO: validate features are all same size
+    # TODO: estimate sizes of features
+
     @classmethod
     def from_networkx(
         cls,
@@ -452,57 +500,36 @@ class GraphData:
                 )
             )
         gdata = g.get_global(global_attr_key)
-
-        if n_node_feat is None:
-            try:
-                _, ndata = _first(g.nodes(data=True))
-                if feature_key not in ndata:
-                    n_node_feat = 0
-                else:
-                    n_node_feat = np_or_tensor_size(ndata[feature_key])
-            except StopIteration:
-                n_node_feat = 0
-
-        if n_edge_feat is None:
-            try:
-                _, _, edata = _first(g.edges(data=True))
-                if feature_key not in edata:
-                    n_edge_feat = 0
-                else:
-                    n_edge_feat = np_or_tensor_size(edata[feature_key])
-            except StopIteration:
-                n_edge_feat = 0
-
-        if n_glob_feat is None:
-            if feature_key in gdata:
-                if feature_key not in gdata:
-                    n_glob_feat = 0
-                else:
-                    n_glob_feat = np_or_tensor_size(gdata[feature_key])
-            else:
-                n_glob_feat = 0
-
-        n_nodes = g.number_of_nodes()
-        n_edges = g.number_of_edges()
-        node_attr = np.empty((n_nodes, n_node_feat))
-        edge_attr = np.empty((n_edges, n_edge_feat))
-        glob_attr = np.empty((1, n_glob_feat))
+        _n_node_feat, _n_edge_feat, _n_glob_feat = cls._get_nx_feature_size(
+            g, feature_key, global_attr_key
+        )
+        n_node_feat = n_node_feat or _n_node_feat
+        n_edge_feat = n_edge_feat or _n_edge_feat
+        n_glob_feat = n_glob_feat or _n_glob_feat
+        n_node_size, n_edge_size, n_glob_size = (
+            g.number_of_nodes(),
+            g.number_of_edges(),
+            1,
+        )
+        node_attr = np.empty((n_node_size, n_node_feat))
+        edge_attr = np.empty((n_edge_size, n_edge_feat))
+        glob_attr = np.empty((n_glob_size, n_glob_feat))
 
         nodes = sorted(list(g.nodes(data=True)))
         ndict = {}
         # TODO: support n dim tensors (but they get flattened anyways...)
         for i, (n, ndata) in enumerate(nodes):
-            node_attr[i] = ndata[feature_key].flatten()
+            node_attr[i] = ndata.get(feature_key, np.array([])).flatten()
             ndict[n] = i
 
         # TODO: method to change dtype?
-        edges = np.empty((2, n_edges), dtype=np.float)
+        edges = np.empty((2, n_edge_size), dtype=np.float)
         for i, (n1, n2, edata) in enumerate(g.edges(data=True)):
             edges[:, i] = np.array([ndict[n1], ndict[n2]])
-            edge_attr[i] = edata[feature_key].flatten()
+            edge_attr[i] = edata.get(feature_key, np.array([])).flatten()
 
         if feature_key in gdata:
-            glob_attr[0] = gdata[feature_key]
+            glob_attr[0] = gdata.get(feature_key, np.array([])).flatten()
 
         if requires_grad is not None:
             tensor = functools.partial(

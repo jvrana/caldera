@@ -1,3 +1,4 @@
+# flake8: noqa
 import networkx as nx
 import pandas as pd
 import seaborn as sns

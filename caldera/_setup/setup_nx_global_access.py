@@ -17,6 +17,7 @@ def add_global_access_to_nx(key):
     )
     nx.Graph.get_global = GraphWithGlobal.get_global
     nx.Graph.set_global = GraphWithGlobal.set_global
+    nx.Graph.globals = GraphWithGlobal.globals
     setattr(nx.Graph, key, GlobalAccess())
 
 
