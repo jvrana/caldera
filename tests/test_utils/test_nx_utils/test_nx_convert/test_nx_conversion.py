@@ -15,6 +15,13 @@ def np_same(a, b):
     return True
 
 
+def test_collect_features_default():
+    g = nx.DiGraph()
+    g.add_node(1)
+    nx_collect_features(g, "node", None, "_target", default=np.array([0.0]))
+    assert g.nodes[1] == {"_target": np.array([0.0])}
+
+
 class TestOneHot:
     def test_nodes_to_one_hot(self):
         g = nx.DiGraph()

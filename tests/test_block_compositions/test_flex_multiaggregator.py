@@ -53,7 +53,8 @@ def test_():
 
 
 def make_dot(var, params=None):
-    """ Produces Graphviz representation of PyTorch autograd graph.
+    """Produces Graphviz representation of PyTorch autograd graph.
+
     Blue nodes are the Variables that require grad, orange are Tensors
     saved for backward in torch.autograd.Function
     Args:
@@ -92,7 +93,7 @@ def make_dot(var, params=None):
             elif hasattr(var, "variable"):
                 u = var.variable
                 name = param_map[id(u)] if params is not None else ""
-                node_name = "%s\n %s" % (name, size_to_str(u.size()))
+                node_name = "{}\n {}".format(name, size_to_str(u.size()))
                 dot.node(str(id(var)), node_name, fillcolor="lightblue")
             elif var in output_nodes:
                 dot.node(
@@ -133,7 +134,7 @@ def add_nodes(var):
         elif hasattr(var, "variable"):
             u = var.variable
             name = param_map[id(u)] if params is not None else ""
-            node_name = "%s\n %s" % (name, size_to_str(u.size()))
+            node_name = "{}\n {}".format(name, size_to_str(u.size()))
             dot.node(str(id(var)), node_name, fillcolor="lightblue")
         elif var in output_nodes:
             dot.node(str(id(var)), str(type(var).__name__), fillcolor="darkolivegreen1")

@@ -90,7 +90,7 @@ class TestDirectedAndUndirected:
         @pytest.mark.parametrize("c1", undirected_types, ids=lambda x: str(x))
         @pytest.mark.parametrize(
             "c2",
-            directed_types + mark_xfail(directed_types, strict=True),
+            directed_types + mark_xfail(undirected_types, strict=True),
             ids=lambda x: str(x),
         )
         def test_undirected_to_directed(self, c1, c2):

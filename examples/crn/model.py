@@ -6,17 +6,17 @@ from torch import nn
 from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock
-from caldera.blocks import MultiAggregator
 from caldera.blocks import EdgeBlock
 from caldera.blocks import Flex
 from caldera.blocks import GlobalBlock
 from caldera.blocks import MLP
+from caldera.blocks import MultiAggregator
 from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
+from caldera.defaults import CalderaDefaults as defaults
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
 from caldera.utils import pairwise
-from caldera.defaults import CalderaDefaults as defaults
 
 
 class Network(torch.nn.Module):

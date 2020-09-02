@@ -13,8 +13,8 @@ from typing import Union
 import networkx as nx
 import numpy as np
 
-from caldera.utils.nx._path_utils import PathNpSum
-from caldera.utils.nx._path_utils import PathSymbol
+from caldera.utils.nx.path._path_utils import PathNpSum
+from caldera.utils.nx.path._path_utils import PathSymbol
 from caldera.utils.nx.types import Graph
 
 

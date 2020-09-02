@@ -1,9 +1,10 @@
-"""_nx_np_features.py.
+"""_features.py.
 
 Functional methods to convert networkx graphs to
 :class:`caldera.data.GraphData` instances.
 """
 import functools
+from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Hashable
@@ -85,14 +86,18 @@ def values_to_one_hot(
     return to_one_hot(np.array(_values), mx=num_classes)
 
 
-def merge_update(data, key, to_key, join_fn, process_fn):
+def merge_update(data, key, to_key, join_fn, process_fn, default=...):
     update_fn = functools.partial(update_left_inplace, join_fn=join_fn)
 
     data1 = Fn.compose(Fn.index_each(-1))(data)
 
+    getter = Fn.get_each(key)
+    if default is not ...:
+        getter = Fn.get_each(key, default=default)
+
     data2 = Fn.compose(
         Fn.index_each(-1),
-        Fn.get_each(key),
+        getter,
         process_fn,
         Fn.map_each(lambda x: {to_key: x}),
     )(data)
@@ -106,6 +111,8 @@ def nx_collect_features(
     feature: str,
     from_key: str,
     to_key: str,
+    *,
+    default: Any = ...,
     encoding: Optional[str] = None,
     processing_func=None,
     processing_kwargs=None,
@@ -147,4 +154,33 @@ def nx_collect_features(
             )
         )
 
-    merge_update(data, from_key, to_key, join_fn=join_func, process_fn=processing_func)
+    merge_update(
+        data,
+        from_key,
+        to_key,
+        join_fn=join_func,
+        process_fn=processing_func,
+        default=default,
+    )
+
+
+_get_unique_keys = Fn.compose(
+    Fn.index_each(-1), Fn.chain_each(), Fn.iter_each_unique(), set
+)
+
+
+def fill_defaults(graph, keys, default: ..., global_key: Optional[str] = None):
+    if default is ...:
+        default = np.array([0.0])
+
+    keys = set(keys)
+
+    x = {
+        "node": graph.nodes(data=True),
+        "edge": graph.edges(data=True),
+        "global": [(graph.get_global(global_key),)],
+    }
+
+    for n_e_or_g, datalist in x.items():
+        for k in keys.difference(_get_unique_keys(datalist)):
+            nx_collect_features(graph, n_e_or_g, None, k, default=default)

@@ -28,6 +28,7 @@ instead of
 """
 import functools
 import itertools
+import random
 from collections import OrderedDict
 from typing import Any
 from typing import Callable
@@ -38,7 +39,6 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import TypeVar
-
 
 T = TypeVar("T")
 S = TypeVar("S")
@@ -676,3 +676,11 @@ class Functional:
             return arr
 
         return _apply
+
+    @staticmethod
+    def shuffle_each():
+        def _shuffle_each(arr):
+            shuffled = random.shuffle(arr)
+            yield from shuffled
+
+        return _shuffle_each
