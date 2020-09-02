@@ -42,9 +42,8 @@ def add_default_global_data(
 
     Will not update if key exists in data.
     """
-    if not hasattr(g, global_key):
-        setattr(g, global_key, dict())
-    setdefault_inplace(getattr(g, global_key), data)
+    if not g.get_global(global_key):
+        g.set_global(data, global_key)
 
 
 def add_default(
