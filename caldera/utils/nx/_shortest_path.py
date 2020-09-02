@@ -15,7 +15,7 @@ import numpy as np
 
 from caldera.utils.nx._path_utils import PathNpSum
 from caldera.utils.nx._path_utils import PathSymbol
-from caldera.utils.nx._tools import Graph
+from caldera.utils.nx.types import Graph
 
 
 def _weight_function(e, k):
@@ -144,9 +144,7 @@ def multisource_dijkstras(
     func: Callable = lambda x: x,
     target: Hashable = None,
     cutoff: Optional[Union[float, int]] = None,
-) -> Union[
-    Tuple[Union[float, int], List[Hashable]],
-]:
+) -> Union[Tuple[Union[float, int], List[Hashable]]]:
     if sources is None or not len(sources):
         raise ValueError("sources must not be empty")
     if target in sources:

@@ -7,7 +7,7 @@ from ._matrix import in_degree
 from ._matrix import in_degree_matrix_from_edges
 from ._matrix import out_degree
 from ._matrix import out_degree_matrix_from_edges
-from ._sparse import graph_data_to_coo_matrix
+from ._sparse import to_sparse_coo_matrix
 from ._traversal import bfs_nodes
 from ._traversal import induce
 from ._traversal import neighbors

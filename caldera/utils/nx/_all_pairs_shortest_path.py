@@ -9,7 +9,7 @@ import numpy as np
 from caldera.utils.np import replace_nan_with_inf
 from caldera.utils.nx._path_utils import PathSum
 from caldera.utils.nx._path_utils import PathSymbol
-from caldera.utils.nx._tools import Graph
+from caldera.utils.nx.types import Graph
 
 
 def floyd_warshall(

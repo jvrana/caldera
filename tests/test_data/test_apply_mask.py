@@ -4,8 +4,9 @@ import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
+from caldera.testing import nx_random_features
 from caldera.utils import deterministic_seed
-from caldera.utils.testing import nx_random_features
+from caldera.utils.nx import nx_to_directed
 
 
 def test_mask_all_nodes():
@@ -120,10 +121,10 @@ def grid_data(request):
         return nx_random_features(g, 5, 4, 3)
 
     if request.param is GraphData:
-        g = newg(nx.grid_graph([2, 4, 3]))
+        g = nx_to_directed(newg(nx.grid_graph([2, 4, 3])))
         return GraphData.from_networkx(g)
     elif request.param is GraphBatch:
-        graphs = [newg(nx.grid_graph([2, 4, 3])) for _ in range(10)]
+        graphs = [nx_to_directed(newg(nx.grid_graph([2, 4, 3]))) for _ in range(10)]
         return GraphBatch.from_networkx_list(graphs)
     else:
         raise ValueError()
