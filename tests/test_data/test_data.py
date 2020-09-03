@@ -6,7 +6,6 @@ from flaky import flaky
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.utils import deterministic_seed
 
 random_graph_data = GraphData.random
 
@@ -238,7 +237,7 @@ class TestGraphData:
             GraphData.from_networkx(g, feature_key="feature")
 
     def test_from_networkx_different_types(self):
-        pass
+        pytest.fail("test not written")
 
     @pytest.mark.parametrize(
         "keys", [(None, None), ("myfeatures", "mydata"), ("features", "data")]

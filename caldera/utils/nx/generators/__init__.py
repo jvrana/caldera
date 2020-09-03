@@ -1,3 +1,9 @@
+"""
+generators
+
+Networkx graph generators
+"""
+
 import itertools
 import random
 import uuid
