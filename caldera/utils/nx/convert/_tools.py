@@ -1,4 +1,4 @@
-from caldera.utils.functional import Functional as Fn
+from caldera.utils import functional as Fn
 
 
 def feature_info(g, global_key: str = None):

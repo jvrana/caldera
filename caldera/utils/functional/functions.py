@@ -8,7 +8,7 @@ from typing import List
 from typing import Tuple
 from typing import TypeVar
 
-from caldera.utils.functional import Functional as Fn
+from caldera.utils import functional as Fn
 
 K = TypeVar("K")
 V = TypeVar("V")

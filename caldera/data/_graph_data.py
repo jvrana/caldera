@@ -14,12 +14,9 @@ import networkx as nx
 import numpy as np
 import torch
 
-from caldera.defaults import CalderaDefaults
-from caldera.utils import _first
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
 from caldera.utils import same_storage
-from caldera.utils.functional import Functional as Fn
 from caldera.utils.nx import nx_is_directed
 from caldera.utils.nx.types import DirectedGraph
 

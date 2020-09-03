@@ -6,8 +6,8 @@ import numpy as np
 from caldera.data import GraphData
 from caldera.testing import add_default
 from caldera.testing import annotate_shortest_path
+from caldera.utils import functional as Fn
 from caldera.utils._tools import _resolve_range
-from caldera.utils.functional import Functional as Fn
 from caldera.utils.nx import nx_copy
 from caldera.utils.nx import nx_to_directed
 from caldera.utils.nx.convert import nx_collect_features

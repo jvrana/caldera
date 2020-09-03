@@ -1,13 +1,6 @@
-"""_features.py.
-
-Functional methods to convert networkx graphs to
-:class:`caldera.data.GraphData` instances.
-"""
 import functools
-from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import Hashable
 from typing import Iterable
 from typing import List
 from typing import Optional
@@ -24,10 +17,29 @@ from caldera.utils import functional as Fn
 from caldera.utils.nx.types import Graph
 from caldera.utils.tensor import to_one_hot
 
-T = TypeVar("T")
-K = TypeVar("K")
-S = TypeVar("S")
-V = TypeVar("V")
+
+collect_values_by_key = Fn.compose(
+    Fn.map_each(lambda x: x.items()),
+    Fn.chain_each(),
+    Fn.group_each_by_key(lambda x: x[0]),
+    Fn.map_each(lambda x: (x[0], [_x[1] for _x in x[1]])),
+    dict,
+)  # from a list of dictionaries, List[Dict] -> Dict[str, List]
+
+
+unique_value_types = Fn.compose(
+    Fn.index_each(-1),
+    collect_values_by_key,
+    lambda x: {k: {_v.__class__ for _v in v} for k, v in x.items()},
+)
+
+
+def feature_info(g, global_key: str = None):
+    return {
+        "node": {"keys": unique_value_types(g.nodes(data=True))},
+        "edge": {"keys": unique_value_types(g.edges(data=True))},
+        "global": {"keys": unique_value_types([(g.get_global(global_key),)])},
+    }
 
 
 def _raise_if_not_graph(x):
@@ -39,13 +51,10 @@ def _raise_if_not_graph(x):
         )
 
 
-def get_global_data(graphs, global_key: str = None):
-    return Fn.compose(
-        Fn.apply_each(_raise_if_not_graph),
-        Fn.map_each(lambda g: g.get_global(global_key)),
-        Fn.enumerate_each(),
-        list,
-    )(graphs)
+T = TypeVar("T")
+K = TypeVar("K")
+S = TypeVar("S")
+V = TypeVar("V")
 
 
 def update_left_inplace(
@@ -106,62 +115,21 @@ def merge_update(data, key, to_key, join_fn, process_fn, default=...):
         _ = update_fn(d1, d2)
 
 
-def nx_collect_features(
-    g: Graph,
-    feature: str,
-    from_key: str,
-    to_key: str,
-    *,
-    default: Any = ...,
-    encoding: Optional[str] = None,
-    processing_func=None,
-    processing_kwargs=None,
-    join_func: str = "hstack",
-    global_key: str = None,
-    **kwargs
-):
-    if processing_kwargs is None:
-        processing_kwargs = {}
-
-    if encoding is None:
-        processing_func = Fn.compose(list, np.array)
-    elif encoding == "onehot":
-        processing_func = Fn.compose(
-            list, functools.partial(values_to_one_hot, **kwargs)
-        )
-
-    if join_func == "hstack":
-
-        def join_func(a, b):
-            return np.hstack([a, b])
-
-    elif join_func == "vstack":
-
-        def join_func(a, b):
-            return np.vstack([a, b])
-
-    _NODE, _EDGE, _GLOBAL = "node", "edge", "global"
-    if feature == _NODE:
-        data = g.nodes(data=True)
-    elif feature == _EDGE:
-        data = g.edges(data=True)
-    elif feature == _GLOBAL:
-        data = [(0, g.get_global(global_key))]
-    else:
-        raise ValueError(
-            "feature '{}' not recognized. Select from {}.".format(
-                feature, [_NODE, _EDGE, _GLOBAL]
-            )
-        )
-
-    merge_update(
-        data,
-        from_key,
-        to_key,
-        join_fn=join_func,
-        process_fn=processing_func,
-        default=default,
-    )
+# def fill_defaults(graph, keys, default: ..., global_key: Optional[str] = None):
+#     if default is ...:
+#         default = np.array([0.0])
+#
+#     keys = set(keys)
+#
+#     x = {
+#         "node": graph.nodes(data=True),
+#         "edge": graph.edges(data=True),
+#         "global": [(graph.get_global(global_key),)],
+#     }
+#
+#     for n_e_or_g, datalist in x.items():
+#         for k in keys.difference(_get_unique_keys(datalist)):
+#             nx_collect_np_features_in_place(graph, n_e_or_g, None, k, default=default)
 
 
 _get_unique_keys = Fn.compose(
@@ -169,18 +137,50 @@ _get_unique_keys = Fn.compose(
 )
 
 
-def fill_defaults(graph, keys, default: ..., global_key: Optional[str] = None):
-    if default is ...:
-        default = np.array([0.0])
+def setdefault_inplace(d1: Dict[K, T], d2: Dict[K, S]) -> Dict[K, Union[T, S]]:
+    return dict_join(d1, d2, d1, join_fn=lambda a, b: a, mode="right")
 
-    keys = set(keys)
 
-    x = {
-        "node": graph.nodes(data=True),
-        "edge": graph.edges(data=True),
-        "global": [(graph.get_global(global_key),)],
-    }
+def add_default_node_data(g: Graph, data: Dict):
+    """Update set default node data.
 
-    for n_e_or_g, datalist in x.items():
-        for k in keys.difference(_get_unique_keys(datalist)):
-            nx_collect_features(graph, n_e_or_g, None, k, default=default)
+    Will not update if key exists in data.
+    """
+    for _, ndata in g.nodes(data=True):
+        setdefault_inplace(ndata, data)
+
+
+def add_default_edge_data(g: Graph, data: Dict):
+    """Update set default edge data.
+
+    Will not update if key exists in data.
+    """
+    for _, _, edata in g.edges(data=True):
+        setdefault_inplace(edata, data)
+
+
+def add_default_global_data(
+    g: Graph, data: Dict, global_key: str = CalderaDefaults.nx_global_key
+):
+    """Update set default glboal data.
+
+    Will not update if key exists in data.
+    """
+    if not g.get_global(global_key):
+        g.set_global(data, global_key)
+
+
+def add_default(
+    g: Graph,
+    *,
+    node_data: Optional[Dict] = None,
+    edge_data: Optional[Dict] = None,
+    global_data: Optional[Dict] = None,
+    global_key: str = None
+):
+    if node_data:
+        add_default_node_data(g, node_data)
+    if edge_data:
+        add_default_edge_data(g, edge_data)
+    if global_data:
+        add_default_global_data(g, global_data, global_key)
