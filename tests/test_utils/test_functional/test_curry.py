@@ -1,5 +1,5 @@
-from bentham.functional.curry import curry
-from bentham.functional.curry import flex_curry
+from caldera.utils.functional.curry import curry
+from caldera.utils.functional.curry import flex_curry
 
 
 def test_curry():
