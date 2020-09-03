@@ -323,7 +323,7 @@ class DataLoaders:
             g = nx.to_directed(nx.random_tree(10))
             cls._default_g(g)
 
-            gdata = g.data
+            gdata = g.get_global()
             i = np.random.randint(0, 1, (1,))
             gdata["features"] = to_one_hot(i, s)
             if i % 2 == 0:

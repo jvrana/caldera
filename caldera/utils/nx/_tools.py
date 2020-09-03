@@ -123,7 +123,7 @@ def nx_copy(
             n, ndata = do_deepcopy((n, ndata))
         to_graph.add_node(n, **ndata)
 
-    edge_iter = to_graph.edges(data=True)
+    edge_iter = from_graph.edges(data=True)
     if edge_transform:
         edge_iter = edge_transform(edge_iter)
 
