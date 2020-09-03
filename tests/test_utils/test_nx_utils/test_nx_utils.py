@@ -11,21 +11,22 @@ from caldera.utils.nx import nx_to_directed
 from caldera.utils.nx import nx_to_undirected
 
 
-@pytest.mark.parametrize("dp", [True, False])
-def test_nx_copy(dp):
-    g = nx.Graph()
-    g.add_node(1)
-    g.add_node(2, x=5)
-    g.add_edge(1, 2, y=6)
-    g.add_edge(2, 3, z=[])
-    g2 = nx.Graph()
-    nx_copy(g, g2, deepcopy=dp)
-    assert g2.nodes[1] == {}
-    assert g2.nodes[2] == {"x": 5}
-    assert g2.edges[(1, 2)] == {"y": 6}
-    assert g2.edges[(2, 3)] == {"z": []}
-    assert g2.edges[(2, 3)] is not g.edges[(2, 3)]
-    assert (g2.edges[(2, 3)]["z"] is g.edges[(2, 3)]["z"]) != dp
+class TestNxCopy:
+    @pytest.mark.parametrize("dp", [True, False])
+    def test_nx_copy(self, dp):
+        g = nx.Graph()
+        g.add_node(1)
+        g.add_node(2, x=5)
+        g.add_edge(1, 2, y=6)
+        g.add_edge(2, 3, z=[])
+        g2 = nx.Graph()
+        nx_copy(g, g2, deepcopy=dp)
+        assert g2.nodes[1] == {}
+        assert g2.nodes[2] == {"x": 5}
+        assert g2.edges[(1, 2)] == {"y": 6}
+        assert g2.edges[(2, 3)] == {"z": []}
+        assert g2.edges[(2, 3)] is not g.edges[(2, 3)]
+        assert (g2.edges[(2, 3)]["z"] is g.edges[(2, 3)]["z"]) != dp
 
 
 undirected_types = [nx.Graph, nx.MultiGraph, nx.OrderedGraph, nx.OrderedMultiGraph]
