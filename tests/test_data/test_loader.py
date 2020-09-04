@@ -13,6 +13,17 @@ def test_loader():
         assert batch.size[2] == 32
 
 
+def test_loader_zipped():
+    datalist1 = [GraphData.random(5, 4, 3) for _ in range(32 * 5)]
+    datalist2 = [GraphData.random(5, 4, 3) for _ in range(32 * 5)]
+    loader = GraphDataLoader(datalist1, datalist2, batch_size=32, shuffle=True)
+
+    for a, b in loader:
+        assert isinstance(a, GraphBatch)
+        assert isinstance(b, GraphBatch)
+        assert a is not b
+
+
 def test_loader_mem_sizes():
     datalist = [GraphData.random(5, 4, 3) for _ in range(32 * 5)]
     loader = GraphDataLoader(datalist, batch_size=1, shuffle=True)
