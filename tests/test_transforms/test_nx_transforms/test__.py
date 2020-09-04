@@ -4,11 +4,11 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from caldera.etl.transforms import NetworkxAttachNumpyFeatures
-from caldera.etl.transforms import NetworkxAttachNumpyOneHot
-from caldera.etl.transforms import NetworkxToDirected
-from caldera.etl.transforms import NetworkxToUndirected
-from caldera.etl.transforms._base import NetworkxTransformBase
+from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
+from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
+from caldera.transforms.networkx import NetworkxToDirected
+from caldera.transforms.networkx import NetworkxToUndirected
+from caldera.transforms.networkx._base import NetworkxTransformBase
 from caldera.utils.nx import nx_is_directed
 from caldera.utils.nx import nx_is_undirected
 
@@ -16,7 +16,7 @@ from caldera.utils.nx import nx_is_undirected
 class TestTransformBase:
     class TransformTest(NetworkxTransformBase):
         def transform(self, x):
-            yield from x
+            return x
 
     def test_transform_from_list_to_list(self):
         t = self.TransformTest()

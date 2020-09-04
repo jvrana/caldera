@@ -1,4 +1,5 @@
 import functools
+import itertools
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -17,6 +18,7 @@ from ._base import NetworkxTransformBase
 from caldera.utils import dict_join
 from caldera.utils import functional
 from caldera.utils.tensor import to_one_hot
+
 
 GraphGen = Generator[nx.Graph, None, None]
 
@@ -100,9 +102,10 @@ def _update_left_inplace(
 
 
 def _merge_update(data, key, to_key, join_fn, process_fn, default=...):
+    gen1, gen2 = itertools.tee(data)
     update_fn = functools.partial(_update_left_inplace, join_fn=join_fn)
 
-    data1 = functional.compose(functional.index_each(-1))(data)
+    data1 = functional.compose(functional.index_each(-1))(gen1)
 
     getter = functional.get_each(key)
     if default is not ...:
@@ -113,8 +116,7 @@ def _merge_update(data, key, to_key, join_fn, process_fn, default=...):
         getter,
         process_fn,
         functional.map_each(lambda x: {to_key: x}),
-    )(data)
-
+    )(gen2)
     for d1, d2 in zip(data1, data2):
         _ = update_fn(d1, d2)
 
@@ -159,8 +161,8 @@ class NetworkxAttachNumpyFeatures(NetworkxTransformBase):
         self.processing_func = processing_func
         self.processing_kwargs = processing_kwargs
 
-    def _transform_graph(self, g):
-        iterator = _dispatch_nx_iterator(g, self.x)
+    def transform(self, g):
+        iterator = list(_dispatch_nx_iterator(g, self.x))
 
         _merge_update(
             iterator,
@@ -171,9 +173,6 @@ class NetworkxAttachNumpyFeatures(NetworkxTransformBase):
             default=self.default,
         )
         return g
-
-    def transform(self, graphs):
-        yield from functional.map_each(self._transform_graph)(graphs)
 
 
 class NetworkxAttachNumpyOneHot(NetworkxAttachNumpyFeatures):

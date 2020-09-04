@@ -236,9 +236,6 @@ class TestGraphData:
         with pytest.raises(RuntimeError):
             GraphData.from_networkx(g, feature_key="feature")
 
-    def test_from_networkx_different_types(self):
-        pytest.fail("test not written")
-
     @pytest.mark.parametrize(
         "keys", [(None, None), ("myfeatures", "mydata"), ("features", "data")]
     )
@@ -750,7 +747,7 @@ class TestView:
         ],
     )
     def test_view_graph_data(self, slices):
-        data = GraphData.random(5, 5, 5)
+        data = GraphData.random(5, 5, 5, min_nodes=10, max_nodes=10)
         assert data.shape == (5, 5, 5)
         data_view = data.view(*slices)
         print(data_view.shape)

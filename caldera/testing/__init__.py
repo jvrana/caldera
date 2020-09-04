@@ -1,6 +1,6 @@
 import networkx as nx
 
-from caldera.utils.nx.convert import add_default
+from caldera.transforms.networkx import NetworkxSetDefaultFeature
 from caldera.utils.nx.generators import random_node
 
 
@@ -39,8 +39,10 @@ def annotate_shortest_path(
     except nx.NetworkXNoPath:
         path = []
 
-    add_default(g, node_data={target_key: False, source_key: False, path_key: False})
-    add_default(g, edge_data={path_key: False})
+    NetworkxSetDefaultFeature(
+        node_default={target_key: False, source_key: False, path_key: False},
+        edge_default={path_key: False},
+    )
 
     if annotate_nodes:
         for n in path:

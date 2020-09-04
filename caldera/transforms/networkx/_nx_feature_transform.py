@@ -50,16 +50,14 @@ class NetworkxTransformFeatures(NetworkxTransformBase):
         self.edge_transform = edge_transform
         self.global_transform = global_transform
 
-    def transform(self, graphs):
-        yield from Fn.map_each(
-            lambda g: nx_copy(
-                g,
-                None,
-                node_transform=self.node_transform,
-                edge_transform=self.edge_transform,
-                global_transform=self.global_transform,
-            )
-        )(graphs)
+    def transform(self, g):
+        return nx_copy(
+            g,
+            None,
+            node_transform=self.node_transform,
+            edge_transform=self.edge_transform,
+            global_transform=self.global_transform,
+        )
 
 
 class NetworkxTransformFeatureData(NetworkxTransformFeatures):
@@ -70,7 +68,7 @@ class NetworkxTransformFeatureData(NetworkxTransformFeatures):
         global_transform: Callable[[TupleGen], TupleGen] = None,
     ):
         super().__init__(
-            node_Transform=Fn.map_each(node_transform),
+            node_transform=Fn.map_each(node_transform),
             edge_transform=Fn.map_each(edge_transform),
             global_transform=Fn.map_each(global_transform),
         )

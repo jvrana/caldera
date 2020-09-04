@@ -11,8 +11,8 @@ from caldera.data import GraphData
 
 class Reverse(TransformBase):
     @overload
-    def __call__(self, data: GraphData) -> GraphData:
+    def transform_each(self, data: GraphData) -> GraphData:
         ...
 
-    def __call__(self, data: GraphBatch) -> GraphBatch:
+    def transform(self, data: GraphBatch) -> GraphBatch:
         return data.reverse()

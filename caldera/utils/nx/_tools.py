@@ -67,6 +67,8 @@ def nx_copy(
     *,
     node_transform: Optional[Callable[[NodeGenerator], NodeGenerator]] = None,
     edge_transform: Optional[Callable[[EdgeGenerator], EdgeGenerator]] = None,
+    global_transform: Optional[Callable[[NodeGenerator], NodeGenerator]] = None,
+    global_attr_key: str = None,
     deepcopy: bool = False
 ) -> nx.Graph:
     """Copies node, edges, node_data, and edge_data from graph `g1` to graph
@@ -135,12 +137,15 @@ def nx_copy(
     if hasattr(from_graph, GraphWithGlobal.get_global.__name__) and hasattr(
         to_graph, GraphWithGlobal.get_global.__name__
     ):
-        gdata = from_graph.get_global()
-        if deepcopy:
-            gdata = do_deepcopy(gdata)
-        else:
-            gdata = dict(gdata)
-        to_graph.set_global(gdata)
+        giter = from_graph.globals(data=True, global_key=global_attr_key)
+        if global_transform:
+            giter = global_transform(giter)
+        for gkey, gdata in giter:
+            if deepcopy:
+                gdata = do_deepcopy(gdata)
+            else:
+                gdata = dict(gdata)
+            to_graph.set_global(gdata, gkey)
     return to_graph
 
 

@@ -9,10 +9,9 @@ class NetworkxToDirected(NetworkxTransformBase):
     def __init__(self, graph_class: Optional[Type] = None):
         self.graph_class = graph_class
 
-    def transform(self, graphs):
-        for g in graphs:
-            if self.graph_class is None:
-                kwargs = {}
-            else:
-                kwargs = dict(graph_class=self.graph_class)
-            yield nx_to_directed(g, **kwargs)
+    def transform(self, g):
+        if self.graph_class is None:
+            kwargs = {}
+        else:
+            kwargs = dict(graph_class=self.graph_class)
+        return nx_to_directed(g, **kwargs)

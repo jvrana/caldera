@@ -166,14 +166,14 @@ class TestParametrizedBasic:
         result = f(arr)
         validate_generator(result, expected)
 
-    @pytest.mark.parametrize("n", [0, 1, 10, 30])
-    def test_iter_count_has_remaining(self, n):
-        data = randint(1, 10, 100)
-        data_gen = iter(data)
-        result = F.iter_count(n)(data)
-        print(data)
-        validate_generator(result, data[:n])
-        validate_generator(data_gen, data[n:])
+    # @pytest.mark.parametrize("n", [0, 1, 10, 30])
+    # def test_iter_count_has_remaining(self, n):
+    #     data = randint(1, 10, 100)
+    #     data_gen = iter(data)
+    #     result = F.iter_count(n)(data)
+    #     print(data)
+    #     validate_generator(result, data[:n])
+    #     validate_generator(data_gen, data[n:])
 
     @pytest.mark.parametrize(
         ("func", "args", "kwargs", "arr", "expected"),
@@ -371,7 +371,7 @@ class TestWithRandomData:
         data = list(range(1000))
         data2 = list(range(1000, 2000))
         data3 = list(range(3000, 4000))
-        f = F.zip_each_with(iter(data2), iter(data3))
+        f = F.zip_each_with(data2, data3)
         result = f(iter(data))
         validate_generator(result, zip(data2, data3, data))
 
