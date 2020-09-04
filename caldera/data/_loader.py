@@ -4,8 +4,8 @@ from typing import Generator
 from typing import List
 from typing import Optional
 from typing import overload
-from typing import TypeVar
 from typing import Tuple
+from typing import TypeVar
 
 import torch
 from torch.utils.data import DataLoader

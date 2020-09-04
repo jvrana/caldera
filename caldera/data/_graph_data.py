@@ -460,7 +460,9 @@ class GraphData:
 
         n_feat = get_feature_shape(g.nodes(data=True), "node")
         e_feat = get_feature_shape(g.edges(data=True), "edge")
-        g_feat = get_feature_shape(g.globals(data=True, global_key=global_key), "global")
+        g_feat = get_feature_shape(
+            g.globals(data=True, global_key=global_key), "global"
+        )
 
         return n_feat, e_feat, g_feat
 

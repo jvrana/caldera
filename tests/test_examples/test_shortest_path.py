@@ -1,18 +1,4 @@
 import networkx as nx
-
-from caldera.data import GraphData
-from caldera.testing import annotate_shortest_path
-from caldera.transforms import Compose
-from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
-from caldera.transforms.networkx import NetworkxNodesToStr
-from caldera.transforms.networkx import NetworkxSetDefaultFeature
-from caldera.transforms.networkx import NetworkxToDirected
-from caldera.utils._tools import _resolve_range
-from caldera.utils.nx.generators import _uuid_chain
-from caldera.utils.nx.generators import chain_graph
-from caldera.utils.nx.generators import compose_and_connect
-from caldera.utils.nx.generators import random_graph
-from caldera.data import GraphDataLoader
 import torch
 
 from caldera.blocks import AggregatingEdgeBlock
@@ -25,10 +11,22 @@ from caldera.blocks import MLP
 from caldera.blocks import MultiAggregator
 from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
+from caldera.data import GraphData
+from caldera.data import GraphDataLoader
 from caldera.defaults import CalderaDefaults as defaults
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
-
+from caldera.testing import annotate_shortest_path
+from caldera.transforms import Compose
+from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
+from caldera.transforms.networkx import NetworkxNodesToStr
+from caldera.transforms.networkx import NetworkxSetDefaultFeature
+from caldera.transforms.networkx import NetworkxToDirected
+from caldera.utils._tools import _resolve_range
+from caldera.utils.nx.generators import _uuid_chain
+from caldera.utils.nx.generators import chain_graph
+from caldera.utils.nx.generators import compose_and_connect
+from caldera.utils.nx.generators import random_graph
 
 
 def generate_shorest_path_example(n_nodes, density, path_length):
@@ -229,8 +227,8 @@ class Network(torch.nn.Module):
 
 def test_train_shortest_path():
     graphs = [generate_shorest_path_example(100, 0.01, 10) for _ in range(10)]
-    input_data = [GraphData.from_networkx(g, feature_key='_features') for g in graphs]
-    target_data = [GraphData.from_networkx(g, feature_key='_target') for g in graphs]
+    input_data = [GraphData.from_networkx(g, feature_key="_features") for g in graphs]
+    target_data = [GraphData.from_networkx(g, feature_key="_target") for g in graphs]
 
     loader = GraphDataLoader(input_data, target_data, batch_size=32, shuffle=True)
 
