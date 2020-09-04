@@ -2,8 +2,6 @@
 
 `get_global()`
 """
-import functools
-
 import networkx as nx
 
 

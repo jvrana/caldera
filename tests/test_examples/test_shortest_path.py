@@ -1,28 +1,19 @@
 from pprint import pprint
 
 import networkx as nx
-import numpy as np
 
 from caldera.data import GraphData
 from caldera.testing import annotate_shortest_path
 from caldera.transforms import Compose
-from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
 from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
 from caldera.transforms.networkx import NetworkxNodesToStr
 from caldera.transforms.networkx import NetworkxSetDefaultFeature
 from caldera.transforms.networkx import NetworkxToDirected
-from caldera.transforms.networkx import NetworkxTransformFeatures
 from caldera.utils._tools import _resolve_range
 from caldera.utils.nx.generators import _uuid_chain
 from caldera.utils.nx.generators import chain_graph
 from caldera.utils.nx.generators import compose_and_connect
 from caldera.utils.nx.generators import random_graph
-
-
-def test_feature_info():
-    g = random_graph((30, 50), density=(0.01, 0.3))
-    add_default(g, node_data={"features": True, "target": False})
-    feature_info(g)
 
 
 def generate_shorest_path_example(n_nodes, density, path_length):

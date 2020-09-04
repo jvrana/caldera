@@ -1,5 +1,3 @@
-import torch
-
 from caldera.blocks import EdgeBlock
 from caldera.blocks import GlobalBlock
 from caldera.blocks import NodeBlock

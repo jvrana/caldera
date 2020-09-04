@@ -1,3 +1,5 @@
 __version__ = "0.1"
 
-from caldera import _setup
+from caldera._setup import setup as _setup
+
+_setup()

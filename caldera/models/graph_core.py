@@ -1,5 +1,3 @@
-import torch
-
 from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock

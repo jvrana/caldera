@@ -1,6 +1,5 @@
 import operator
 from functools import reduce
-from typing import Generator
 from typing import overload
 from typing import Tuple
 from typing import Type
