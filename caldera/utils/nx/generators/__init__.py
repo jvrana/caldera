@@ -15,8 +15,8 @@ from typing import Union
 import networkx as nx
 import torch
 
+from caldera.utils import functional as Fn
 from caldera.utils._tools import _resolve_range
-from caldera.utils.functional import Functional as Fn
 from caldera.utils.nx import nx_is_directed
 
 

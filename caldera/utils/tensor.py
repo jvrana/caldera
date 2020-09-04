@@ -25,8 +25,8 @@ def same_storage(
     """
     if empty_does_not_share_storage and (tensor_is_empty(x) or tensor_is_empty(y)):
         return False
-    x_ptrs = {e.data_ptr() for e in x.view(-1)}
-    y_ptrs = {e.data_ptr() for e in y.view(-1)}
+    x_ptrs = {e.data_ptr() for e in x.flatten()}
+    y_ptrs = {e.data_ptr() for e in y.flatten()}
     return (x_ptrs <= y_ptrs) or (y_ptrs <= x_ptrs)
 
 

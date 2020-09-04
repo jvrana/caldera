@@ -3,10 +3,7 @@ import uuid
 import networkx as nx
 import pytest
 
-from caldera import Functional as Fn
-from caldera.utils.nx.generators import chain_graph
 from caldera.utils.nx.generators import compose_and_connect
-from caldera.utils.nx.generators import random_graph
 from caldera.utils.nx.generators import unique_chain_graph
 
 

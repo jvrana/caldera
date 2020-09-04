@@ -33,8 +33,6 @@ from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
-from caldera.data.utils import in_degree
-from caldera.defaults import CalderaDefaults
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
 from caldera.utils import deterministic_seed
@@ -372,7 +370,8 @@ class DataLoaders:
 
             for n, ndata in g.nodes(data=True):
                 ndata["features"] = np.random.randn(1)
-                ndata["target"] = np.array([in_degree(n)])
+                ind = g.in_degree(n)
+                ndata["target"] = np.array([ind])
 
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
@@ -451,7 +450,7 @@ class DataLoaders:
 
             for n in nx_iter_roots(g):
                 ndata = g.nodes[n]
-                ndata["target"] = np.array(3.0)
+                ndata["target"] = np.array([3.0])
 
             for n in nx.topological_sort(g):
                 ndata = g.nodes[n]

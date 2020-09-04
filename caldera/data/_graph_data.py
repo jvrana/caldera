@@ -14,12 +14,9 @@ import networkx as nx
 import numpy as np
 import torch
 
-from caldera.defaults import CalderaDefaults
-from caldera.utils import _first
 from caldera.utils import long_isin
 from caldera.utils import reindex_tensor
 from caldera.utils import same_storage
-from caldera.utils.functional import Functional as Fn
 from caldera.utils.nx import nx_is_directed
 from caldera.utils.nx.types import DirectedGraph
 
@@ -444,13 +441,15 @@ class GraphData:
             if len(shapes) > 1:
                 if None in shapes:
                     raise RuntimeError(
-                        "{} features shapes must be the same. Found {}. "
-                        "At least one {} is missing a feature..".format(m, shapes, m)
+                        "{x} features shapes must be the same. Found {shapes}. "
+                        "At least one {x} is missing a feature '{key}'.".format(
+                            x=m, shapes=shapes, key=key
+                        )
                     )
                 else:
                     raise RuntimeError(
-                        "{} features shapes must be the same. Found {}.".format(
-                            m, shapes
+                        "{x} features for '{key}' must be the same. Found {shapes}.".format(
+                            x=m, shapes=shapes, key=key
                         )
                     )
             elif len(shapes) == 0:

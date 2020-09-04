@@ -35,6 +35,5 @@ def test_random_hop(random_data, seeds):
 )
 def test_benchmark_hop(random_data):
     hop = RandomHop(1, 2)
-    edge_dict = get_edge_dict(random_data.edges)
     for i in range(100):
-        hop(random_data, edge_dict=edge_dict)
+        hop(random_data)

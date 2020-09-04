@@ -25,10 +25,10 @@ class RandomHop(TransformBase):
         self.n_hops = n_hops
 
     @overload
-    def __call__(self, data: GraphData, edge_dict: ...) -> GraphData:
+    def transform_each(self, data: GraphData, edge_dict: ...) -> GraphData:
         ...
 
-    def __call__(
+    def transform(
         self, data: GraphBatch, edge_dict: Optional[Dict] = None
     ) -> GraphBatch:
         if data.num_nodes == 0:
