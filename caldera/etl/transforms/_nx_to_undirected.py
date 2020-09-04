@@ -11,4 +11,8 @@ class NetworkxToUndirected(NetworkxTransformBase):
 
     def transform(self, graphs):
         for g in graphs:
-            yield nx_to_undirected(g)
+            if self.graph_class is None:
+                kwargs = {}
+            else:
+                kwargs = dict(graph_class=self.graph_class)
+            yield nx_to_undirected(g, **kwargs)

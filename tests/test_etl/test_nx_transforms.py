@@ -1,18 +1,51 @@
+import inspect
+
 import networkx as nx
 import numpy as np
 import pytest
 
 from caldera.etl.transforms import NetworkxAttachNumpyFeatures
 from caldera.etl.transforms import NetworkxAttachNumpyOneHot
+from caldera.etl.transforms import NetworkxToDirected
+from caldera.etl.transforms import NetworkxToUndirected
 from caldera.etl.transforms._base import NetworkxTransformBase
+from caldera.utils.nx import nx_is_directed
+from caldera.utils.nx import nx_is_undirected
 
 
 class TestTransformBase:
+    class TransformTest(NetworkxTransformBase):
+        def transform(self, x):
+            yield from x
+
     def test_transform_from_list_to_list(self):
-        pytest.fail("")
+        t = self.TransformTest()
+        x1 = [1, 2, 3]
+        x2 = t(x1)
+        assert isinstance(x2, list)
+        assert x2 == [1, 2, 3]
+
+    def test_transform_from_graph_to_graph(self):
+        t = self.TransformTest()
+        x1 = nx.Graph()
+        x2 = t(x1)
+        assert isinstance(x2, nx.Graph)
 
     def test_transform_from_iterable_to_iterable(self):
-        pytest.fail("")
+        t = self.TransformTest()
+        x1 = iter([1, 2, 3])
+        x2 = t(x1)
+        assert not isinstance(x2, list)
+        assert inspect.isgenerator(x2)
+        assert list(x2) == [1, 2, 3]
+        assert list(x2) == []
+
+    def test_transform_tuple_to_tuple(self):
+        t = self.TransformTest()
+        x1 = tuple([1, 2, 3])
+        x2 = t(x1)
+        assert isinstance(x2, tuple)
+        assert x2 == (1, 2, 3)
 
 
 def np_same(a, b):
@@ -168,3 +201,37 @@ class TestCollectIterables:
 
         assert np_same(g.edges[(1, 2)]["x"], np.array([0, 1, 2, 0, 1, 2]))
         assert np_same(g.edges[(2, 3)]["x"], np.array([1, 2, 3, 1, 2, 3]))
+
+
+class TestToDirected:
+    @pytest.mark.parametrize("args", [tuple(), (nx.OrderedDiGraph,)])
+    def test_to_directed(self, args):
+        g = nx.Graph()
+        g.add_edge(1, 2)
+        transform = NetworkxToDirected(*args)
+        assert g.edges[(1, 2)] == {}
+        assert g.edges[(2, 1)] == {}
+
+        dg = transform(g)
+        if args:
+            assert isinstance(dg, args[0])
+        else:
+            assert isinstance(dg, nx.DiGraph)
+        assert dg.edges[(1, 2)] == {}
+        assert dg.edges[(2, 1)] == {}
+
+    @pytest.mark.parametrize("args", [tuple(), (nx.OrderedGraph,)])
+    def test_to_undirected(self, args):
+        g = nx.DiGraph()
+        g.add_edge(1, 2)
+        transform = NetworkxToUndirected(*args)
+        assert g.edges[(1, 2)] == {}
+
+        udg = transform(g)
+        if args:
+            assert isinstance(udg, args[0])
+        else:
+            assert isinstance(udg, nx.Graph)
+            assert not isinstance(udg, nx.DiGraph)
+        assert udg.edges[(1, 2)] == {}
+        assert udg.edges[(2, 1)] == {}
