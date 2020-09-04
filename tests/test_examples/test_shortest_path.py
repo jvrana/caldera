@@ -27,6 +27,7 @@ from caldera.utils.nx.generators import _uuid_chain
 from caldera.utils.nx.generators import chain_graph
 from caldera.utils.nx.generators import compose_and_connect
 from caldera.utils.nx.generators import random_graph
+import numpy as np
 
 
 def generate_shorest_path_example(n_nodes, density, path_length):
@@ -54,6 +55,7 @@ def generate_shorest_path_example(n_nodes, density, path_length):
                 node_default={"source": False, "target": False, "shortest_path": False},
                 edge_default={"shortest_path": False},
             ),
+
             NetworkxAttachNumpyOneHot(
                 "node", "source", "_features", classes=[False, True]
             ),
@@ -65,6 +67,11 @@ def generate_shorest_path_example(n_nodes, density, path_length):
             ),
             NetworkxAttachNumpyOneHot(
                 "node", "shortest_path", "_target", classes=[False, True]
+            ),
+            NetworkxSetDefaultFeature(
+                node_default={"_features": np.array([0.]), "_target": np.array([0.])},
+                edge_default={"_features": np.array([0.]), "_target": np.array([0.])},
+                global_default={"_features": np.array([0.]), "_target": np.array([0.])},
             ),
             NetworkxNodesToStr(),
             NetworkxToDirected(),
@@ -84,9 +91,10 @@ def test_generate_shortest_path_example():
 
 
 class Network(torch.nn.Module):
+
     def __init__(
         self,
-        latent_sizes=(128, 128, 1),
+        latent_sizes=(16, 16, 1),
         depths=(1, 1, 1),
         dropout: float = None,
         pass_global_to_edge: bool = True,
@@ -180,8 +188,18 @@ class Network(torch.nn.Module):
         )
 
         self.output_transform = GraphEncoder(
-            EdgeBlock(Flex(torch.nn.Sigmoid)(Flex.d(), 1)),
-            NodeBlock(Flex(torch.nn.Sigmoid)(Flex.d(), 1)),
+            EdgeBlock(
+                torch.nn.Sequential(
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                    torch.nn.Sigmoid()
+                )
+            ),
+            NodeBlock(
+                torch.nn.Sequential(
+                    Flex(torch.nn.Linear)(Flex.d(), 1),
+                    torch.nn.Sigmoid()
+                )
+            ),
             GlobalBlock(Flex(torch.nn.Linear)(Flex.d(), 1)),
         )
 
@@ -215,7 +233,6 @@ class Network(torch.nn.Module):
 
             # transform
             _e, _x, _g = self.output_transform(decoded)
-            print()
             gt = GraphBatch(_x, _e, _g, edges, node_idx, edge_idx)
             if save_all:
                 outputs.append(gt)
@@ -226,7 +243,7 @@ class Network(torch.nn.Module):
 
 
 def test_train_shortest_path():
-    graphs = [generate_shorest_path_example(100, 0.01, 10) for _ in range(10)]
+    graphs = [generate_shorest_path_example(100, 0.01, 1000) for _ in range(10)]
     input_data = [GraphData.from_networkx(g, feature_key="_features") for g in graphs]
     target_data = [GraphData.from_networkx(g, feature_key="_target") for g in graphs]
 
@@ -236,12 +253,17 @@ def test_train_shortest_path():
 
     network = Network()
 
-    for _ in range(2):
-        for input_batch, target_batch in loader:
-            output = network(input_batch, 10)
+    for input_batch, _ in loader:
+        network(input_batch, 10)
+        break
 
-    # print(datalist[0])
-    # dataset = GraphDataset(datalist)
-    # loader = GraphDataLoader(dataset, batch_size=32, shuffle=True)
-    # for batch in loader:
-    #     print(batch)
+    loss_fn = torch.nn.BCELoss()
+    optimizer = torch.optim.AdamW(network.parameters())
+    for _ in range(20):
+        for input_batch, target_batch in loader:
+            output = network(input_batch, 10)[0]
+            x, y = output.x, target_batch.x
+            loss = loss_fn(x.flatten(), y[:, 0].flatten())
+            loss.backward()
+            print(loss.detach())
+            optimizer.step()
