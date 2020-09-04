@@ -4,7 +4,6 @@ from typing import Type
 import torch
 from scipy.sparse import coo_matrix
 
-from .indexing import prod
 from .indexing import SizeType
 from .indexing import unroll_index
 

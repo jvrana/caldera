@@ -1,3 +1,4 @@
+# flake8: noqa
 from ._add_edges import add_edges
 from ._floyd_warshall import floyd_warshall
 from ._matrix import adj_matrix

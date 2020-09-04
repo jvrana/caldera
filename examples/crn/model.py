@@ -1,7 +1,4 @@
-from typing import List
-
 import torch
-from torch import nn
 
 from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
@@ -16,7 +13,6 @@ from caldera.data import GraphBatch
 from caldera.defaults import CalderaDefaults as defaults
 from caldera.models import GraphCore
 from caldera.models import GraphEncoder
-from caldera.utils import pairwise
 
 
 class Network(torch.nn.Module):

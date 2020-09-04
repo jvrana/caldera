@@ -21,3 +21,17 @@ from caldera.blocks.global_block import GlobalBlock
 from caldera.blocks.mlp import MLP
 from caldera.blocks.node_block import AggregatingNodeBlock
 from caldera.blocks.node_block import NodeBlock
+
+__all__ = [
+    Aggregator,
+    MultiAggregator,
+    AggregatingEdgeBlock,
+    EdgeBlock,
+    Flex,
+    AggregatingNodeBlock,
+    AggregatingEdgeBlock,
+    AggregatingGlobalBlock,
+    NodeBlock,
+    GlobalBlock,
+    MLP,
+]
