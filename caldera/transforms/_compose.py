@@ -8,7 +8,6 @@ from typing import Tuple
 from typing import TypeVar
 from typing import Union
 
-from ._base import TransformBase
 from ._base import TransformCallable
 
 T = TypeVar("T")

@@ -19,9 +19,9 @@ class RandomNodeMask(TransformBase):
         self.dist = distributions.Bernoulli(1.0 - dropout)
 
     @overload
-    def __call__(self, data: GraphData) -> GraphData:
+    def transform_each(self, data: GraphData) -> GraphData:
         ...
 
-    def __call__(self, data: GraphBatch) -> GraphBatch:  # noqa: F811
+    def transform(self, data: GraphBatch) -> GraphBatch:
         mask = self.dist.sample((data.num_nodes,)).to(torch.bool)
         return data.apply_node_mask(mask)

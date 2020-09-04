@@ -1,3 +1,16 @@
+r"""
+Blocks (:mod:`caldera.blocks`)
+==============================
+
+.. currentmodule:: caldera.blocks
+
+This module provides representations of Molecules and Molecular Assemblies.
+
+.. autosummary::
+    :toctree: generated/
+
+    Aggregator
+"""
 from caldera.blocks.aggregator import Aggregator
 from caldera.blocks.aggregator import MultiAggregator
 from caldera.blocks.edge_block import AggregatingEdgeBlock

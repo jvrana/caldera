@@ -1,5 +1,6 @@
 import pytest
 import torch
+from flaky import flaky
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
@@ -8,7 +9,7 @@ from caldera.data import GraphData
 @pytest.fixture(params=[GraphData, GraphBatch])
 def data(request):
     args = (5, 4, 3)
-    kwargs = dict(min_nodes=5, max_nodes=5, min_edges=5, max_edges=5)
+    kwargs = dict(min_nodes=10, max_nodes=10, min_edges=5, max_edges=5)
     if request.param is GraphData:
         return GraphData.random(*args, **kwargs)
     else:
@@ -38,6 +39,7 @@ def shuffle(request):
 @pytest.mark.parametrize(
     "shuffle", [("shuffle_nodes", True), ("shuffle_nodes", False)], indirect=True
 )
+@flaky(max_runs=3, min_passes=2)
 def test_shuffle_nodes(data, shuffle):
     data1, data2 = shuffle(data)
 
@@ -51,6 +53,7 @@ def test_shuffle_nodes(data, shuffle):
 @pytest.mark.parametrize(
     "shuffle", [("shuffle_edges", True), ("shuffle_edges", False)], indirect=True
 )
+@flaky(max_runs=3, min_passes=2)
 def test_shuffle_edges(data, shuffle):
     data1, data2 = shuffle(data)
 

@@ -6,7 +6,6 @@ from flaky import flaky
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.utils import deterministic_seed
 
 random_graph_data = GraphData.random
 
@@ -191,6 +190,51 @@ class TestGraphData:
         """Empty graphs should be OK."""
         g = nx.DiGraph()
         GraphData.from_networkx(g)
+
+    def test_from_networkx_missing_node_data(self):
+        g = nx.DiGraph()
+        g.add_node(1)
+        g.add_edge(1, 2, feature=np.array([10.0]))
+        g.set_global({"feature": np.array([12.0])})
+        data = GraphData.from_networkx(g, feature_key="feature")
+        assert data.x.shape == (2, 0)
+        assert torch.all(data.e == torch.tensor([[10.0]]))
+        assert torch.all(data.g == torch.tensor([[12.0]]))
+
+    def test_from_networkx_missing_edge_data(self):
+        g = nx.DiGraph()
+        g.add_node(1, feature=np.array([10.0]))
+        g.add_node(2, feature=np.array([11.0]))
+        g.add_edge(1, 2)
+        g.set_global({"feature": np.array([12.0])})
+        data = GraphData.from_networkx(g, feature_key="feature")
+        assert data.e.shape == (1, 0)
+        assert torch.all(data.x == torch.tensor([[10.0], [11.0]]))
+        assert torch.all(data.g == torch.tensor([[12.0]]))
+
+    def test_from_networkx_missing_glob_data(self):
+        g = nx.DiGraph()
+        g.add_node(1, feature=np.array([10.0]))
+        g.add_node(2, feature=np.array([11.0]))
+        g.add_edge(1, 2, feature=np.array([12.0]))
+        data = GraphData.from_networkx(g, feature_key="feature")
+        assert torch.all(data.x == torch.tensor([[10.0], [11.0]]))
+        assert torch.all(data.e == torch.tensor([[12.0]]))
+        assert data.g.shape == (1, 0)
+
+    def test_from_networkx_different_node_shapes(self):
+        g = nx.DiGraph()
+        g.add_node(1, feature=np.array([[10.0, 11.0]]))
+        g.add_node(2, feature=np.array([[10.0], [11.0], [12.0]]))
+        with pytest.raises(RuntimeError):
+            GraphData.from_networkx(g, feature_key="feature")
+
+    def test_from_networkx_different_edge_shapes(self):
+        g = nx.DiGraph()
+        g.add_edge(1, 2, feature=np.array([[10.0, 11.0]]))
+        g.add_edge(2, 3, feature=np.array([[10.0], [11.0]]))
+        with pytest.raises(RuntimeError):
+            GraphData.from_networkx(g, feature_key="feature")
 
     @pytest.mark.parametrize(
         "keys", [(None, None), ("myfeatures", "mydata"), ("features", "data")]
@@ -703,7 +747,7 @@ class TestView:
         ],
     )
     def test_view_graph_data(self, slices):
-        data = GraphData.random(5, 5, 5)
+        data = GraphData.random(5, 5, 5, min_nodes=10, max_nodes=10)
         assert data.shape == (5, 5, 5)
         data_view = data.view(*slices)
         print(data_view.shape)

@@ -1,0 +1,98 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.9.4
+    framework: torch
+    is_jupyter_run: true
+    is_kaggle_kernel: false
+    python_version: 3.7.7
+batch_size:
+  desc: null
+  value: 64
+dev_size:
+  desc: null
+  value: 2000
+epochs:
+  desc: null
+  value: 100
+eval:
+  desc: null
+  value:
+    loader_summary:
+      edges:
+        batch_mean: 7702.0
+        batch_std: 0.0
+        sum: 7702
+      graphs:
+        batch_indegree_mean: 0.6060272455215454
+        batch_indegree_std: 0.0
+        batch_mean: 4761.0
+        batch_outdegree_mean: 0.6060272455215454
+        batch_outdegree_std: 0.0
+        batch_std: 0.0
+        sum: 4761
+      nodes:
+        batch_mean: 12709.0
+        batch_std: 0.0
+        sum: 12709
+latent_depth_0:
+  desc: null
+  value: 3
+latent_depth_1:
+  desc: null
+  value: 3
+latent_depth_2:
+  desc: null
+  value: 1
+latent_size_0:
+  desc: null
+  value: 254
+latent_size_1:
+  desc: null
+  value: 254
+latent_size_2:
+  desc: null
+  value: 128
+learning_rate:
+  desc: null
+  value: 0.001
+log_every_epoch:
+  desc: null
+  value: 10
+pass_global_to_edge:
+  desc: null
+  value: true
+pass_global_to_node:
+  desc: null
+  value: true
+processing_steps:
+  desc: null
+  value: 5
+train:
+  desc: null
+  value:
+    loader_summary:
+      edges:
+        batch_mean: 102.73333333333333
+        batch_std: 10.211540312585342
+        sum: 7705
+      graphs:
+        batch_indegree_mean: 0.605280876159668
+        batch_indegree_std: 0.017655085772275925
+        batch_mean: 63.48
+        batch_outdegree_mean: 0.605280876159668
+        batch_outdegree_std: 0.017655085772275925
+        batch_std: 4.473209138862166
+        sum: 4761
+      nodes:
+        batch_mean: 169.53333333333333
+        batch_std: 14.650900616989007
+        sum: 12715
+train_size:
+  desc: null
+  value: 10000
+weight_decay:
+  desc: null
+  value: 0.001
