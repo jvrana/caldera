@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import networkx as nx
 
 from caldera.data import GraphData
@@ -47,27 +45,24 @@ def generate_shorest_path_example(n_nodes, density, path_length):
             NetworkxAttachNumpyOneHot(
                 "node", "target", "_features", classes=[False, True]
             ),
-            # NetworkxAttachNumpyOneHot(
-            #     "edge", "shortest_path", "_target", classes=[False, True]
-            # ),
-            # NetworkxAttachNumpyOneHot(
-            #     "node", "shortest_path", "_target", classes=[False, True]
-            # ),
+            NetworkxAttachNumpyOneHot(
+                "edge", "shortest_path", "_target", classes=[False, True]
+            ),
+            NetworkxAttachNumpyOneHot(
+                "node", "shortest_path", "_target", classes=[False, True]
+            ),
             NetworkxNodesToStr(),
             NetworkxToDirected(),
         ]
     )
-    copied_graph = preprocess([graph])[0]
 
-    for n, ndata in copied_graph.nodes(data=True):
-        print(ndata)
-
-    # 5. fill in missing features
-    GraphData.from_networkx(copied_graph, feature_key="_features")
-    GraphData.from_networkx(copied_graph, feature_key="_target")
-
-    return copied_graph
+    return preprocess([graph])[0]
 
 
-def test_():
-    generate_shorest_path_example(100, 0.01, 10)
+def test_generate_shortest_path_example():
+    g = generate_shorest_path_example(100, 0.01, 10)
+    d1 = GraphData.from_networkx(g, feature_key="_features")
+    d2 = GraphData.from_networkx(g, feature_key="_target")
+
+    assert tuple(d1.shape) == (4, 0, 0)
+    assert tuple(d2.shape) == (2, 2, 0)
