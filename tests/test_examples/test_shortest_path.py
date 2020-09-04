@@ -56,18 +56,20 @@ def generate_shorest_path_example(n_nodes, density, path_length):
             NetworkxAttachNumpyOneHot(
                 "node", "target", "_features", classes=[False, True]
             ),
-            NetworkxAttachNumpyOneHot(
-                "edge", "shortest_path", "_target", classes=[False, True]
-            ),
-            NetworkxAttachNumpyOneHot(
-                "node", "shortest_path", "_target", classes=[False, True]
-            ),
-            # NetworkxNodesToStr(),
-            # NetworkxToDirected()
+            # NetworkxAttachNumpyOneHot(
+            #     "edge", "shortest_path", "_target", classes=[False, True]
+            # ),
+            # NetworkxAttachNumpyOneHot(
+            #     "node", "shortest_path", "_target", classes=[False, True]
+            # ),
+            NetworkxNodesToStr(),
+            NetworkxToDirected(),
         ]
     )
-
     copied_graph = preprocess([graph])[0]
+
+    for n, ndata in copied_graph.nodes(data=True):
+        print(ndata)
 
     # 5. fill in missing features
     GraphData.from_networkx(copied_graph, feature_key="_features")

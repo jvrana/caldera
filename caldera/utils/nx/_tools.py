@@ -1,3 +1,4 @@
+import itertools
 import random
 from copy import deepcopy as do_deepcopy
 from typing import Callable
@@ -113,12 +114,24 @@ def nx_copy(
     """
     if to_graph is None:
         to_graph = from_graph.__class__()
-    elif isinstance(to_graph, type) and issubclass(to_graph, nx.Graph.__class__):
+    elif isinstance(to_graph, type) and issubclass(to_graph, nx.Graph):
         to_graph = to_graph()
 
     node_iter = from_graph.nodes(data=True)
     if node_transform:
-        node_iter = node_transform(node_iter)
+        niter1, niter2 = itertools.tee(node_iter)
+        node_iter = list(node_transform(niter1))
+        _node_mapping = {}
+        for x1, x2 in zip(niter2, node_iter):
+            _node_mapping[x1[0]] = x2[0]
+
+        def map_node(x):
+            return _node_mapping[x]
+
+    else:
+
+        def map_node(x):
+            return x
 
     for n, ndata in node_iter:
         if deepcopy:
@@ -132,7 +145,7 @@ def nx_copy(
     for n1, n2, edata in edge_iter:
         if deepcopy:
             n1, n2, edata = do_deepcopy((n1, n2, edata))
-        to_graph.add_edge(n1, n2, **edata)
+        to_graph.add_edge(map_node(n1), map_node(n2), **edata)
 
     if hasattr(from_graph, GraphWithGlobal.get_global.__name__) and hasattr(
         to_graph, GraphWithGlobal.get_global.__name__

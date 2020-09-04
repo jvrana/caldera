@@ -6,6 +6,8 @@ import pytest
 
 from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
 from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
+from caldera.transforms.networkx import NetworkxNodesToStr
+from caldera.transforms.networkx import NetworkxSetDefaultFeature
 from caldera.transforms.networkx import NetworkxToDirected
 from caldera.transforms.networkx import NetworkxToUndirected
 from caldera.transforms.networkx._base import NetworkxTransformBase
@@ -235,3 +237,47 @@ class TestToDirected:
             assert not isinstance(udg, nx.DiGraph)
         assert udg.edges[(1, 2)] == {}
         assert udg.edges[(2, 1)] == {}
+
+
+class TestAddDefault:
+    def test_add_node_default(self):
+        g = nx.DiGraph()
+        g.add_node(1)
+        transform = NetworkxSetDefaultFeature(node_default={"feature": True})
+        g = transform(g)
+        assert g.nodes[1] == {"feature": True}
+
+    def test_add_edge_default(self):
+        g = nx.DiGraph()
+        g.add_edge(1, 2)
+        transform = NetworkxSetDefaultFeature(edge_default={"feature": True})
+        g = transform(g)
+        assert g.edges[(1, 2)] == {"feature": True}
+
+    def test_add_global_default(self):
+        g = nx.DiGraph()
+        g.add_node(1)
+        transform = NetworkxSetDefaultFeature(global_default={"feature": True})
+        g = transform(g)
+        assert g.get_global() == {"feature": True}
+
+    def test_add_default(self):
+        g = nx.DiGraph()
+        g.add_edge(1, 2)
+        transform = NetworkxSetDefaultFeature(
+            node_default={"n": True}, edge_default={"e": False}, global_default={"g": 5}
+        )
+        g = transform(g)
+        assert g.nodes[1] == {"n": True}
+        assert g.nodes[2] == {"n": True}
+        assert g.edges[(1, 2)] == {"e": False}
+        assert g.get_global() == {"g": 5}
+
+
+class TestNodeToStr:
+    def test_node_to_str(self):
+        g = nx.DiGraph()
+        g.add_edge(1, 2)
+        transform = NetworkxNodesToStr()
+        g = transform(g)
+        assert g.number_of_nodes() == 2

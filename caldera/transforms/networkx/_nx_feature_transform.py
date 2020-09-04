@@ -1,4 +1,5 @@
 from typing import Callable
+from typing import Dict
 from typing import Generator
 from typing import Tuple
 from typing import TypeVar
@@ -63,12 +64,23 @@ class NetworkxTransformFeatures(NetworkxTransformBase):
 class NetworkxTransformFeatureData(NetworkxTransformFeatures):
     def __init__(
         self,
-        node_transform: Callable[[TupleGen], TupleGen] = None,
-        edge_transform: Callable[[TupleGen], TupleGen] = None,
-        global_transform: Callable[[TupleGen], TupleGen] = None,
+        node_transform: Callable[[Dict], Dict] = None,
+        edge_transform: Callable[[Dict], Dict] = None,
+        global_transform: Callable[[Dict], Dict] = None,
     ):
+        def to_data(f):
+            def _to_data(x):
+                return tuple(list(x)[:-1]) + (f(x[-1]),)
+
+            return _to_data
+
+        def map_to_data(f):
+            if f is None:
+                return None
+            return Fn.map_each(to_data(f))
+
         super().__init__(
-            node_transform=Fn.map_each(node_transform),
-            edge_transform=Fn.map_each(edge_transform),
-            global_transform=Fn.map_each(global_transform),
+            node_transform=map_to_data(node_transform),
+            edge_transform=map_to_data(edge_transform),
+            global_transform=map_to_data(global_transform),
         )

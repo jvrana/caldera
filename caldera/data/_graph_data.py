@@ -441,13 +441,15 @@ class GraphData:
             if len(shapes) > 1:
                 if None in shapes:
                     raise RuntimeError(
-                        "{} features shapes must be the same. Found {}. "
-                        "At least one {} is missing a feature..".format(m, shapes, m)
+                        "{x} features shapes must be the same. Found {shapes}. "
+                        "At least one {x} is missing a feature '{key}'.".format(
+                            x=m, shapes=shapes, key=key
+                        )
                     )
                 else:
                     raise RuntimeError(
-                        "{} features shapes must be the same. Found {}.".format(
-                            m, shapes
+                        "{x} features for '{key}' must be the same. Found {shapes}.".format(
+                            x=m, shapes=shapes, key=key
                         )
                     )
             elif len(shapes) == 0:
