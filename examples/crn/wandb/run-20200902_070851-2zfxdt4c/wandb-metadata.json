@@ -1,0 +1,28 @@
+{
+    "root": "/home/justin/Github/caldera",
+    "program": "<python with no main file>",
+    "git": {
+        "remote": "https://github.com/jvrana/caldera.git",
+        "commit": "0709d6410e5206a256eb8d4bff878367d8fcc576"
+    },
+    "email": "justin.vrana@gmail.com",
+    "startedAt": "2020-09-02T14:08:50.155014",
+    "host": "linux.2080ti.justin",
+    "username": "justin",
+    "executable": "/home/justin/anaconda3/envs/caldera/bin/python",
+    "os": "Linux-5.4.0-42-generic-x86_64-with-debian-bullseye-sid",
+    "python": "3.7.7",
+    "gpu": "GeForce RTX 2080 Ti",
+    "gpu_count": 1,
+    "cpu_count": 12,
+    "args": [
+        "-f",
+        "/home/justin/.local/share/jupyter/runtime/kernel-b2f1ce45-67f4-44b7-a1d0-b34cedcfdaee.json"
+    ],
+    "state": "running",
+    "jobType": null,
+    "mode": "run",
+    "name": "atomic-sponge-63",
+    "project": "caldera-examples_crn",
+    "heartbeatAt": "2020-09-02T14:09:09.555658"
+}

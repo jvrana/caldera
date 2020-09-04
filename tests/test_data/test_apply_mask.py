@@ -4,9 +4,9 @@ import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.testing import nx_random_features
 from caldera.utils import deterministic_seed
 from caldera.utils.nx import nx_to_directed
+from caldera.utils.nx.generators import nx_random_features
 
 
 def test_mask_all_nodes():

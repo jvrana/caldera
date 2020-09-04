@@ -1,0 +1,64 @@
+program: train.py
+description: grid
+method: grid
+metric:
+  goal: minimize
+  name: eval_loss
+project: Caldera
+parameters:
+  log_every_epoch:
+    value: 5
+  latent_size_0:
+    values: [512]
+  latent_size_1:
+    values: [254]
+  latent_size_2:
+    values: [1028]
+  lr_to_batch_size:
+    values: [0.0000008]
+  latent_depth_0:
+    values: [5]
+  latent_depth_1:
+    values: [3]
+  latent_depth_2:
+    values: [10]
+  processing_steps:
+    values: [5]
+  batch_size:
+    values: [1024]
+  weight_decay:
+    values: [0.001]
+  epochs:
+    value: 150
+  pass_global_to_node:
+    values: [true, false]
+  pass_global_to_edge:
+    values: [true, false]
+  dropout:
+    values: [0.0]
+  aggregator_activation:
+    values: [leakyrelu, tanh, sigmoid]
+  aggregators:
+    values: [
+      ['add'],
+      ['mean'],
+      ['max'],
+      ['min'],
+      ['add', 'mean'],
+      ['add', 'max'],
+      ['add', 'min'],
+      ['mean', 'max'],
+      ['mean', 'min'],
+      ['max', 'min'],
+      ['add', 'mean', 'max'],
+      ['add', 'mean', 'min'],
+      ['add', 'max', 'min'],
+      ['mean', 'max', 'min'],
+      ['add', 'mean', 'max', 'min']
+    ]
+
+#early_terminate:
+#  type: hyperband
+#  s: 2
+#  eta: 3
+#  max_iter: 3

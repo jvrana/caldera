@@ -1,10 +1,49 @@
+import itertools
+import random
 from copy import deepcopy as do_deepcopy
+from typing import Callable
+from typing import Dict
 from typing import Generator
 from typing import Hashable
 from typing import Optional
+from typing import overload
+from typing import Tuple
 from typing import Type
+from typing import TypeVar
+from typing import Union
 
 import networkx as nx
+
+from caldera.utils.nx._global_accessor import GraphWithGlobal
+
+
+T = TypeVar("S")
+
+
+@overload
+def _resolve_range(x: Union[Tuple[float, float], float]) -> float:
+    pass
+
+
+def _rand_float(a: float, b: float):
+    return a + (b - a) * random.random()
+
+
+@overload
+def _resolve_range(x: Union[Tuple[float, float], float]) -> float:
+    ...
+
+
+def _resolve_range(x: Union[Tuple[int, int], int]) -> int:
+    if isinstance(x, int) or isinstance(x, float):
+        return x
+    elif isinstance(x, tuple):
+        if isinstance(x[0], int):
+            return random.randint(*x)
+        elif isinstance(x[0], float):
+            return _rand_float(*x)
+    else:
+        raise TypeError
 
 
 def nx_iter_roots(g: nx.DiGraph) -> Generator[Hashable, None, None]:
@@ -19,18 +58,108 @@ def nx_iter_leaves(g: nx.DiGraph) -> Generator[Hashable, None, None]:
             yield n
 
 
-def nx_copy(g1: nx.Graph, g2: nx.Graph, deepcopy: bool) -> nx.Graph:
-    if g2 is None:
-        g2 = g1.__class__()
-    for n, ndata in g1.nodes(data=True):
+NodeGenerator = Generator[Tuple[T, Dict], None, None]
+EdgeGenerator = Generator[Tuple[T, T, Dict], None, None]
+
+
+def nx_copy(
+    from_graph: nx.Graph,
+    to_graph: Union[nx.Graph, Type[nx.Graph]],
+    *,
+    node_transform: Optional[Callable[[NodeGenerator], NodeGenerator]] = None,
+    edge_transform: Optional[Callable[[EdgeGenerator], EdgeGenerator]] = None,
+    global_transform: Optional[Callable[[NodeGenerator], NodeGenerator]] = None,
+    global_attr_key: str = None,
+    deepcopy: bool = False
+) -> nx.Graph:
+    """Copies node, edges, node_data, and edge_data from graph `g1` to graph
+    `g2`. If `g2` is None, a new graph of type `g1.__class__` is created. If
+    `g2` is a class or subclass of `nx.Graph`, a new graph of that type is
+    created.
+
+    If `deepcopy` is set to True, the copy will perform a deepcopy of all node
+    and edge data. If false, only shallow copies will be created.
+
+    `node_transform` and `edge_transform` can be provided to perform a transform
+    on the on `g1.nodes(data=True)` and `g1.edges(data=True)` iterators
+    during copy. The node transform should return a `Generator[Tuple[T, dict], None, None]`
+    while the edge transform should return a `Generator[Tuple[T, T, dict], None, None]`.
+    These transforms may include skipping certain nodes or edges, transforming the node or edge
+    data, or transforming the node keys themselves.
+
+    Some example transforms include:
+
+    .. code-block:: python
+
+        def node_to_str(gen):
+            for n, ndata in gen:
+                yield (str(n), ndata)
+
+        def remove_self_loops(gen):
+            for n1, n2, edata in gen:
+                if n1 == n2:
+                    yield (n1, n2, edata)
+
+        nx_copy(g1, None, node_transform=node_to_str, edge_transform=remove_self_loops, deepcopy=True)
+
+
+    :param from_graph: graph to copy from
+    :param to_graph: graph to copy to
+    :param node_transform: optional transform applied to the `from_graph.nodes(data=True)` iterator
+    :param edge_transform: optional transform applied to the `from_graph.edges(data=True)` iterator
+    :param literal_transform: if True, node_transform will *not* be applied following the edge_transform.
+        This may result in unintentional edges being created.
+    :param deepcopy:
+    :return:
+    """
+    if to_graph is None:
+        to_graph = from_graph.__class__()
+    elif isinstance(to_graph, type) and issubclass(to_graph, nx.Graph):
+        to_graph = to_graph()
+
+    node_iter = from_graph.nodes(data=True)
+    if node_transform:
+        niter1, niter2 = itertools.tee(node_iter)
+        node_iter = list(node_transform(niter1))
+        _node_mapping = {}
+        for x1, x2 in zip(niter2, node_iter):
+            _node_mapping[x1[0]] = x2[0]
+
+        def map_node(x):
+            return _node_mapping[x]
+
+    else:
+
+        def map_node(x):
+            return x
+
+    for n, ndata in node_iter:
         if deepcopy:
             n, ndata = do_deepcopy((n, ndata))
-        g2.add_node(n, **ndata)
-    for n1, n2, edata in g1.edges(data=True):
+        to_graph.add_node(n, **ndata)
+
+    edge_iter = from_graph.edges(data=True)
+    if edge_transform:
+        edge_iter = edge_transform(edge_iter)
+
+    for n1, n2, edata in edge_iter:
         if deepcopy:
             n1, n2, edata = do_deepcopy((n1, n2, edata))
-        g2.add_edge(n1, n2, **edata)
-    return g2
+        to_graph.add_edge(map_node(n1), map_node(n2), **edata)
+
+    if hasattr(from_graph, GraphWithGlobal.get_global.__name__) and hasattr(
+        to_graph, GraphWithGlobal.get_global.__name__
+    ):
+        giter = from_graph.globals(data=True, global_key=global_attr_key)
+        if global_transform:
+            giter = global_transform(giter)
+        for gkey, gdata in giter:
+            if deepcopy:
+                gdata = do_deepcopy(gdata)
+            else:
+                gdata = dict(gdata)
+            to_graph.set_global(gdata, gkey)
+    return to_graph
 
 
 def nx_shallow_copy(g1: nx.Graph, g2: Optional[nx.Graph] = None) -> nx.Graph:

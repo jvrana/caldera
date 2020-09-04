@@ -98,7 +98,7 @@ class EncodeCoreDecode(torch.nn.Module):
             GlobalBlock(Flex(torch.nn.Linear)(Flex.d(), output_sizes[2])),
         )
 
-    def forward(self, data, steps):
+    def forward(self, data, steps, save_all: bool = True):
         # encoded
         e, x, g = self.encoder(data)
         data = GraphBatch(x, e, g, data.edges, data.node_idx, data.edge_idx)
@@ -128,8 +128,9 @@ class EncodeCoreDecode(torch.nn.Module):
 
             # transform
             _e, _x, _g = self.output_transform(decoded)
-            outputs.append(GraphBatch(_x, _e, _g, edges, node_idx, edge_idx))
-
-        # revise connectivity
-
+            gt = GraphBatch(_x, _e, _g, edges, node_idx, edge_idx)
+            if save_all:
+                outputs.append(gt)
+            else:
+                outputs[0] = gt
         return outputs
