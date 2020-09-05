@@ -3,7 +3,7 @@
 __version__ = "0.1.0"
 __name__ = "caldera"
 __title__ = "caldera"
-__authors__ = ["Justin Vrana <justin.vrana@gmail.com>"]
+__authors__ = ['Justin Vrana <justin.vrana@gmail.com>']
 __repo__ = None
 __homepage__ = None
 __description__ = ""

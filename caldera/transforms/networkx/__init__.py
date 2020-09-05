@@ -13,16 +13,16 @@ from ._nx_to_undirected import NetworkxToUndirected
 
 
 __all__ = [
-    NetworkxAttachNumpyFeatures,
-    NetworkxAttachNumpyOneHot,
-    NetworkxSetDefaultFeature,
-    NetworkxTransformFeatureData,
-    NetworkxTransformFeatures,
-    NetworkxNodesToStr,
-    NetworkxToDirected,
-    NetworkxToUndirected,
-    NetworkxApplyToFeature,
-    NetworkxFlattenNodeFeature,
-    NetworkxFlattenEdgeFeature,
-    NetworkxFlattenGlobalFeature,
+    'NetworkxAttachNumpyFeatures',
+    'NetworkxAttachNumpyOneHot',
+    'NetworkxSetDefaultFeature',
+    'NetworkxTransformFeatureData',
+    'NetworkxTransformFeatures',
+    'NetworkxNodesToStr',
+    'NetworkxToDirected',
+    'NetworkxToUndirected',
+    'NetworkxApplyToFeature',
+    'NetworkxFlattenNodeFeature',
+    'NetworkxFlattenEdgeFeature',
+    'NetworkxFlattenGlobalFeature',
 ]

@@ -1,14 +1,11 @@
-Welcome to Getting Started with Sphinx's documentation!
-=======================================================
+Caldera
+=======
 
 .. toctree::
    :maxdepth: 2
+   :glob:
+   :hidden:
 
+   getting_started
+   examples/*.rst
    api
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

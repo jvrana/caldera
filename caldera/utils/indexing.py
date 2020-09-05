@@ -71,7 +71,7 @@ def reindex_tensor(
         print(b)
         # >> tensor([0, 0, 0, 1, 2, 3, 2, 2, 2])
 
-    .. code-block:: pythong
+    .. code-block:: python
 
         # multiple tensors with multiple dimensions
         a = torch.tensor([1, 1, 1, 1, 0, 2, 0, 5, 6])

@@ -10,14 +10,14 @@ from ._path_utils import PathSymbol
 from ._shortest_path import multisource_dijkstras
 
 __all__ = [
-    floyd_warshall,
-    PathAccumulator,
-    PathMax,
-    PathMin,
-    PathMul,
-    PathNpProduct,
-    PathNpSum,
-    PathSum,
-    PathSymbol,
-    multisource_dijkstras,
+    'floyd_warshall',
+    'PathAccumulator',
+    'PathMax',
+    'PathMin',
+    'PathMul',
+    'PathNpProduct',
+    'PathNpSum',
+    'PathSum',
+    'PathSymbol',
+    'multisource_dijkstras',
 ]

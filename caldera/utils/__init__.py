@@ -1,3 +1,16 @@
+r"""
+Utils (:mod:`caldera.utils`)
+==============================
+
+.. currentmodule:: caldera.utils
+
+Caldera utility functions.
+
+.. autosummary::
+    :toctree: generated/
+"""
+
+
 from ._dict_join import dict_join
 from ._iteration import _first
 from ._iteration import pairwise
@@ -15,18 +28,18 @@ from caldera.utils.tensor import torch_scatter_group
 
 
 __all__ = [
-    reindex_tensor,
-    unravel_index,
-    scatter_coo,
-    scatter_indices,
-    torch_coo_to_scipy_coo,
-    deterministic_seed,
-    long_isin,
-    same_storage,
-    stable_arg_sort_long,
-    tensor_is_empty,
-    torch_scatter_group,
-    dict_join,
-    pairwise,
-    _first,
+    'reindex_tensor',
+    'unravel_index',
+    'scatter_coo',
+    'scatter_indices',
+    'torch_coo_to_scipy_coo',
+    'deterministic_seed',
+    'long_isin',
+    'same_storage',
+    'stable_arg_sort_long',
+    'tensor_is_empty',
+    'torch_scatter_group',
+    'dict_join',
+    'pairwise',
+    '_first',
 ]
