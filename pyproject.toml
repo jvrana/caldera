@@ -25,14 +25,19 @@ torch-scatter = "^2.0.4"
 networkx = "^2.4"
 numpy = "^1.18.4"
 scipy = "^1.5.2"
-pytest-cov = {version = "^2.10.0", extras = ["lint"]}
-black = {version = "^19.10b0", extras = ["lint"]}
-pre-commit = {version = "^2.6.0", extras = ["lint"]}
-pylint = {version = "^2.5.3", extras = ["lint"]}
-sphinx-rtd-theme = {version = "^0.5.0", extras = ["docs"]}
-sphinx_autodoc_typehints = {version = "^1.11.0", extras = ["docs"]}
-sphinx = {version = "^3.2.1", extras = ["docs"]}
-autodocsumm = {version = "^0.2.0", extras = ["docs"]}
+pytest-cov = {version = "^2.10.0", optional = true}
+black = {version = "^19.10b0", optional = true}
+pre-commit = {version = "^2.6.0", optional = true}
+pylint = {version = "^2.5.3", optional = true}
+sphinx_autodoc_typehints = {version = "^1.11.0", optional = true}
+sphinx = {version = "^3.2.1", optional = true}
+autodocsumm = {version = "^0.2.0", optional = true}
+keats = {version = "^0.2.28", optional = true}
+sphinx_rtd_theme = "^0.5.0"
+
+[tool.poetry.extras]
+docs = ["sphinx", "sphinx_rtd_theme", "sphinx_autodoc_typehints", "autodocsumm", "keats"]
+lint = ["black", "pytest-cov", "pre-commit", "pylint"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.2"

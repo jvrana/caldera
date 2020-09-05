@@ -11,6 +11,7 @@ This module provides representations of Molecules and Molecular Assemblies.
 
     Aggregator
 """
+
 from caldera.blocks.aggregator import Aggregator
 from caldera.blocks.aggregator import MultiAggregator
 from caldera.blocks.edge_block import AggregatingEdgeBlock
@@ -23,15 +24,15 @@ from caldera.blocks.node_block import AggregatingNodeBlock
 from caldera.blocks.node_block import NodeBlock
 
 __all__ = [
-    Aggregator,
-    MultiAggregator,
-    AggregatingEdgeBlock,
-    EdgeBlock,
-    Flex,
-    AggregatingNodeBlock,
-    AggregatingEdgeBlock,
-    AggregatingGlobalBlock,
-    NodeBlock,
-    GlobalBlock,
-    MLP,
+    "Aggregator",
+    "MultiAggregator",
+    "AggregatingEdgeBlock",
+    "EdgeBlock",
+    "Flex",
+    "AggregatingNodeBlock",
+    "AggregatingEdgeBlock",
+    "AggregatingGlobalBlock",
+    "NodeBlock",
+    "GlobalBlock",
+    "MLP",
 ]
