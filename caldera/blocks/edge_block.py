@@ -1,9 +1,12 @@
+from typing import Any
+from typing import Optional
+from typing import Tuple
+
 import torch
 from torch import nn
 
 from caldera.blocks.block import Block
 from caldera.data import GraphData
-from typing import Optional, Tuple, Any
 
 
 class EdgeBlock(Block):

@@ -23,10 +23,10 @@ autosummary_generate = glob.glob("*.rst")  # Make _autosummary files and include
 autoclass_content = "both"  # include both class docstring and __init__
 
 autodoc_default_options = {
-    'members': True,
-    'member-order': 'bysource',
-    'special-members': '__init__',
-    'exclude-members': '__weakref__'
+    "members": True,
+    "member-order": "bysource",
+    "special-members": "__init__",
+    "exclude-members": "__weakref__",
 }
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -36,7 +36,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
-    "sphinx.ext.intersphinx"
+    "sphinx.ext.intersphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -78,7 +78,7 @@ html_theme_options = {
         ("Getting Started", "getting_started"),
         ("Examples", "examples/examples"),
         ("API", "api"),
-        ("Github", pkg.__homepage__, True)
+        ("Github", pkg.__homepage__, True),
     ],
     # Render the next and previous page links in navbar. (Default: true)
     "navbar_sidebarrel": False,
