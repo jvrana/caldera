@@ -258,7 +258,7 @@ def test_train_shortest_path():
 
     loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.AdamW(network.parameters())
-    for _ in range(100):
+    for _ in range(10):
         for input_batch, target_batch in loader:
             output = network(input_batch, 10)[0]
             x, y = output.x, target_batch.x
