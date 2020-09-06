@@ -1,5 +1,7 @@
 # Caldera 🌋
 
+![pre-commit](https://github.com/jvrana/caldera/workflows/pre-commit/badge.svg)
+
 **SOFTWARE IS IN ALPHA, README IS PENDING**
 
 **Caldera** is a Pytorch extension for learning on graphical data. It learns underlying causal relationships in data.
