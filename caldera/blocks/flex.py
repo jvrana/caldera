@@ -9,6 +9,18 @@ import torch
 from caldera.exceptions import CalderaException
 
 
+class InvalidFlexZeroDimension(Exception):
+    """Flex dimension cannot be 0."""
+
+
+class InvalidFlexNegativeDimension(Exception):
+    """Flex dimension cannot be negative."""
+
+
+class ResolveError(Exception):
+    """There was an error resolving the module."""
+
+
 class FlexDim:
     def __init__(self, pos: int = 0, dim: int = 1):
         """Flexible dimension to be used in conjunction with `FlexBlock`
@@ -23,9 +35,9 @@ class FlexDim:
     def resolve(self, input_args, input_kwargs):
         d = input_args[self.pos].shape[self.dim]
         if d == 0:
-            raise ValueError("Dimension cannot be zero.")
-        elif d < 0:
-            raise ValueError("Dimension cannot be less than zero.")
+            raise InvalidFlexZeroDimension("Dimension cannot be zero.")
+        if d < 0:
+            raise InvalidFlexNegativeDimension("Dimension cannot be less than zero.")
         return d
 
     def __repr__(self):
@@ -84,7 +96,12 @@ class FlexBlock(torch.nn.Module):
         resolved_args = self.resolve_args(args, kwargs)
         resolved_kwargs = self.resolve_kwargs(args, kwargs)
         self.__resolved = True
-        self.resolved_module = self.module(*resolved_args, **resolved_kwargs)
+        try:
+            self.resolved_module = self.module(*resolved_args, **resolved_kwargs)
+        except Exception as e:
+            raise ResolveError(
+                "There was an error resolving module {}: {}".format(self.module, str(e))
+            ) from e
         if self._apply_history:
             self._play_apply()
 
@@ -146,11 +163,6 @@ class FlexBlock(torch.nn.Module):
             )
             return s
 
-    # def reset_parameters(self):
-    #     for child in self.children():
-    #         if hasattr(child, 'reset_parameters'):
-    #             child.reset_parameters()
-
 
 class Flex:
 
@@ -161,7 +173,7 @@ class Flex:
 
         Usage:
 
-        .. code-block:: python
+        .. code-block::
 
             Flex(torch.nn.Linear)(Flex.d(), 25)
 

@@ -21,7 +21,7 @@ def torch_coo_to_scipy_coo(m: torch.sparse.FloatTensor) -> coo_matrix:
 def scatter_indices(indices: torch.LongTensor, shape: SizeType):
     """Unroll the coo indices using the provided shape.
 
-    .. code-block:: python
+    .. code-block::
 
         indices = torch.tensor([
             [0, 1, 2],

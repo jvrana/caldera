@@ -19,7 +19,7 @@ def to_sparse_coo_matrix(
     fill value, will return a sparse matrix filled with the value instead of
     the edge attribute data.
 
-    .. code-block:: python
+    .. code-block::
 
         to_sparse_coo_matrix(data)
         to_sparse_coo_matrix(data, fill_value=1)

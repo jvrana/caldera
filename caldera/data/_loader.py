@@ -4,6 +4,7 @@ from typing import Generator
 from typing import List
 from typing import Optional
 from typing import overload
+from typing import Tuple
 from typing import TypeVar
 
 import torch
@@ -18,25 +19,30 @@ T = TypeVar("T")
 
 
 @overload
-def collate(data_list: List[GraphBatch]) -> GraphBatch:
+def collate_list(data_list: List[GraphBatch]) -> GraphBatch:
     ...
 
 
-def collate(data_list: List[GraphData]) -> GraphBatch:
-    if isinstance(data_list[0], tuple):
-        if issubclass(type(data_list[0][0]), GraphData):
-            return tuple(
-                [collate([x[i] for x in data_list]) for i in range(len(data_list[0]))]
-            )
-        else:
-            raise RuntimeError(
-                "Cannot collate {}({})({})".format(
-                    type(data_list), type(data_list[0]), type(data_list[0][0])
-                )
-            )
-    elif isinstance(data_list, list) and len(data_list) == 1:
-        return data_list[0]
+def collate_list(data_list: List[GraphData]) -> GraphBatch:
     return GraphBatch.from_data_list(data_list)
+
+
+@overload
+def collate_zip(data_list: List[Tuple[GraphBatch, ...]]) -> Tuple[GraphBatch, ...]:
+    ...
+
+
+def collate_zip(data_list: List[Tuple[GraphData, ...]]) -> Tuple[GraphBatch, ...]:
+    if issubclass(type(data_list[0][0]), GraphData):
+        return tuple(
+            [collate_list([x[i] for x in data_list]) for i in range(len(data_list[0]))]
+        )
+    else:
+        raise RuntimeError(
+            "Cannot collate {}({})({})".format(
+                type(data_list), type(data_list[0]), type(data_list[0][0])
+            )
+        )
 
 
 class GraphDataLoader(DataLoader):
@@ -52,11 +58,18 @@ class GraphDataLoader(DataLoader):
 
     def __init__(
         self,
-        dataset: List[GraphBatch],
+        *dataset: List[GraphBatch],
         batch_size: int = 1,
         shuffle: bool = False,
         **kwargs
     ):
+        if len(dataset) > 1:
+            dataset = list(zip(*dataset))
+            self.zipped = True
+            collate = collate_zip
+        else:
+            dataset = dataset[0]
+            collate = collate_list
         super().__init__(dataset, batch_size, shuffle, collate_fn=collate, **kwargs)
 
     def first(self, *args, **kwargs):

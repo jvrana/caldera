@@ -89,7 +89,7 @@ def nx_copy(
 
     Some example transforms include:
 
-    .. code-block:: python
+    .. code-block::
 
         def node_to_str(gen):
             for n, ndata in gen:

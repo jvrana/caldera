@@ -87,7 +87,7 @@ def torch_scatter_group(
 
     Example:
 
-    .. code-block:: python
+    .. code-block::
 
         idx = torch.tensor([2, 2, 0, 1, 1, 1, 2])
         x = torch.tensor([0, 1, 2, 3, 4, 5, 6])

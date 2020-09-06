@@ -17,11 +17,10 @@ class GraphDataset(Dataset):
         self, datalist: List[GraphData], transform: Optional[TransformCallable] = None
     ):
         """
-        Args:
-            csv_file (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+        Creates a graph dataset.
+
+        :param datalist:
+        :param transform:
         """
         assert isinstance(datalist, list)
         self.datalist = datalist

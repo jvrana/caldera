@@ -1,3 +1,4 @@
+from abc import ABC
 from functools import wraps
 from typing import List
 from typing import Tuple
@@ -20,7 +21,7 @@ def scatter_min(*args, **kwargs):
     return torch_scatter.scatter_min(*args, **kwargs)[0]
 
 
-class AggregatorBase(nn.Module):
+class AggregatorBase(nn.Module, ABC):
     """Aggregation layer."""
 
     valid_aggregators = {
