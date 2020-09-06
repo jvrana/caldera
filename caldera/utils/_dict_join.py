@@ -29,7 +29,7 @@ def dict_join(
     (`mode="intersection"), only the keys in the left dictionary
     (`mode="left"`), or keys only in the right dictionary (`mode="right"`).
 
-    .. code-block:: python
+    .. code-block::
 
         import operator
         d1 = {'a': [1,2,3], 'b': [1,2]
@@ -40,7 +40,7 @@ def dict_join(
 
     This can be done such that the first dictionary is updated instead of returning a new dictionary:
 
-    .. code-block:: python
+    .. code-block::
 
         d1 = {'a': [1,2,3], 'b': [1,2]
         d2 = {'a': [1,2], 'c': [10,20]

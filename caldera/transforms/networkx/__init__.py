@@ -1,3 +1,27 @@
+r"""
+Data (:mod:`caldera.transform`)
+===============================
+
+.. currentmodule:: caldera.transforms.networkx
+
+Methods for transforming :class:`networkx.Graph`s
+
+.. autosummary::
+    :toctree: generated/
+
+    NetworkxApplyToFeature
+    NetworkxAttachNumpyFeatures
+    NetworkxAttachNumpyOneHot
+    NetworkxSetDefaultFeature
+    NetworkxTransformFeatureData
+    NetworkxTransformFeatures
+    NetworkxFlattenEdgeFeature
+    NetworkxFlattenGlobalFeature
+    NetworkxFlattenNodeFeature
+    NetworkxNodesToStr
+    NetworkxToDirected
+    NetworkxToUndirected
+"""
 from ._nx_apply_to_key import NetworkxApplyToFeature
 from ._nx_attach_np_features import NetworkxAttachNumpyFeatures
 from ._nx_attach_np_features import NetworkxAttachNumpyOneHot
@@ -13,16 +37,16 @@ from ._nx_to_undirected import NetworkxToUndirected
 
 
 __all__ = [
-    NetworkxAttachNumpyFeatures,
-    NetworkxAttachNumpyOneHot,
-    NetworkxSetDefaultFeature,
-    NetworkxTransformFeatureData,
-    NetworkxTransformFeatures,
-    NetworkxNodesToStr,
-    NetworkxToDirected,
-    NetworkxToUndirected,
-    NetworkxApplyToFeature,
-    NetworkxFlattenNodeFeature,
-    NetworkxFlattenEdgeFeature,
-    NetworkxFlattenGlobalFeature,
+    "NetworkxAttachNumpyFeatures",
+    "NetworkxAttachNumpyOneHot",
+    "NetworkxSetDefaultFeature",
+    "NetworkxTransformFeatureData",
+    "NetworkxTransformFeatures",
+    "NetworkxNodesToStr",
+    "NetworkxToDirected",
+    "NetworkxToUndirected",
+    "NetworkxApplyToFeature",
+    "NetworkxFlattenNodeFeature",
+    "NetworkxFlattenEdgeFeature",
+    "NetworkxFlattenGlobalFeature",
 ]

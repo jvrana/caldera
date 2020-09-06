@@ -99,9 +99,9 @@ class FlexBlock(torch.nn.Module):
         try:
             self.resolved_module = self.module(*resolved_args, **resolved_kwargs)
         except Exception as e:
-            raise ResolveError("There was an error resolving module {}: {}".format(
-                    self.module, str(e)
-                )) from e
+            raise ResolveError(
+                "There was an error resolving module {}: {}".format(self.module, str(e))
+            ) from e
         if self._apply_history:
             self._play_apply()
 
@@ -173,7 +173,7 @@ class Flex:
 
         Usage:
 
-        .. code-block:: python
+        .. code-block::
 
             Flex(torch.nn.Linear)(Flex.d(), 25)
 

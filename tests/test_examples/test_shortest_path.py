@@ -1,4 +1,5 @@
 import networkx as nx
+import numpy as np
 import torch
 
 from caldera.blocks import AggregatingEdgeBlock
@@ -27,7 +28,6 @@ from caldera.utils.nx.generators import _uuid_chain
 from caldera.utils.nx.generators import chain_graph
 from caldera.utils.nx.generators import compose_and_connect
 from caldera.utils.nx.generators import random_graph
-import numpy as np
 
 
 def generate_shorest_path_example(n_nodes, density, path_length):
@@ -55,7 +55,6 @@ def generate_shorest_path_example(n_nodes, density, path_length):
                 node_default={"source": False, "target": False, "shortest_path": False},
                 edge_default={"shortest_path": False},
             ),
-
             NetworkxAttachNumpyOneHot(
                 "node", "source", "_features", classes=[False, True]
             ),
@@ -69,9 +68,12 @@ def generate_shorest_path_example(n_nodes, density, path_length):
                 "node", "shortest_path", "_target", classes=[False, True]
             ),
             NetworkxSetDefaultFeature(
-                node_default={"_features": np.array([0.]), "_target": np.array([0.])},
-                edge_default={"_features": np.array([0.]), "_target": np.array([0.])},
-                global_default={"_features": np.array([0.]), "_target": np.array([0.])},
+                node_default={"_features": np.array([0.0]), "_target": np.array([0.0])},
+                edge_default={"_features": np.array([0.0]), "_target": np.array([0.0])},
+                global_default={
+                    "_features": np.array([0.0]),
+                    "_target": np.array([0.0]),
+                },
             ),
             NetworkxNodesToStr(),
             NetworkxToDirected(),
@@ -86,12 +88,11 @@ def test_generate_shortest_path_example():
     d1 = GraphData.from_networkx(g, feature_key="_features")
     d2 = GraphData.from_networkx(g, feature_key="_target")
 
-    assert tuple(d1.shape) == (4, 0, 0)
-    assert tuple(d2.shape) == (2, 2, 0)
+    assert tuple(d1.shape) == (4, 1, 1)
+    assert tuple(d2.shape) == (2, 2, 1)
 
 
 class Network(torch.nn.Module):
-
     def __init__(
         self,
         latent_sizes=(16, 16, 1),
@@ -190,14 +191,12 @@ class Network(torch.nn.Module):
         self.output_transform = GraphEncoder(
             EdgeBlock(
                 torch.nn.Sequential(
-                    Flex(torch.nn.Linear)(Flex.d(), 1),
-                    torch.nn.Sigmoid()
+                    Flex(torch.nn.Linear)(Flex.d(), 1), torch.nn.Sigmoid()
                 )
             ),
             NodeBlock(
                 torch.nn.Sequential(
-                    Flex(torch.nn.Linear)(Flex.d(), 1),
-                    torch.nn.Sigmoid()
+                    Flex(torch.nn.Linear)(Flex.d(), 1), torch.nn.Sigmoid()
                 )
             ),
             GlobalBlock(Flex(torch.nn.Linear)(Flex.d(), 1)),
@@ -259,7 +258,7 @@ def test_train_shortest_path():
 
     loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.AdamW(network.parameters())
-    for _ in range(100):
+    for _ in range(10):
         for input_batch, target_batch in loader:
             output = network(input_batch, 10)[0]
             x, y = output.x, target_batch.x
