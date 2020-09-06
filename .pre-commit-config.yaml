@@ -35,5 +35,8 @@ repos:
     -   id: poetry-export
         args: ['-vvv']
     -   id: poetry-export
+        name: export-docs
+        args: ['--requirements', 'requirements-docs.txt', '--dev', '-E', 'docs', '-vvv']
+    -   id: poetry-export
         name: export-dev
-        args: ['--requirements', 'requirements-dev.txt', '--dev', '-E', 'docs', '-vvv']
+        args: ['--requirements', 'requirements-dev.txt', '--dev', '-vvv']
