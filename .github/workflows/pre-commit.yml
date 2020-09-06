@@ -11,4 +11,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
+    - name: Install dependencies
+      run: |
+        pip install pip -U
+        pip install poetry
     - uses: pre-commit/action@v2.0.0
