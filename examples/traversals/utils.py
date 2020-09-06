@@ -3,7 +3,7 @@
 # import networkx as nx
 #
 #
-# # TODO: add long path
+# # TODO: add long traversal
 # def random_graph(n, e=None, d=None):
 #     """Create a random graph."""
 #     n = random.randint(*n)
@@ -22,11 +22,11 @@
 #     g.nodes[source]["source"] = True
 #     g.nodes[target]["target"] = True
 #     try:
-#         path = nx.shortest_path(g, source=nodes[0], target=nodes[1])
+#         traversal = nx.shortest_path(g, source=nodes[0], target=nodes[1])
 #     except nx.NetworkXNoPath:
-#         path = []
+#         traversal = []
 #
-#     for n in path:
+#     for n in traversal:
 #         g.nodes[n]["shortest_path"] = False
 #     for n, ndata in g.nodes(data=True):
 #         ndata["shortest_path"] = target
@@ -34,7 +34,7 @@
 #     for n1, n2, edata in g.edges(data=True):
 #         edata["shortest_path"] = False
 #
-#     for n1, n2 in nx.utils.pairwise(path):
+#     for n1, n2 in nx.utils.pairwise(traversal):
 #         g[n1][n2]["shortest_path"] = True
 #
 #

@@ -4,14 +4,39 @@ Blocks (:mod:`caldera.blocks`)
 
 .. currentmodule:: caldera.blocks
 
-This module provides representations of Molecules and Molecular Assemblies.
+Network building blocks for creating graph neural networks.
+
+Generic Blocks
+--------------
 
 .. autosummary::
     :toctree: generated/
 
-    Aggregator
-"""
+    Flex
+    MLP
 
+Encoder/Decoder Blocks
+----------------------
+
+.. autosummary::
+    :toctree: generated/
+
+    NodeBlock
+    EdgeBlock
+    GlobalBlock
+
+Message Passing Blocks
+----------------------
+
+.. autosummary::
+    :toctree: generated/
+
+    AggregatingNodeBlock
+    AggregatingEdgeBlock
+    AggregatingGlobalBlock
+    Aggregator
+    MultiAggregator
+"""
 from caldera.blocks.aggregator import Aggregator
 from caldera.blocks.aggregator import MultiAggregator
 from caldera.blocks.edge_block import AggregatingEdgeBlock

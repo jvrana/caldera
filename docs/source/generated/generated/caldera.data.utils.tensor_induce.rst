@@ -1,0 +1,6 @@
+﻿caldera.data.utils.tensor\_induce
+=================================
+
+.. currentmodule:: caldera.data.utils
+
+.. autofunction:: tensor_induce

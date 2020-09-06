@@ -1,30 +1,13 @@
 API Documentation
 =================
 
-.. automodule:: caldera.data
-    :members:
+.. autosummary::
+    :toctree: generated/
 
-
-.. automodule:: caldera.blocks
-    :members:
-
-
-.. automodule:: caldera.models
-    :members:
-
-
-.. automodule:: caldera.transforms
-    :members:
-
-
-.. automodule:: caldera.utils
-    :members:
-
-
-.. automodule:: caldera.exceptions
-    :members:
-
-
-.. automodule:: caldera.defaults
-    :members:
-
+    caldera.data
+    caldera.blocks
+    caldera.models
+    caldera.transforms
+    caldera.utils
+    caldera.exceptions
+    caldera.defaults

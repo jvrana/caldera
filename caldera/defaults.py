@@ -4,7 +4,6 @@ Defaults (:mod:`caldera.defaults`)
 
 Caldera defaults.
 """
-
 import torch
 
 

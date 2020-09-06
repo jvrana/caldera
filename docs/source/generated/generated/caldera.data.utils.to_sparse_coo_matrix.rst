@@ -1,0 +1,6 @@
+﻿caldera.data.utils.to\_sparse\_coo\_matrix
+==========================================
+
+.. currentmodule:: caldera.data.utils
+
+.. autofunction:: to_sparse_coo_matrix

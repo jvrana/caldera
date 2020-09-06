@@ -22,7 +22,9 @@ class NetworkxTransformFeatures(NetworkxTransformBase):
         edge_transform: Callable[[TupleGen], TupleGen] = None,
         global_transform: Callable[[TupleGen], TupleGen] = None,
     ):
-        """.. code-block:: python.
+        """Transform networkx feature data.
+
+        .. code-block:: python.
 
             def only_self_loops(edges):
                 for e1, e2, edata in edges:

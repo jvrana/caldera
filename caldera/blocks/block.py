@@ -1,9 +1,10 @@
+from abc import ABC
 from typing import Dict
 
 from torch import nn
 
 
-class Block(nn.Module):
+class Block(nn.Module, ABC):
     def __init__(self, module_dict: Dict[str, nn.Module], independent: bool):
         super().__init__()
         self._independent = independent

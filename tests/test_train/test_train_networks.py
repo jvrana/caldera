@@ -249,7 +249,7 @@ class DataLoaders:
     @staticmethod
     def random_loader(data_size, batch_size):
         datalist = [GraphData.random(5, 5, 5) for _ in range(data_size)]
-        return GraphDataLoader(datalist, batch_size)
+        return GraphDataLoader(datalist, batch_size=batch_size)
 
     @staticmethod
     def _default_g(g: nx.DiGraph, global_key: str = None):
@@ -284,9 +284,7 @@ class DataLoaders:
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(
-            list(zip(input_data, output_data)), batch_size=batch_size
-        )
+        return GraphDataLoader(input_data, output_data, batch_size=batch_size)
 
     @classmethod
     def random_graph_red_black_edges(cls, data_size, batch_size):
@@ -308,9 +306,7 @@ class DataLoaders:
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(
-            list(zip(input_data, output_data)), batch_size=batch_size
-        )
+        return GraphDataLoader(input_data, output_data, batch_size=batch_size)
 
     @classmethod
     def random_graph_red_black_global(cls, data_size, batch_size):
@@ -333,9 +329,7 @@ class DataLoaders:
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(
-            list(zip(input_data, output_data)), batch_size=batch_size
-        )
+        return GraphDataLoader(input_data, output_data, batch_size=batch_size)
 
     @classmethod
     def est_density(cls, data_size, batch_size):
@@ -354,9 +348,7 @@ class DataLoaders:
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(
-            list(zip(input_data, output_data)), batch_size=batch_size
-        )
+        return GraphDataLoader(input_data, output_data, batch_size=batch_size)
 
     @classmethod
     def in_degree(cls, data_size, batch_size):
@@ -376,9 +368,7 @@ class DataLoaders:
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(
-            list(zip(input_data, output_data)), batch_size=batch_size
-        )
+        return GraphDataLoader(input_data, output_data, batch_size=batch_size)
 
     @classmethod
     def boolean_network(cls, data_size, batch_size):
@@ -421,9 +411,7 @@ class DataLoaders:
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(
-            list(zip(input_data, output_data)), batch_size=batch_size
-        )
+        return GraphDataLoader(input_data, output_data, batch_size=batch_size)
 
     @classmethod
     def sigmoid_circuit(cls, data_size, batch_size):
@@ -467,9 +455,7 @@ class DataLoaders:
             input_data.append(GraphData.from_networkx(g, feature_key="features"))
             output_data.append(GraphData.from_networkx(g, feature_key="target"))
 
-        return GraphDataLoader(
-            list(zip(input_data, output_data)), batch_size=batch_size
-        )
+        return GraphDataLoader(input_data, output_data, batch_size=batch_size)
 
 
 T = Tuple[Tuple[Tuple[Any, ...], Dict], torch.Tensor]

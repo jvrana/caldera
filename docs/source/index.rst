@@ -7,5 +7,7 @@ Caldera
    :hidden:
 
    getting_started
-   examples/*.rst
    api
+
+
+:py:class:`torch.Tensor`

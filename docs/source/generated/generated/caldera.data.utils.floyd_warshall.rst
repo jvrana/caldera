@@ -1,0 +1,6 @@
+﻿caldera.data.utils.floyd\_warshall
+==================================
+
+.. currentmodule:: caldera.data.utils
+
+.. autofunction:: floyd_warshall

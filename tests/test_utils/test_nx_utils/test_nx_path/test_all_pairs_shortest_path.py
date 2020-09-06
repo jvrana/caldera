@@ -4,10 +4,10 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from caldera.utils.nx.path import floyd_warshall
-from caldera.utils.nx.path import PathMul
-from caldera.utils.nx.path import PathSum
-from caldera.utils.nx.path import PathSymbol
+from caldera.utils.nx.traversal import floyd_warshall
+from caldera.utils.nx.traversal import PathMul
+from caldera.utils.nx.traversal import PathSum
+from caldera.utils.nx.traversal import PathSymbol
 
 
 class TestSympyFloydWarshall:

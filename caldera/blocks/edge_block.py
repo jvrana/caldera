@@ -9,17 +9,12 @@ class EdgeBlock(Block):
     def __init__(self, mlp: nn.Module):
         super().__init__({"mlp": mlp}, independent=True)
 
-    def forward(
-        self,
-        edge_attr: torch.tensor,
-        node_attr: torch.tensor = None,
-        edges: torch.tensor = None,
-    ):
+    def forward(self, edge_attr: torch.tensor):
         results = self.block_dict["mlp"](edge_attr)
         return results
 
     def forward_from_data(self, data: GraphData):
-        return self(data.e, data.x, data.edges)
+        return self(data.e)
 
 
 class AggregatingEdgeBlock(EdgeBlock):

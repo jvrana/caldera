@@ -48,6 +48,14 @@ class GraphData:
         edges: torch.LongTensor,
         requires_grad: Optional[bool] = None,
     ):
+        """Blank.
+
+        :param node_attr:
+        :param edge_attr:
+        :param global_attr:
+        :param edges:
+        :param requires_grad:
+        """
         self.x = node_attr
         self.e = edge_attr
         self.g = global_attr
@@ -417,7 +425,7 @@ class GraphData:
             )
         )
 
-    # TODO: docstrings
+    # TODO: nbexamples
     # TODO: handle undirected and hypergraphs
     # TODO: check that features are NUMPY rather than TORCH
 

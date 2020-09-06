@@ -1,0 +1,6 @@
+﻿caldera.data.utils.out\_degree
+==============================
+
+.. currentmodule:: caldera.data.utils
+
+.. autofunction:: out_degree

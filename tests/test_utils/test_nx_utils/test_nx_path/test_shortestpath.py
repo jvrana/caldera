@@ -1,10 +1,10 @@
 import networkx as nx
 import numpy as np
 
-from caldera.utils.nx.path import multisource_dijkstras
-from caldera.utils.nx.path import PathNpProduct
-from caldera.utils.nx.path import PathNpSum
-from caldera.utils.nx.path import PathSymbol
+from caldera.utils.nx.traversal import multisource_dijkstras
+from caldera.utils.nx.traversal import PathNpProduct
+from caldera.utils.nx.traversal import PathNpSum
+from caldera.utils.nx.traversal import PathSymbol
 
 
 class TestDijkstras:
