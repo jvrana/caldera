@@ -16,17 +16,18 @@ copyright = "{year}, {authors}".format(year=now.year, authors=",".join(authors))
 author = authors[0]
 release = pkg.__version__
 
-
 # -- General configuration ---------------------------------------------------
-autosummary_generate = True
+import glob
+
+autosummary_generate = glob.glob("*.rst")  # Make _autosummary files and include them
 autoclass_content = "both"  # include both class docstring and __init__
-# autodoc_default_flags = [
-#     # Make sure that any autodoc declarations show the right members
-#     "members",
-#     "inherited-members",
-#     "private-members",
-#     "show-inheritance",
-# ]
+
+autodoc_default_options = {
+    'members': True,
+    'member-order': 'bysource',
+    'special-members': '__init__',
+    'exclude-members': '__weakref__'
+}
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -35,7 +36,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
-    "sphinx.ext.intersphinx",
+    "sphinx.ext.intersphinx"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -74,8 +75,10 @@ html_theme_options = {
     # Note the "1" or "True" value above as the third argument to indicate
     # an arbitrary url.
     "navbar_links": [
-        ("Examples", "examples"),
+        ("Getting Started", "getting_started"),
+        ("Examples", "examples/examples"),
         ("API", "api"),
+        ("Github", pkg.__homepage__, True)
     ],
     # Render the next and previous page links in navbar. (Default: true)
     "navbar_sidebarrel": False,
@@ -98,7 +101,7 @@ html_theme_options = {
     # Currently, the supported themes are:
     # - Bootstrap 2: https://bootswatch.com/2
     # - Bootstrap 3: https://bootswatch.com/3
-    "bootswatch_theme": "paper",
+    "bootswatch_theme": "simplex",
     # Choose Bootstrap version.
     # Values: "3" (default) or "2" (in quotes)
     "bootstrap_version": "3",

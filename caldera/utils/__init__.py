@@ -10,7 +10,8 @@ Caldera utility functions.
     :toctree: generated/
 
     dict_join
-    pairwise
+    # pairwise
+
 
 Indexing
 --------

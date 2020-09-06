@@ -7,7 +7,7 @@ Data (:mod:`caldera.data`)
 This module provide objects for representing graphs as `torch` tensors.
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: generated
 
     GraphData
     GraphBatch

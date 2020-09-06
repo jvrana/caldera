@@ -1,3 +1,12 @@
+r"""
+Design (:mod:`dasi.design`)
+=============================
+
+.. currentmodule:: caldera.data._graph_data
+
+This module provide DNA assembly functionality for DASi.
+"""
+
 from __future__ import annotations
 
 import functools

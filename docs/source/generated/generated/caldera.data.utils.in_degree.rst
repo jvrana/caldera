@@ -1,6 +1,0 @@
-﻿caldera.data.utils.in\_degree
-=============================
-
-.. currentmodule:: caldera.data.utils
-
-.. autofunction:: in_degree

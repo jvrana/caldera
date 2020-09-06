@@ -1,6 +1,0 @@
-﻿caldera.utils.nx.generators.connect\_node\_sets
-===============================================
-
-.. currentmodule:: caldera.utils.nx.generators
-
-.. autofunction:: connect_node_sets

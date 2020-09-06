@@ -1,6 +1,0 @@
-﻿caldera.utils.nx.generators.random\_edge
-========================================
-
-.. currentmodule:: caldera.utils.nx.generators
-
-.. autofunction:: random_edge

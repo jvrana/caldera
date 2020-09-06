@@ -24,7 +24,7 @@ class NetworkxTransformFeatures(NetworkxTransformBase):
     ):
         """Transform networkx feature data.
 
-        .. code-block:: python.
+        .. code-block::
 
             def only_self_loops(edges):
                 for e1, e2, edata in edges:
@@ -36,7 +36,7 @@ class NetworkxTransformFeatures(NetworkxTransformBase):
 
         Alternatively, using the functional programming module:
 
-        .. code-block:: python
+        .. code-block::
             from caldera.utils.functional import Functional
 
             only_self_loops = Fn.filter_each(lambda x: x[0] == x[1])

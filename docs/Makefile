@@ -11,7 +11,7 @@ BUILDDIR      = build
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) s.
 
 # Put it first so that "make" without argument is like "make help".
 .PHONY: help Makefile
@@ -24,6 +24,7 @@ clean:
 	rm -rf $(BUILDDIR)/*
 	cd .. && poetry run keats version up
 	cd .. && poetry run keats changelog up
+	#rm -rf $(SOURCEDIR)/generated
 
 # execute each notebook and generate files for each notebook
 .PHONY: nbexamples

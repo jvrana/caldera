@@ -20,7 +20,7 @@ def has_cycle(g: nx.DiGraph) -> bool:
         return False
 
 
-def to_one_hot(arr: torch.tensor, mx: int):
+def to_one_hot(arr: torch.Tensor, mx: int):
     oh = torch.zeros((arr.shape[0], mx))
     for i, a in enumerate(arr):
         oh[i, a] = 1.0

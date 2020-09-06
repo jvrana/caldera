@@ -1,6 +1,0 @@
-﻿caldera.data.utils.in\_degree\_matrix\_from\_edges
-==================================================
-
-.. currentmodule:: caldera.data.utils
-
-.. autofunction:: in_degree_matrix_from_edges

@@ -1,6 +1,0 @@
-﻿caldera.data.utils.adj\_matrix\_from\_edges
-===========================================
-
-.. currentmodule:: caldera.data.utils
-
-.. autofunction:: adj_matrix_from_edges

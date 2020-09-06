@@ -60,18 +60,18 @@ def reindex_tensor(a: torch.Tensor) -> torch.Tensor:
 
 def reindex_tensor(
     a: torch.Tensor, *tensors: Tuple[torch.Tensor, ...]
-) -> Tuple[torch.tensor, ...]:
+) -> Tuple[torch.Tensor, ...]:
     """Reindex a tensor to lowest index. Handles multiple tensors and tensors
     with many dimensions.
 
-    .. code-block:: python
+    .. code-block::
 
         a = torch.tensor([1, 1, 1, 4, 0, 5, 0, 0, 0])
         b = reindex(a)
         print(b)
         # >> tensor([0, 0, 0, 1, 2, 3, 2, 2, 2])
 
-    .. code-block:: python
+    .. code-block::
 
         # multiple tensors with multiple dimensions
         a = torch.tensor([1, 1, 1, 1, 0, 2, 0, 5, 6])

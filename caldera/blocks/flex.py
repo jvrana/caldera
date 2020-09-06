@@ -173,7 +173,7 @@ class Flex:
 
         Usage:
 
-        .. code-block:: python
+        .. code-block::
 
             Flex(torch.nn.Linear)(Flex.d(), 25)
 

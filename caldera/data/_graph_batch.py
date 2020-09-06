@@ -21,7 +21,7 @@ class GraphBatch(GraphData):
     def __init__(
         self,
         node_attr: torch.FloatTensor,
-        edge_attr: torch.FloatTensor,
+        edge_attr: torch.TeFloatTensornsor,
         global_attr: torch.FloatTensor,
         edges: torch.LongTensor,
         node_idx: torch.LongTensor,

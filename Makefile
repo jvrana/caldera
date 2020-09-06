@@ -14,11 +14,9 @@ check:
 	which python
 	python check.py
 
-
-pullversion:
-	poetry run keats version up
-
-
+.PHONY: docs
+docs:
+	make -C docs html
 #docs:
 #	@echo "Updating documentation..."
 #

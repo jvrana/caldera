@@ -3,13 +3,14 @@ from torch import nn
 
 from caldera.blocks.block import Block
 from caldera.data import GraphData
+from typing import Optional, Tuple, Any
 
 
 class EdgeBlock(Block):
     def __init__(self, mlp: nn.Module):
         super().__init__({"mlp": mlp}, independent=True)
 
-    def forward(self, edge_attr: torch.tensor):
+    def forward(self, edge_attr: torch.FloatTensor):
         results = self.block_dict["mlp"](edge_attr)
         return results
 
@@ -24,13 +25,13 @@ class AggregatingEdgeBlock(EdgeBlock):
 
     def forward(
         self,
-        *,
-        edge_attr: torch.tensor,
-        node_attr: torch.tensor,
-        edges: torch.tensor,
-        global_attr: torch.Tensor = None,
-        edge_idx: torch.Tensor = None,
-    ):
+        *args: Tuple,
+        edge_attr: torch.FloatTensor,
+        node_attr: torch.FloatTensor,
+        edges: torch.LongTensor,
+        global_attr: Optional[torch.FloatTensor] = None,
+        edge_idx: Optional[torch.LongTensor] = None,
+    ) -> Any:
         to_agg = (node_attr[edges[0]], node_attr[edges[1]])
         if global_attr is not None:
             if edge_idx is None:

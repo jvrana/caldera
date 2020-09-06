@@ -23,7 +23,7 @@ def floyd_warshall(
     """Run the floyd-warshall algorithm (all pairs shortest _path) with
     arbitrary cost functions.
 
-    .. code-block:: python
+    .. code-block::
 
         W = floyd_warshall2(g, symbols=[
                 PathSymbol("A", SumPath),
@@ -31,7 +31,7 @@ def floyd_warshall(
             ], func: lambda a, b: a / b
         )
 
-    .. code-block:: python
+    .. code-block::
 
         W = floyd_warshall2(g, key="weight")
 

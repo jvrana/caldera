@@ -118,7 +118,7 @@ def device(request, allow_cuda):
 def new_writer():
     """Return a function that creates a new writer.
 
-    .. code-block:: python
+    .. code-block::
 
         def test_writer(new_writer):
             writer = new_writer('my_directory', suffix='_test')
@@ -135,7 +135,7 @@ def new_writer():
 def seeds(request):
     """Example usage of fixture.
 
-    .. code-block:: python
+    .. code-block::
 
         @pytest.mark.parametrize("seeds", list(range(10)), ids=lambda x: "seed" + str(x), indirect=True)
         def test_foo(seeds):

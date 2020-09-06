@@ -56,17 +56,6 @@ tests_no_zope = ["coverage (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0
 
 [[package]]
 category = "main"
-description = "Extended sphinx autodoc including automatic autosummaries"
-name = "autodocsumm"
-optional = true
-python-versions = "*"
-version = "0.2.0"
-
-[package.dependencies]
-sphinx = ">=2.2"
-
-[[package]]
-category = "main"
 description = "A tool that automatically formats Python code to conform to the PEP 8 style guide"
 name = "autopep8"
 optional = true
@@ -331,7 +320,7 @@ description = "File identification library for Python"
 name = "identify"
 optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
-version = "1.4.30"
+version = "1.5.0"
 
 [package.extras]
 license = ["editdistance"]
@@ -1208,12 +1197,11 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [extras]
-docs = ["sphinx", "sphinx_bootstrap_theme", "sphinx_autodoc_typehints", "autodocsumm", "keats", "nbformat", "nbconvert"]
+docs = ["sphinx", "sphinx_bootstrap_theme", "sphinx_autodoc_typehints", "keats", "nbformat", "nbconvert"]
 lint = ["black", "pytest-cov", "pre-commit", "pylint"]
 
 [metadata]
-content-hash = "f2e490023fcd4d358a075557328e47de4bc5ba37640c28cb68b5d7dafec8087f"
-lock-version = "1.0"
+content-hash = "e52c87c8ba6b72af91d9b0515d0f9cec548518acdf86971e406db4a84bcd132a"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -1236,9 +1224,6 @@ atomicwrites = [
 attrs = [
     {file = "attrs-20.2.0-py2.py3-none-any.whl", hash = "sha256:fce7fc47dfc976152e82d53ff92fa0407700c21acd20886a13777a0d20e655dc"},
     {file = "attrs-20.2.0.tar.gz", hash = "sha256:26b54ddbbb9ee1d34d5d3668dd37d6cf74990ab23c828c2888dccdceee395594"},
-]
-autodocsumm = [
-    {file = "autodocsumm-0.2.0.tar.gz", hash = "sha256:8f83e8d6cb5821c808316136b0b8d3a4b4a236824ca7d5e7e8208b793646dd65"},
 ]
 autopep8 = [
     {file = "autopep8-1.5.4.tar.gz", hash = "sha256:d21d3901cb0da6ebd1e83fc9b0dfbde8b46afc2ede4fe32fbda0c7c6118ca094"},
@@ -1366,8 +1351,8 @@ html5lib = [
     {file = "html5lib-1.1.tar.gz", hash = "sha256:b2e5b40261e20f354d198eae92afc10d750afb487ed5e50f9c4eaf07c184146f"},
 ]
 identify = [
-    {file = "identify-1.4.30-py2.py3-none-any.whl", hash = "sha256:f9f84a4ff44e29b9cc23c4012c2c8954089860723f80ce63d760393e5f197108"},
-    {file = "identify-1.4.30.tar.gz", hash = "sha256:e105a62fd3a496c701fd1bc4e24eb695455b5efb97e722816d5bd988c3344311"},
+    {file = "identify-1.5.0-py2.py3-none-any.whl", hash = "sha256:0868312cb7402b48cf44fe3f568259f804ef4e983c143d11bf7a51ca311ebc34"},
+    {file = "identify-1.5.0.tar.gz", hash = "sha256:009f92ba753c467a99f6fd3eb395412cbc34077dd5a64313b62ba04297f2ab8e"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
