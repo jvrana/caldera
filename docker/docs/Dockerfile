@@ -15,7 +15,7 @@ WORKDIR /src
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-FROM caldera as caldera-dev
+FROM caldera AS caldera-dev
 COPY requirements-dev.txt .
 RUN pip install -r requirements-dev.txt
 
@@ -26,5 +26,3 @@ RUN pip install -r requirements-docs.txt
 FROM caldera-docs AS project
 COPY . .
 RUN pip install .
-
-

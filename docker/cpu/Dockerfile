@@ -11,6 +11,14 @@ FROM torch AS torchscatter
 RUN pip install torch-scatter==latest+${CUDA} -f https://pytorch-geometric.com/whl/torch-1.6.0.html
 
 FROM torchscatter AS caldera
-COPY . /src
 WORKDIR /src
+COPY requirements.txt .
 RUN pip install -r requirements.txt
+
+FROM caldera AS caldera-dev
+COPY requirements-dev.txt .
+RUN pip install -r requirements-dev.txt
+
+FROM caldera-dev AS project
+COPY . .
+RUN pip install .
