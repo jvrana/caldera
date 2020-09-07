@@ -25,7 +25,7 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           rm -rf gh-pages-git/*
-          cp -r docs/build/html/* gh-pages-git
+          cp -r gh-pages/html/* gh-pages-git
           cd gh-pages-git
           git add .
           git commit -m "generated"
