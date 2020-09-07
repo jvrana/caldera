@@ -32,13 +32,13 @@ jobs:
       run: |
         DOCKER_BUILDKIT=1 docker build master \
         -f master/docker/docs/Dockerfile \
-        -t actions/caldera:docs
+        -t actions/caldera:latest-docs
     - name: Build the Documentation
-      run: ./master/docker/docs/build.sh actions/caldera:docs _ghpages
+      run: ./master/docker/docs/build.sh actions/caldera:latest-docs _ghpages
     - name: Commit
       run: |
+        rm -rf ghpages/*
+        cp -r _ghpages/html/* ghpages
         cd ghpages
-        rm -rf *
-        cp -r ../_ghpages/html/* .
         git add .
         git status
