@@ -1,0 +1,19 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ master, development ]
+  pull_request:
+    branches:  [ master, development ]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - name: Install dependencies
+      run: |
+        pip install pip -U
+        pip install poetry
+    - uses: pre-commit/action@v2.0.0

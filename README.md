@@ -1,5 +1,9 @@
 # Caldera 🌋
 
+![Code Quality](https://github.com/jvrana/caldera/workflows/Code%20Quality/badge.svg)
+![Tests](https://github.com/jvrana/caldera/workflows/Tests/badge.svg)
+![Documentation](https://github.com/jvrana/caldera/workflows/Documentation/badge.svg)
+
 **SOFTWARE IS IN ALPHA, README IS PENDING**
 
 **Caldera** is a Pytorch extension for learning on graphical data. It learns underlying causal relationships in data.
@@ -18,11 +22,23 @@
 
 ### Installation
 
-**via pip**
+#### via pip
 
-**via Conda**
+#### via Conda
 
-**via Docker**
+#### via Docker
+
+**Build CUDA enable image**
+
+```
+docker build . -f docker/cu101/Dockerfile
+```
+
+**Build slim cpu-only image**
+
+```
+docker build . -f docker/cpu/Dockerfile
+```
 
 ### Tour
 

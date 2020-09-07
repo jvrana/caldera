@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [ master ]
+
+env:
+  CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
+  DOCKER_BUILDKIT: 1
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout master
+      uses: actions/checkout@v2
+    - name: Build the Docker Image
+      run: |
+        DOCKER_BUILDKIT=1 docker build \
+        . \
+        -f docker/cpu/Dockerfile \
+        -t $CACHE_IMAGE
+    - name: Run Tests
+      run: |
+        tmpfile=$(mktemp /tmp/caldera-build-docs.XXXXXX)
+        exec 3>"$tmpfile"
+        rm "$tmpfile"
+        docker run --cidfile $tmpfile $CACHE_IMAGE /bin/bash -c "pytest --html pytest-report.html"
+        CID=$(cat $tmpfile)
+        docker cp $CID:/src/pytest-report.html .
+    - name: Upload Pytest Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: pytest-latest-report.html
+        path: pytest-report.html

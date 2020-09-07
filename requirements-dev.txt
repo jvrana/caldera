@@ -10,6 +10,12 @@ colorama==0.4.3; sys_platform == "win32" \
 decorator==4.4.2 \
     --hash=sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760 \
     --hash=sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7
+dictdiffer==0.8.1 \
+    --hash=sha256:d79d9a39e459fe33497c858470ca0d2e93cb96621751de06d631856adfd9c390 \
+    --hash=sha256:1adec0d67cdf6166bda96ae2934ddb5e54433998ceab63c984574d187cc563d2
+flaky==3.7.0 \
+    --hash=sha256:d6eda73cab5ae7364504b7c44670f70abed9e75f77dd116352f662817592ec9c \
+    --hash=sha256:3ad100780721a1911f57a165809b7ea265a7863305acb66708220820caf8aa0d
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d
 importlib-metadata==1.7.0; python_version < "3.8" \
@@ -63,6 +69,12 @@ pyparsing==2.4.7 \
 pytest==5.4.3 \
     --hash=sha256:5c0db86b698e8f170ba4582a492248919255fcd4c79b1ee64ace34301fb589a1 \
     --hash=sha256:7979331bfcba207414f5e1263b5a0f8f521d0f457318836a7355531ed1a4c7d8
+pytest-html==2.1.1 \
+    --hash=sha256:6a4ac391e105e391208e3eb9bd294a60dd336447fd8e1acddff3a6de7f4e57c5 \
+    --hash=sha256:9e4817e8be8ddde62e8653c8934d0f296b605da3d2277a052f762c56a8b32df2
+pytest-metadata==1.10.0 \
+    --hash=sha256:b7e6e0a45adacb17a03a97bf7a2ef60cc1f4e172bcce9732ce5e814191932315 \
+    --hash=sha256:fcbcc5781aee450107c620c79c57e50796b6777b82b3c504be9cbc3017201169
 scipy==1.5.2 \
     --hash=sha256:cca9fce15109a36a0a9f9cfc64f870f1c140cb235ddf27fe0328e6afb44dfed0 \
     --hash=sha256:1c7564a4810c1cd77fcdee7fa726d7d39d4e2695ad252d7c86c3ea9d85b7fb8f \

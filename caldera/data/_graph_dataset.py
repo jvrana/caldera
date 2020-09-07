@@ -16,8 +16,7 @@ class GraphDataset(Dataset):
     def __init__(
         self, datalist: List[GraphData], transform: Optional[TransformCallable] = None
     ):
-        """
-        Creates a graph dataset.
+        """Creates a graph dataset.
 
         :param datalist:
         :param transform:

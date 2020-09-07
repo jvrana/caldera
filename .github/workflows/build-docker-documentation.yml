@@ -1,0 +1,52 @@
+name: Documentation
+
+on:
+  pull_request:
+    branches: [ master ]
+
+env:
+  CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
+  DOCKER_BUILDKIT: 1
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout master
+      uses: actions/checkout@v2
+      with:
+        path: master
+        ref: master
+    - name: Checkout gh-pages
+      uses: actions/checkout@v2
+      with:
+        path: ghpages
+        ref: gh-pages
+    - name: Log in to docker hub
+      run: docker login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_PASS }}
+    - name: Build the Docker Image
+      run: |
+        DOCKER_BUILDKIT=1 docker build \
+        --cache-from $CACHE_IMAGE \
+        master \
+        -f master/docker/docs/Dockerfile \
+        -t $CACHE_IMAGE
+    - name: Push Cached Docker Image
+      run: |
+        docker push $CACHE_IMAGE
+    - name: Build the Documentation
+      run: ./master/docker/docs/build.sh $CACHE_IMAGE _ghpages
+    - name: Commit
+      run: |
+        cd ghpages
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        rm -rf *
+        cp -r ../_ghpages/* .
+        git add .
+        git status
+        git diff-index --quiet HEAD || (git commit -m "generated" && git push)
