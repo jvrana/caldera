@@ -21,6 +21,7 @@ jobs:
     - name: Build the Docker Image
       run: |
         DOCKER_BUILDKIT=1 docker build \
+        . \
         -f docker/cpu/Dockerfile \
         -t $CACHE_IMAGE
     - name: Run Tests
