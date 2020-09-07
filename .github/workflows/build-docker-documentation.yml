@@ -49,5 +49,4 @@ jobs:
         cp -r ../_ghpages/* .
         git add .
         git status
-        git commit -m "generated"
-        git push
+        git diff-index --quiet HEAD || (git commit -m "generated" && git push)
