@@ -20,3 +20,9 @@ jobs:
       with:
         name: html
         path: gh-pages/html
+    - uses: actions/checkout@v2
+      with:
+        ref: gh-pages
+        run: |
+          git add .
+          echo $(git status)
