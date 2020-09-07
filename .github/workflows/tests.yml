@@ -1,0 +1,27 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
+  DOCKER_BUILDKIT: 1
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout master
+      uses: actions/checkout@v2
+    - name: Build the Docker Image
+      run: |
+        DOCKER_BUILDKIT=1 docker build \
+        -f docker/cpu/Dockerfile \
+        -t $CACHE_IMAGE
+    - name: Run Tests
+      run: pytest
