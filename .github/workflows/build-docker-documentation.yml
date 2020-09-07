@@ -17,5 +17,5 @@ jobs:
     - name: Build the Docker image
       run: docker build . -f docker/docs/Dockerfile -t actions/caldera:docs
     - name: Build the Documentation
-      run: ./docker/docs/build.sh
+      run: ./docker/docs/build.sh actions/caldera:docs gh-pages
     
