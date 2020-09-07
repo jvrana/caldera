@@ -42,11 +42,11 @@ jobs:
       run: ./master/docker/docs/build.sh $CACHE_IMAGE _ghpages
     - name: Commit
       run: |
+        cd ghpages
         git config user.name github-actions
         git config user.email github-actions@github.com
-        rm -rf ghpages/*
-        cp -r _ghpages/* ghpages
-        cd ghpages
+        rm -rf *
+        cp -r ../_ghpages/* .
         git add .
         git status
         git commit -m "generated"
