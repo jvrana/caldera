@@ -25,4 +25,15 @@ jobs:
         -f docker/cpu/Dockerfile \
         -t $CACHE_IMAGE
     - name: Run Tests
-      run: docker run $CACHE_IMAGE /bin/bash -c "pytest"
+      run: |
+        tmpfile=$(mktemp /tmp/caldera-build-docs.XXXXXX)
+        exec 3>"$tmpfile"
+        rm "$tmpfile"
+        docker run --cidfile $tmpfile $IMAGE /bin/bash -c "pytest --html pytest-report.html"
+        CID=$(cat $tmpfile)
+        docker cp $CID:/src/pytest-report.html .
+    - name: Upload Pytest Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: pytest-latest-report.html
+        path: ${{ github.workspace }}

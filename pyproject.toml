@@ -45,6 +45,7 @@ lint = ["black", "pytest-cov", "pre-commit", "pylint"]
 pytest = "^5.4.2"
 flaky = "^3.7.0"
 dictdiffer = "^0.8.1"
+pytest-html = "^2.1.1"
 
 [build-system]
 requires = ["poetry>=0.12"]
