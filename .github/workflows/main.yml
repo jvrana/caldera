@@ -1,0 +1,21 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build . -f docker/docs/Dockerfile -t actions/caldera:docs
+    - name: Build the Documentation
+      run: docker run --rm actions/caldera:docs /bin/bash -c "cd docs && make clean && make html"
+    
