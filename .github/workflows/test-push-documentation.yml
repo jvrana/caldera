@@ -20,7 +20,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.TOKEN }}
             USERNAME:  ${{ secrets.USERNAME }}
       - run: |
-          git clone --no-checkout https://$USERNAME:$GITHUB_TOKEN@github.com/jvrana/caldera.git --branch gh-pages --single-branch gh-pages-git
+          git clone https://jvrana:b4174934b5c9d8cffc47560fe7ac09d140f3b014@github.com/jvrana/caldera.git gh-pages-git
           git config user.name github-actions
           git config user.email github-actions@github.com
           rm -rf gh-pages-git/*
