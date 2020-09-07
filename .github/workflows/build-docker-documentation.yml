@@ -43,3 +43,4 @@ jobs:
         cp -r ../_ghpages/html/* .
         git add .
         git status
+          
