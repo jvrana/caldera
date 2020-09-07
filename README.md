@@ -1,6 +1,7 @@
 # Caldera 🌋
 
 ![Code Quality](https://github.com/jvrana/caldera/workflows/Code%20Quality/badge.svg)
+![Tests](https://github.com/jvrana/caldera/workflows/Tests/badge.svg)
 ![Documentation](https://github.com/jvrana/caldera/workflows/Documentation/badge.svg)
 
 **SOFTWARE IS IN ALPHA, README IS PENDING**
