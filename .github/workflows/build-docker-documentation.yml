@@ -16,18 +16,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Log in to docker hub
-      run: docker login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_PASS }}
-    - name: Build the Docker image
-      run: |
-        DOCKER_BUILDKIT=1 docker build \
-        . \
-        -f docker/docs/Dockerfile \
-        -t actions/caldera:docs
-    - name: Build the Documentation
-      run: ./docker/docs/build.sh actions/caldera:docs gh-pages
-    - uses: actions/upload-artifact@v2
+    - name: Checkout master
+      uses: actions/checkout@v2
       with:
-        name: html
-        path: gh-pages/html
+        path: master
+        ref: master
+    - name: Checkout gh-pages
+      uses: actions/checkout@v2
+      with:
+        path: ghpages
+        ref: gh-pages
+#    - name: Log in to docker hub
+#      run: docker login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_PASS }}
+#    - name: Build the Docker image
+#      run: |
+#        cd master
+#        DOCKER_BUILDKIT=1 docker build . \
+#        . \
+#        -f docker/docs/Dockerfile \
+#        -t actions/caldera:docs
+#    - name: Build the Documentation
+#      run: ./docker/docs/build.sh actions/caldera:docs gh-pages
+    - name: Do stuff in master
+      run: |
+        cd master
+        ls
+        cd ..
+    - name: Commit to gh-pages
+      run: |
+        cd ghpages
+        ls
+        cd ..
