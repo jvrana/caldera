@@ -1,0 +1,22 @@
+caldera.blocks.Flex
+===================
+
+.. currentmodule:: caldera.blocks
+
+.. autoclass:: Flex
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Flex.__init__
+   
+   
+
+   
+   
+   
