@@ -29,7 +29,7 @@ jobs:
         tmpfile=$(mktemp /tmp/caldera-build-docs.XXXXXX)
         exec 3>"$tmpfile"
         rm "$tmpfile"
-        docker run --cidfile $tmpfile $IMAGE /bin/bash -c "pytest --html pytest-report.html"
+        docker run --cidfile $tmpfile $CACHE_IMAGE /bin/bash -c "pytest --html pytest-report.html"
         CID=$(cat $tmpfile)
         docker cp $CID:/src/pytest-report.html .
     - name: Upload Pytest Report
