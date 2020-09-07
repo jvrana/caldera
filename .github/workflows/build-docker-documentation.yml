@@ -31,7 +31,7 @@ jobs:
     - name: Build the Docker Image
       run: |
         DOCKER_BUILDKIT=1 docker build \
-        --cache-from $CACHE_IMAGE
+        --cache-from $CACHE_IMAGE \
         master \
         -f master/docker/docs/Dockerfile \
         -t $CACHE_IMAGE
