@@ -65,7 +65,7 @@ html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 # Guzzle theme options (see theme.conf for more information)
 html_theme_options = {
     # Set the name of the project to appear in the sidebar
-    "navbar_title": pkg.__title__.capitalize(),
+    "navbar_title": pkg.__title__.capitalize() + " " + str(pkg.__version__),
     "navbar_site_name": pkg.__title__.capitalize(),
     # A list of tuples containing pages or urls to link to.
     # Valid tuples should be in the following forms:
