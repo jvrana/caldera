@@ -16,17 +16,7 @@ jobs:
       run: docker build . -f docker/docs/Dockerfile -t actions/caldera:docs
     - name: Build the Documentation
       run: ./docker/docs/build.sh actions/caldera:docs gh-pages
-    - name: Commit to gh-pages branch
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        USERNAME:  ${{ secrets.USERNAME }}
-      run: |
-          git clone --no-checkout "https://$USERNAME:$GITHUB_TOKEN@github.com/jvrana/caldera.git" --branch gh-pages --single-branch gh-pages-git
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          rm -rf gh-pages-git/*
-          cp -r gh-pages/html/* gh-pages-git
-          cd gh-pages-git
-          git add .
-          git commit -m "generated"
-          git push
+    - uses: actions/upload-artifact@v2
+      with:
+        name: html
+        path: gh-pages/html
