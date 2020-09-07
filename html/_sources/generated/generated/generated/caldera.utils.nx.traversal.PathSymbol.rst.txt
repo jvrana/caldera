@@ -1,0 +1,23 @@
+caldera.utils.nx.traversal.PathSymbol
+=====================================
+
+.. currentmodule:: caldera.utils.nx.traversal
+
+.. autoclass:: PathSymbol
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PathSymbol.__init__
+      ~PathSymbol.initialize_matrix
+   
+   
+
+   
+   
+   

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caldera.blocks &#8212; caldera 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="caldera.blocks.Flex" href="generated/caldera.blocks.Flex.html" />
+    <link rel="prev" title="caldera.data.utils.get_edge_dict" href="generated/caldera.data.utils.get_edge_dict.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Caldera</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../getting_started.html">Getting Started</a></li>
+                <li><a href="../examples/examples.html">Examples</a></li>
+                <li><a href="../api.html">API</a></li>
+                <li><a href="http://www.github.com/jvrana/caldera">Github</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Caldera <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="caldera.data.html">caldera.data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="caldera.data.html#data-caldera-data">Data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.data</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">caldera.blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#blocks-caldera-blocks">Blocks (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.blocks</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="caldera.models.html">caldera.models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="caldera.models.html#data-caldera-models">Data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.models</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="caldera.transforms.html">caldera.transforms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="caldera.transforms.html#transforms-caldera-transform">Transforms (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.transform</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="caldera.utils.html">caldera.utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="caldera.utils.html#utils-caldera-utils">Utils (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.utils</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="caldera.exceptions.html">caldera.exceptions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="caldera.exceptions.html#exceptions-caldera-exceptions">Exceptions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.exceptions</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="caldera.defaults.html">caldera.defaults</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="caldera.defaults.html#defaults-caldera-defaults">Defaults (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.defaults</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/examples.html">Examples</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">caldera.blocks</a><ul>
+<li><a class="reference internal" href="#blocks-caldera-blocks">Blocks (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.blocks</span></code>)</a><ul>
+<li><a class="reference internal" href="#generic-blocks">Generic Blocks</a></li>
+<li><a class="reference internal" href="#encoder-decoder-blocks">Encoder/Decoder Blocks</a></li>
+<li><a class="reference internal" href="#message-passing-blocks">Message Passing Blocks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="module-caldera.blocks">
+<span id="caldera-blocks"></span><h1>caldera.blocks<a class="headerlink" href="#module-caldera.blocks" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="blocks-caldera-blocks">
+<h2>Blocks (<a class="reference internal" href="#module-caldera.blocks" title="caldera.blocks"><code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.blocks</span></code></a>)<a class="headerlink" href="#blocks-caldera-blocks" title="Permalink to this headline">¶</a></h2>
+<p>Network building blocks for creating graph neural networks.</p>
+<div class="section" id="generic-blocks">
+<h3>Generic Blocks<a class="headerlink" href="#generic-blocks" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/caldera.blocks.Flex.html#caldera.blocks.Flex" title="caldera.blocks.Flex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Flex</span></code></a>(module_type)</p></td>
+<td><p>Initialize a module as a FlexBlock with flexible dimensions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/caldera.blocks.MLP.html#caldera.blocks.MLP" title="caldera.blocks.MLP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MLP</span></code></a>(*latent_sizes[, layer_norm, dropout, …])</p></td>
+<td><p>A multilayer perceptron.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="encoder-decoder-blocks">
+<h3>Encoder/Decoder Blocks<a class="headerlink" href="#encoder-decoder-blocks" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/caldera.blocks.NodeBlock.html#caldera.blocks.NodeBlock" title="caldera.blocks.NodeBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NodeBlock</span></code></a>(mlp)</p></td>
+<td><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/caldera.blocks.EdgeBlock.html#caldera.blocks.EdgeBlock" title="caldera.blocks.EdgeBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EdgeBlock</span></code></a>(mlp)</p></td>
+<td><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/caldera.blocks.GlobalBlock.html#caldera.blocks.GlobalBlock" title="caldera.blocks.GlobalBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GlobalBlock</span></code></a>(mlp)</p></td>
+<td><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="message-passing-blocks">
+<h3>Message Passing Blocks<a class="headerlink" href="#message-passing-blocks" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/caldera.blocks.AggregatingNodeBlock.html#caldera.blocks.AggregatingNodeBlock" title="caldera.blocks.AggregatingNodeBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregatingNodeBlock</span></code></a>(mlp, edge_aggregator)</p></td>
+<td><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/caldera.blocks.AggregatingEdgeBlock.html#caldera.blocks.AggregatingEdgeBlock" title="caldera.blocks.AggregatingEdgeBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregatingEdgeBlock</span></code></a>(mlp)</p></td>
+<td><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/caldera.blocks.AggregatingGlobalBlock.html#caldera.blocks.AggregatingGlobalBlock" title="caldera.blocks.AggregatingGlobalBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregatingGlobalBlock</span></code></a>(mlp[, …])</p></td>
+<td><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/caldera.blocks.Aggregator.html#caldera.blocks.Aggregator" title="caldera.blocks.Aggregator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Aggregator</span></code></a>(aggregator[, dim, dim_size])</p></td>
+<td><p>Aggregation layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/caldera.blocks.MultiAggregator.html#caldera.blocks.MultiAggregator" title="caldera.blocks.MultiAggregator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiAggregator</span></code></a>(input_size, aggregators[, …])</p></td>
+<td><p>A differentiable and trainable way to select the aggregation function.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="caldera.blocks.Aggregator">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">Aggregator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">aggregator</span></em>, <em class="sig-param"><span class="n">dim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dim_size</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.Aggregator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregation layer.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.Aggregator.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">aggregator</span></em>, <em class="sig-param"><span class="n">dim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dim_size</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.Aggregator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.MultiAggregator">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">MultiAggregator</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">aggregators</em>, <em class="sig-param">dim=None</em>, <em class="sig-param">dim_size=None</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.LeakyReLU'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.MultiAggregator" title="Permalink to this definition">¶</a></dt>
+<dd><p>A differentiable and trainable way to select the aggregation
+function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – </p></li>
+<li><p><strong>aggregators</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, …], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – </p></li>
+<li><p><strong>dim</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – </p></li>
+<li><p><strong>dim_size</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="caldera.blocks.MultiAggregator.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">aggregators</em>, <em class="sig-param">dim=None</em>, <em class="sig-param">dim_size=None</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.LeakyReLU'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.MultiAggregator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A differentiable and trainable way to select the aggregation
+function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – </p></li>
+<li><p><strong>aggregators</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, …], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – </p></li>
+<li><p><strong>dim</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – </p></li>
+<li><p><strong>dim_size</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.AggregatingEdgeBlock">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">AggregatingEdgeBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.AggregatingEdgeBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.AggregatingEdgeBlock.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.AggregatingEdgeBlock.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="id0">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">AggregatingEdgeBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="id1">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.EdgeBlock">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">EdgeBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.EdgeBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.EdgeBlock.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.EdgeBlock.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.AggregatingNodeBlock">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">AggregatingNodeBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em>, <em class="sig-param"><span class="n">edge_aggregator</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.AggregatingNodeBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.AggregatingNodeBlock.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em>, <em class="sig-param"><span class="n">edge_aggregator</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.AggregatingNodeBlock.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.AggregatingGlobalBlock">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">AggregatingGlobalBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em>, <em class="sig-param"><span class="n">edge_aggregator</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">node_aggregator</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.AggregatingGlobalBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.AggregatingGlobalBlock.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em>, <em class="sig-param"><span class="n">edge_aggregator</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">node_aggregator</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.AggregatingGlobalBlock.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.NodeBlock">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">NodeBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.NodeBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.NodeBlock.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.NodeBlock.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.GlobalBlock">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">GlobalBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.GlobalBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.GlobalBlock.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mlp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.GlobalBlock.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="caldera.blocks.MLP">
+<em class="property">class </em><code class="sig-prename descclassname">caldera.blocks.</code><code class="sig-name descname">MLP</code><span class="sig-paren">(</span><em class="sig-param">*latent_sizes</em>, <em class="sig-param">layer_norm=True</em>, <em class="sig-param">dropout=None</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.LeakyReLU'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.MLP" title="Permalink to this definition">¶</a></dt>
+<dd><p>A multilayer perceptron.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+<dl class="py method">
+<dt id="caldera.blocks.MLP.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">*latent_sizes</em>, <em class="sig-param">layer_norm=True</em>, <em class="sig-param">dropout=None</em>, <em class="sig-param">activation=&lt;class 'torch.nn.modules.activation.LeakyReLU'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#caldera.blocks.MLP.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="../_sources/generated/caldera.blocks.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2020, Justin Vrana &lt;justin.vrana@gmail.com&gt;.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
