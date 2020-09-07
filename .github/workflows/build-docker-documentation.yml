@@ -31,7 +31,6 @@ jobs:
     - name: Build the Docker image
       run: |
         DOCKER_BUILDKIT=1 docker build master \
-        . \
         -f master/docker/docs/Dockerfile \
         -t actions/caldera:docs
     - name: Build the Documentation
@@ -43,4 +42,3 @@ jobs:
         cp -r ../_ghpages/html/* .
         git add .
         git status
-          
