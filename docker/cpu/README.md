@@ -1,0 +1,1 @@
+A slimmer cpu-only docker build (<2GB) for testing and CI purposes.

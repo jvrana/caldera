@@ -22,8 +22,8 @@ help:
 clean:
 	@echo "Cleaning"
 	rm -rf $(BUILDDIR)/*
-	cd .. && poetry run keats version up
-	cd .. && poetry run keats changelog up
+	keats version up
+	keats changelog up
 	#rm -rf $(SOURCEDIR)/generated
 
 # execute each notebook and generate files for each notebook
