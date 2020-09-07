@@ -22,7 +22,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Commit documentation changes
         run: |
-          git clone git@github.com:jvrana/caldera.git --branch gh-pages --single-branch gh-pages
+          git clone https://${{ secrets.TOKEN }}@github.com/jvrana/caldera.git --branch gh-pages --single-branch gh-pages
           cp -r docs/build/html/* gh-pages/
           cd gh-pages
           git config --local user.email "action@github.com"
