@@ -20,11 +20,23 @@
 
 ### Installation
 
-**via pip**
+#### via pip
 
-**via Conda**
+#### via Conda
 
-**via Docker**
+#### via Docker
+
+**Build CUDA enable image**
+
+```
+docker build . -f docker/cu101/Dockerfile
+```
+
+**Build slim cpu-only image**
+
+```
+docker build . -f docker/cpu/Dockerfile
+```
 
 ### Tour
 
