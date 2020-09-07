@@ -25,4 +25,4 @@ jobs:
         -f docker/cpu/Dockerfile \
         -t $CACHE_IMAGE
     - name: Run Tests
-      run: pytest
+      run: docker run $CACHE_IMAGE /bin/bash -c "pytest"
