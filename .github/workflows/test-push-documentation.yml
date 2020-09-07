@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: idk
+        uses: actions/checkout@v2
         env:
             GITHUB_TOKEN: ${{ secrets.TOKEN }}
             USERNAME:  ${{ secrets.USERNAME }}
             PASSWORD:  ${{ secrets.PASSWORD }}
-      - uses: actions/checkout@v2
       - run: |
           git clone --no-checkout https://$USERNAME:$PASSWORD@github.com/jvrana/caldera.git --branch gh-pages --single-branch gh-pages-git
           git config user.name github-actions
