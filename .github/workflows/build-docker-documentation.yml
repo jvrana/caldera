@@ -42,3 +42,5 @@ jobs:
         cd ghpages
         git add .
         git status
+        git commit -m "generated"
+        git push
