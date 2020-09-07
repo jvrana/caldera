@@ -38,7 +38,7 @@ jobs:
     - name: Commit
       run: |
         rm -rf ghpages/*
-        cp -r _ghpages/html/* ghpages
+        cp -r _ghpages/* ghpages
         cd ghpages
         git add .
         git status
