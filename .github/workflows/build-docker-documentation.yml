@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 env:
-  CACHE_IMAGE: jvrana/docker-ci-cache
+  CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
   DOCKER_BUILDKIT: 1
 
 
@@ -28,15 +28,22 @@ jobs:
         ref: gh-pages
     - name: Log in to docker hub
       run: docker login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_PASS }}
-    - name: Build the Docker image
+    - name: Build the Docker Image
       run: |
-        DOCKER_BUILDKIT=1 docker build master \
+        DOCKER_BUILDKIT=1 docker build \
+        --cache-from $CACHE_IMAGE
+        master \
         -f master/docker/docs/Dockerfile \
-        -t actions/caldera:latest-docs
+        -t $CACHE_IMAGE
+    - name: Push Cached Docker Image
+      run: |
+        docker push $CACHE_IMAGE
     - name: Build the Documentation
-      run: ./master/docker/docs/build.sh actions/caldera:latest-docs _ghpages
+      run: ./master/docker/docs/build.sh $CACHE_IMAGE _ghpages
     - name: Commit
       run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
         rm -rf ghpages/*
         cp -r _ghpages/* ghpages
         cd ghpages
