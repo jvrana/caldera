@@ -19,7 +19,6 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.TOKEN }}
             USERNAME:  ${{ secrets.USERNAME }}
-      - name: checkout
         run: |
           echo $USERNAME
           echo $GITHUB_TOKEN
