@@ -14,13 +14,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: idk
-        uses: actions/checkout@v2
-        
-      - shell: bash
+      - name: get-secrets
         env:
             GITHUB_TOKEN: ${{ secrets.TOKEN }}
             USERNAME:  ${{ secrets.USERNAME }}
+      - name: checkout
+        uses: actions/checkout@v2
       - run: |
           echo $USERNAME
           echo $GITHUB_TOKEN
