@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: idk
         uses: actions/checkout@v2
+        
+      - shell: bash
         env:
             GITHUB_TOKEN: ${{ secrets.TOKEN }}
             USERNAME:  ${{ secrets.USERNAME }}
