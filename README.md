@@ -1,6 +1,7 @@
 # Caldera 🌋
 
 ![pre-commit](https://github.com/jvrana/caldera/workflows/pre-commit/badge.svg)
+![Documentation](https://github.com/jvrana/caldera/workflows/Documentation/badge.svg)
 
 **SOFTWARE IS IN ALPHA, README IS PENDING**
 
