@@ -4,6 +4,11 @@ on:
   push:
     branches: [ master ]
 
+env:
+  CACHE_IMAGE: jvrana/docker-ci-cache
+  DOCKER_BUILDKIT: 1
+
+
 jobs:
 
   build:
@@ -12,18 +17,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Log in to docker hub
+      run: docker login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_PASS }}
     - name: Build the Docker image
-      run: docker build . -f docker/docs/Dockerfile -t actions/caldera:docs
+      run: |
+        docker build
+        --cache-from $CACHE_IMAGE:latest \
+        --tag $CACHE_IMAGE:latest \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        . \
+        -f docker/docs/Dockerfile \
+        -t actions/caldera:docs
     - name: Build the Documentation
       run: ./docker/docs/build.sh actions/caldera:docs gh-pages
     - uses: actions/upload-artifact@v2
       with:
         name: html
         path: gh-pages/html
-    - uses: actions/checkout@v2
-      with:
-        ref: gh-pages
-    - name: commit
-      run: |
-        git add .
-        echo $(git status)
