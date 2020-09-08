@@ -32,6 +32,11 @@ nbexamples:
 	make -C $(SOURCEDIR)/nbexamples clean
 	make -C $(SOURCEDIR)/nbexamples
 
+# execute python based tests
+.PHONY: tests
+tests:
+	@cd _tools && python -m pytest
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile

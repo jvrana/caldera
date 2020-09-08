@@ -10,5 +10,15 @@ Caldera
    api
    examples/examples
    narratives/data-processing
+   _nb_generated/data-processing
 
-:py:class:`torch.Tensor`
+.. jupyter-execute::
+
+  import caldera
+  from caldera.data import GraphData
+
+  data = GraphData.random(5, 4, 3)
+  print(data)
+  name = 'world'
+  print('hello ' + name + '!')
+  data
