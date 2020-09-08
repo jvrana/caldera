@@ -3,6 +3,7 @@ name: Documentation
 on:
   pull_request:
     branches: [ master ]
+    types: [ closed ]
 
 env:
   CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
@@ -12,9 +13,8 @@ env:
 jobs:
 
   build:
-
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout master
       uses: actions/checkout@v2
