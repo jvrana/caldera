@@ -33,7 +33,7 @@ def cmd_output(*cmd: str, retcode: Optional[int] = 0, **kwargs: Any) -> str:
 @pytest.mark.env("doc-tools")
 @pytest.mark.parametrize("temp_sys_path", ["../../docs/"], indirect=True)
 def test_to_tmpdir(tmpdir, use_tmp, temp_sys_path):
-    from docs._tools.nb_to_doc import main
+    from _tools.nb_to_doc import main
 
     if use_tmp is False:
         outdir = None
