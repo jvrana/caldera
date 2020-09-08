@@ -78,6 +78,7 @@ html_theme_options = {
     "navbar_links": [
         ("Getting Started", "getting_started"),
         ("Examples", "examples/examples"),
+        ("Gallery", "gallery/gallery"),
         ("API", "api"),
         ("Github", pkg.__homepage__, True),
     ],

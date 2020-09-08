@@ -9,8 +9,9 @@ Caldera
    getting_started
    api
    examples/examples
+   gallery/gallery
    narratives/data-processing
-   _nb_generated/data-processing
+   developer
 
 .. jupyter-execute::
 
