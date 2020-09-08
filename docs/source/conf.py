@@ -38,7 +38,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
-    "jupyter_sphinx.execute",
+    "jupyter_sphinx",
 ]
 
 always_document_param_types = True
@@ -111,6 +111,11 @@ html_theme_options = {
     # Values: "3" (default) or "2" (in quotes)
     "bootstrap_version": "3",
 }
+
+## uncomment to add globaltoc sidebar
+# html_sidebars = {
+#     '**': ['globaltoc_sidebar.html'],
+# }
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples, originally taken from scikit-learn's doc/conf.py
