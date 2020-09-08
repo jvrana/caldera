@@ -951,7 +951,7 @@ wcwidth = "*"
 [[package]]
 category = "main"
 description = "Run a subprocess in a pseudo terminal"
-marker = "python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\" or os_name != \"nt\" or python_version >= \"3.3\" and sys_platform != \"win32\" and (python_version >= \"3.3\" and sys_platform != \"win32\" or sys_platform != \"win32\")"
+marker = "sys_platform != \"win32\" or os_name != \"nt\" or python_version >= \"3.3\" and sys_platform != \"win32\""
 name = "ptyprocess"
 optional = true
 python-versions = "*"
@@ -1568,7 +1568,7 @@ lint = ["black", "pytest-cov", "pre-commit", "pylint"]
 xtests = ["pytest-sugar"]
 
 [metadata]
-content-hash = "93def3b408ac21ff6ef4136454df3a9b82c706137f02cbf0f115bd524fc7c1e2"
+content-hash = "1a87155cf29ee4c551e0413b0c909e8d556cf8f90af26d1904941de008cde97d"
 lock-version = "1.0"
 python-versions = "^3.7"
 
