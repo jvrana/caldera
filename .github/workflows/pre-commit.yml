@@ -3,8 +3,14 @@ name: Code Quality
 on:
   push:
     branches: [ master, development ]
+    paths:
+      - '!.github/**/*'
+      - '.github/workflows/pre-commit.yml'
   pull_request:
     branches:  [ master, development ]
+    paths:
+      - '!.github/**/*'
+      - '.github/workflows/pre-commit.yml'
 
 jobs:
   pre-commit:
