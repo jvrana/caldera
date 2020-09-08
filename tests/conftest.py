@@ -11,6 +11,13 @@ from caldera.utils import deterministic_seed
 from caldera.utils.tensorboard import new_writer as new_summary_writer
 
 
+def pytest_configure(config):
+    # register an additional marker
+    config.addinivalue_line(
+        "markers", "env(name): mark test to run only on named environment"
+    )
+
+
 #############################
 # Incremental Testing
 #############################
@@ -47,7 +54,21 @@ def pytest_runtest_makereport(item, call):
             )
 
 
+def _pytest_env_mark_setup(item):
+    envnames = [mark.args[0] for mark in item.iter_markers(name="env")]
+    env = item.config.getoption("-E")
+    provided_but_env_item_missing = env and env not in envnames
+    not_provided_but_env_item_present = not env and envnames
+    if provided_but_env_item_missing or not_provided_but_env_item_present:
+        pytest.skip("test requires env in {!r}".format(envnames))
+
+
 def pytest_runtest_setup(item):
+    _pytest_env_mark_setup(item)
+    _pytest_incr_mark_setup(item)
+
+
+def _pytest_incr_mark_setup(item):
     if "incremental" in item.keywords:
         # retrieve the class name of the test
         cls_name = str(item.cls)
@@ -82,6 +103,12 @@ runs = join(abspath(dirname(__file__)), "pytest_runs")
 def pytest_addoption(parser):
     parser.addoption(
         "--cuda", action="store", default=False, help="option: true or false"
+    )
+    parser.addoption(
+        "-E",
+        action="store",
+        metavar="NAME",
+        help="only run tests matching the environment NAME.",
     )
 
 

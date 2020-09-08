@@ -8,7 +8,8 @@ from typing import Any
 from typing import Optional
 
 import pytest
-from tools.nb_to_doc import main
+
+from docs._tools.nb_to_doc import main
 
 
 here = abspath(dirname(__file__))
@@ -31,6 +32,7 @@ def cmd_output(*cmd: str, retcode: Optional[int] = 0, **kwargs: Any) -> str:
 
 
 @pytest.mark.parametrize("use_tmp", [True])
+@pytest.mark.env("doc-tools")
 def test_to_tmpdir(tmpdir, use_tmp):
     if use_tmp is False:
         outdir = None

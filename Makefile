@@ -17,6 +17,7 @@ check:
 .PHONY: docs
 docs:
 	make -C docs html
+
 #docs:
 #	@echo "Updating documentation..."
 #
