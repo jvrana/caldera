@@ -20,8 +20,9 @@ AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import argparse
+import contextlib
 import os
-import sys
 
 import nbformat
 from nbconvert import RSTExporter
@@ -95,18 +96,15 @@ def strip_output(nb):
     return nb
 
 
-if __name__ == "__main__":
-
-    # Get the desired ipynb file traversal and parse into components
-    _, fpath = sys.argv
-    basedir, fname = os.path.split(fpath)
-    fstem = fname[:-6]
-
+def read_notebook(fpath: str):
     # Read the notebook
     print(f"Executing {fpath} ...", end=" ", flush=True)
     with open(fpath) as f:
         nb = nbformat.read(f, as_version=4)
+    return nb
 
+
+def run_notebook(nb, basedir: str):
     # Run the notebook
     kernel = os.environ.get("NB_KERNEL", None)
     if kernel is None:
@@ -118,6 +116,8 @@ if __name__ == "__main__":
     )
     ep.preprocess(nb, {"metadata": {"traversal": basedir}})
 
+
+def remove_plain_text_output(nb):
     # Remove plain text execution result outputs
     for cell in nb.get("cells", {}):
         fields = cell.get("outputs", [])
@@ -130,9 +130,10 @@ if __name__ == "__main__":
                 if not field["data"]:
                     fields.remove(field)
 
+
+def convert_to_rst(nb, basedir, fpath, fstem):
     # Convert to .rst formats
     exp = RSTExporter()
-
     c = Config()
     c.TagRemovePreprocessor.remove_cell_tags = {"hide"}
     c.TagRemovePreprocessor.remove_input_tags = {"hide-input"}
@@ -140,10 +141,8 @@ if __name__ == "__main__":
     c.ExtractOutputPreprocessor.output_filename_template = (
         f"{fstem}_files/{fstem}_" + "{cell_index}_{index}{extension}"
     )
-
     exp.register_preprocessor(TagRemovePreprocessor(config=c), True)
     exp.register_preprocessor(ExtractOutputPreprocessor(config=c), True)
-
     body, resources = exp.from_notebook_node(nb)
 
     # Clean the output on the notebook and save a .ipynb back to disk
@@ -158,14 +157,76 @@ if __name__ == "__main__":
     with open(rst_path, "w") as f:
         f.write(body)
 
+    print(resources["outputs"])
+
     # Write the individual image outputs
     imdir = os.path.join(basedir, f"{fstem}_files")
     if not os.path.exists(imdir):
         os.mkdir(imdir)
-
     for imname, imdata in resources["outputs"].items():
         if imname.startswith(fstem):
             impath = os.path.join(basedir, f"{imname}")
             with open(impath, "wb") as f:
                 f.write(imdata)
                 f.write(imdata)
+
+
+@contextlib.contextmanager
+def chdir(dirname=None):
+    curdir = os.getcwd()
+    try:
+        if dirname is not None:
+            os.chdir(dirname)
+        yield
+    finally:
+        os.chdir(curdir)
+
+
+def main(fpath: str, outdir: str = None):
+    """Execute a python notebook, save files, and convert to `rst`.
+
+    1. Read in the notebook file
+    2. Set current working directory to `<outdir>/<fname>_files`
+    3. Execute the notebook.
+    4. Save images, save rst file
+
+    .. warning::
+
+        This method will change current working directory before notebook execution.
+        Make sure any readable input files are absolute or relative to the notebook file itself.
+        Output paths should use cwd.
+
+    :param fpath:
+    :param outdir: (optional) provide output directory to save files
+    :return:
+    """
+    basedir, fname = os.path.split(fpath)
+    if outdir is None:
+        outdir = basedir
+    fstem = "".join(fname.split(".")[:-1])
+    nb = read_notebook(fpath)
+
+    # create output directory
+    file_out_dir = os.path.join(outdir, f"{fstem}_files")
+    if not os.path.exists(file_out_dir):
+        os.mkdir(file_out_dir)
+
+    # run notebook in directory
+    with chdir(file_out_dir):
+        run_notebook(nb, basedir)
+
+    remove_plain_text_output(nb)
+
+    convert_to_rst(nb, outdir, fpath, fstem)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--filename", "-f", help="file of the .ipynb file to execute")
+    parser.add_argument(
+        "--outdir", "-o", help="output directory to save the files", default=None
+    )
+    args = parser.parse_args()
+
+    # Get the desired ipynb file traversal and parse into components
+    main(fpath=args.filename, outdir=args.outdir)

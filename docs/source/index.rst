@@ -1,13 +1,6 @@
 Caldera
 =======
 
-
-.. note::
-    This is a note
-
-.. warning::
-    This is a warning
-
 .. toctree::
    :maxdepth: 2
    :glob:
@@ -16,6 +9,16 @@ Caldera
    getting_started
    api
    examples/examples
+   narratives/data-processing
+   _nb_generated/data-processing
 
+.. jupyter-execute::
 
-:py:class:`torch.Tensor`
+  import caldera
+  from caldera.data import GraphData
+
+  data = GraphData.random(5, 4, 3)
+  print(data)
+  name = 'world'
+  print('hello ' + name + '!')
+  data

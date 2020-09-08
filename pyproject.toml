@@ -36,10 +36,13 @@ keats = {version = "^0.2.28", optional = true}
 sphinx_bootstrap_theme = {version = "^0.7.1", optional = true}
 nbformat = {version = "^5.0.7", optional = true}
 nbconvert = {version = "^5.6.1", optional = true}
+matplotlib = {version = "^3.3.1", optional = true}
+jupyter-sphinx = {version = "^0.3.1", optional = true}
 
 [tool.poetry.extras]
-docs = ["sphinx", "sphinx_bootstrap_theme", "sphinx_autodoc_typehints", "autodocsumm", "keats", "nbformat", "nbconvert"]
+docs = ["sphinx", "sphinx_bootstrap_theme", "sphinx_autodoc_typehints", "autodocsumm", "keats", "nbformat", "nbconvert", "jupyter-sphinx"]
 lint = ["black", "pytest-cov", "pre-commit", "pylint"]
+extras = ["matplotlib"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.2"
