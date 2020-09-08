@@ -3,10 +3,7 @@ name: Tests
 on:
   pull_request:
     branches: [ master ]
-    paths: 
-    - '**.py'
-    - '!docs/**'
-
+    
 env:
   CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
   DOCKER_BUILDKIT: 1
