@@ -18,6 +18,7 @@ check:
 docs:
 	make -C docs html
 
+
 #docs:
 #	@echo "Updating documentation..."
 #

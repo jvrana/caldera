@@ -9,8 +9,6 @@ from typing import Optional
 
 import pytest
 
-from docs._tools.nb_to_doc import main
-
 
 here = abspath(dirname(__file__))
 fixtures = join(here, "fixtures")
@@ -33,7 +31,10 @@ def cmd_output(*cmd: str, retcode: Optional[int] = 0, **kwargs: Any) -> str:
 
 @pytest.mark.parametrize("use_tmp", [True])
 @pytest.mark.env("doc-tools")
-def test_to_tmpdir(tmpdir, use_tmp):
+@pytest.mark.parametrize("temp_sys_path", ["../../docs/"], indirect=True)
+def test_to_tmpdir(tmpdir, use_tmp, temp_sys_path):
+    from _tools.nb_to_doc import main
+
     if use_tmp is False:
         outdir = None
         expected_outdir = fixtures
