@@ -73,3 +73,17 @@ Converting ipynb to rst
 
     python docs/_tools/nb_to_doc -f <nb_path> -o <out_dir>
 
+Github Actions and CI
+---------------------
+
+Please checkout the `.github/workflows` files for more information.
+
+Code quality
+------------
+
+Run the following to enforce code formatting, refactoring, and checks:
+
+.. code-block::
+
+    pre-commit install
+
