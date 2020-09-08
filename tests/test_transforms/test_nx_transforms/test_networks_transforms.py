@@ -6,13 +6,12 @@ import pytest
 
 from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
 from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
+from caldera.transforms.networkx import NetworkxFilterDataKeys
 from caldera.transforms.networkx import NetworkxNodesToStr
 from caldera.transforms.networkx import NetworkxSetDefaultFeature
 from caldera.transforms.networkx import NetworkxToDirected
 from caldera.transforms.networkx import NetworkxToUndirected
 from caldera.transforms.networkx._base import NetworkxTransformBase
-from caldera.utils.nx import nx_is_directed
-from caldera.utils.nx import nx_is_undirected
 
 
 class TestTransformBase:
@@ -83,6 +82,8 @@ class TestOneHot:
         assert np_same(g.nodes[1]["x"], a1)
         assert np_same(g.nodes[2]["x"], a2)
         assert np_same(g.nodes[3]["x"], a2)
+
+        assert set(g.nodes[1]) == {"features", "x"}
 
     def test_edges_to_one_hot(self):
         g = nx.DiGraph()
@@ -242,24 +243,25 @@ class TestToDirected:
 class TestAddDefault:
     def test_add_node_default(self):
         g = nx.DiGraph()
-        g.add_node(1)
+        g.add_node(1, other=1)
         transform = NetworkxSetDefaultFeature(node_default={"feature": True})
         g = transform(g)
-        assert g.nodes[1] == {"feature": True}
+        assert g.nodes[1] == {"feature": True, "other": 1}
 
     def test_add_edge_default(self):
         g = nx.DiGraph()
-        g.add_edge(1, 2)
+        g.add_edge(1, 2, other=1)
         transform = NetworkxSetDefaultFeature(edge_default={"feature": True})
         g = transform(g)
-        assert g.edges[(1, 2)] == {"feature": True}
+        assert g.edges[(1, 2)] == {"feature": True, "other": 1}
 
     def test_add_global_default(self):
         g = nx.DiGraph()
+        g.get_global()["other"] = 3
         g.add_node(1)
         transform = NetworkxSetDefaultFeature(global_default={"feature": True})
         g = transform(g)
-        assert g.get_global() == {"feature": True}
+        assert g.get_global() == {"feature": True, "other": 3}
 
     def test_add_default(self):
         g = nx.DiGraph()
@@ -281,3 +283,36 @@ class TestNodeToStr:
         transform = NetworkxNodesToStr()
         g = transform(g)
         assert g.number_of_nodes() == 2
+
+
+class TestFilterDataKeys:
+    def test_filer_node_keys(self):
+        g = nx.DiGraph()
+        g.add_node(1, x=1, y=2)
+        g.add_node(2, x=2)
+        g.add_node(3, y=2)
+        t = NetworkxFilterDataKeys(node_keys=["x"])
+
+        g = t([g])[0]
+        assert g.nodes[1] == {"x": 1}
+        assert g.nodes[2] == {"x": 2}
+        assert g.nodes[3] == {}
+
+    def test_filer_edge_keys(self):
+        g = nx.DiGraph()
+        g.add_edge(1, 2, x=1, y=2)
+        g.add_edge(2, 3, x=2)
+        g.add_edge(3, 4, y=2)
+        t = NetworkxFilterDataKeys(edge_keys=["x"])
+
+        g = t([g])[0]
+        assert g.edges[(1, 2)] == {"x": 1}
+        assert g.edges[(2, 3)] == {"x": 2}
+        assert g.edges[(3, 4)] == {}
+
+    def test_filer_global_keys(self):
+        g = nx.DiGraph()
+        g.set_global({"x": [1, 2, 3], "y": 2})
+        t = NetworkxFilterDataKeys(global_keys=["x"])
+        g2 = t([g])[0]
+        assert g2.get_global() == {"x": [1, 2, 3]}

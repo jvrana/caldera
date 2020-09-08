@@ -24,7 +24,7 @@ clean:
 	rm -rf $(BUILDDIR)/*
 	keats version up
 	keats changelog up
-	#rm -rf $(SOURCEDIR)/generated
+	rm -rf $(SOURCEDIR)/generated
 
 # execute each notebook and generate files for each notebook
 .PHONY: nbexamples
