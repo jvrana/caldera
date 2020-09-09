@@ -91,7 +91,7 @@ html_theme_options = {
     "navbar_pagenav": True,
     # Tab name for the current pages TOC. (Default: "Page")
     "navbar_pagenav_name": "Page",
-    "globaltoc_depth": 3,
+    "globaltoc_depth": 4,
     # Location of link to source.
     # Options are "nav" (default), "footer" or anything else to exclude.
     "source_link_position": "footer" "",

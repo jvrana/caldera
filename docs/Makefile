@@ -29,8 +29,7 @@ clean:
 # execute each notebook and generate files for each notebook
 .PHONY: nbexamples
 nbexamples:
-	make -C $(SOURCEDIR)/nbexamples clean
-	make -C $(SOURCEDIR)/nbexamples
+	python _tools/nb_to_doc.py -f ../examples/traversals/shortest_path.ipynb -o source/narratives
 
 # execute python based tests
 .PHONY: tests
