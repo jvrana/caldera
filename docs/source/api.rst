@@ -5,6 +5,7 @@ API Documentation
     :toctree: generated/
 
     caldera.data
+    caldera.dataset
     caldera.blocks
     caldera.models
     caldera.transforms

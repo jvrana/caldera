@@ -24,13 +24,17 @@ clean:
 	rm -rf $(BUILDDIR)/*
 	keats version up
 	keats changelog up
-	#rm -rf $(SOURCEDIR)/generated
+	rm -rf $(SOURCEDIR)/generated
 
 # execute each notebook and generate files for each notebook
 .PHONY: nbexamples
 nbexamples:
-	make -C $(SOURCEDIR)/nbexamples clean
-	make -C $(SOURCEDIR)/nbexamples
+	python _tools/nb_to_doc.py -f ../examples/traversals/shortest_path.ipynb -o source/narratives
+
+# execute python based tests
+.PHONY: tests
+tests:
+	@cd _tools && python -m pytest
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

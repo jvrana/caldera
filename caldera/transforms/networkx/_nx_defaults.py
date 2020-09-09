@@ -10,7 +10,7 @@ class NetworkxSetDefaultFeature(NetworkxTransformFeatureData):
         self.edge_default = edge_default
         self.global_default = global_default
 
-        setdefault = functools.partial(dict_join, join_fn=lambda a, b: a, mode="right")
+        setdefault = functools.partial(dict_join, join_fn=lambda a, b: a, mode="union")
 
         if node_default is not None:
             node_transform = functools.partial(setdefault, b=node_default)

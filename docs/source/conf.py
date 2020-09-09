@@ -37,7 +37,11 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
+    "jupyter_sphinx",
 ]
+
+always_document_param_types = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -77,6 +81,7 @@ html_theme_options = {
     "navbar_links": [
         ("Getting Started", "getting_started"),
         ("Examples", "examples/examples"),
+        ("Gallery", "gallery/gallery"),
         ("API", "api"),
         ("Github", pkg.__homepage__, True),
     ],
@@ -86,7 +91,7 @@ html_theme_options = {
     "navbar_pagenav": True,
     # Tab name for the current pages TOC. (Default: "Page")
     "navbar_pagenav_name": "Page",
-    "globaltoc_depth": 3,
+    "globaltoc_depth": 4,
     # Location of link to source.
     # Options are "nav" (default), "footer" or anything else to exclude.
     "source_link_position": "footer" "",
@@ -106,6 +111,11 @@ html_theme_options = {
     # Values: "3" (default) or "2" (in quotes)
     "bootstrap_version": "3",
 }
+
+## uncomment to add globaltoc sidebar
+# html_sidebars = {
+#     '**': ['globaltoc_sidebar.html'],
+# }
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples, originally taken from scikit-learn's doc/conf.py
