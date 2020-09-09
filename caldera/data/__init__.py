@@ -15,6 +15,7 @@ __all__ = [
 
 
 def method():
-    """This is bullshit"""
+    """This is bullshit."""
 
-this_is_my_attribute = 'a tribute'
+
+this_is_my_attribute = "a tribute"

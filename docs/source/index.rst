@@ -2,6 +2,7 @@ Caldera
 =======
 
 .. toctree::
+   :name: NavBar
    :maxdepth: 2
    :glob:
    :hidden:
@@ -14,17 +15,18 @@ Caldera
    developer
 
 .. toctree::
+   :caption: Python API
    :maxdepth: 1
-   :caption: API
+   :glob:
 
-    data
-    dataset
-    blocks
-    models
-    transforms
-    utils
-    defaults
-    exceptions
+   api/data
+   api/dataset
+   api/blocks
+   api/models
+   api/transforms
+   api/utils
+   api/defaults
+   api/exceptions
 
 .. jupyter-execute::
 
@@ -36,8 +38,3 @@ Caldera
   name = 'world'
   print('hello ' + name + '!')
   data
-
-.. automodule:: caldera.data
-    :members:
-
-

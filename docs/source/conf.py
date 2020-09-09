@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 import caldera as pkg
 from caldera.utils import deterministic_seed
+
 deterministic_seed(0)
 
 import datetime
@@ -22,7 +23,9 @@ release = pkg.__version__
 # -- General configuration ---------------------------------------------------
 import glob
 
-autosummary_generate = True #glob.glob("*.rst")  # Make _autosummary files and include them
+autosummary_generate = (
+    True  # glob.glob("*.rst")  # Make _autosummary files and include them
+)
 autoclass_content = "both"  # include both class docstring and __init__
 
 autodoc_default_options = {
@@ -40,8 +43,13 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx.ext.autosectionlabel",
     "jupyter_sphinx",
+    # 'sphinxcontrib.katex',
 ]
+
+# Disable docstring inheritance
+autodoc_inherit_docstrings = False
 
 always_document_param_types = True
 
@@ -84,7 +92,7 @@ html_theme_options = {
         ("Getting Started", "getting_started"),
         ("Examples", "examples/examples"),
         ("Gallery", "gallery/gallery"),
-        ("API", "api"),
+        ("API", "api/api"),
         ("Github", pkg.__homepage__, True),
     ],
     # Render the next and previous page links in navbar. (Default: true)
@@ -116,8 +124,8 @@ html_theme_options = {
 
 ## uncomment to add globaltoc sidebar
 html_sidebars = {
-    'generated/**': ['api_sidebar.html'],
-    'api/**': ['api_sidebar.html'],
+    "generated/**": ["api_sidebar.html"],
+    "api/**": ["api_sidebar.html"],
 }
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code

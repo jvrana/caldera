@@ -1,7 +1,7 @@
 from caldera.data import GraphBatch
-from caldera.dataset import GraphBatchDataset
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
+from caldera.dataset import GraphBatchDataset
 from caldera.dataset import GraphDataset
 
 
