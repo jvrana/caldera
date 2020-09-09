@@ -85,6 +85,11 @@ def generate_shorest_path_example(n_nodes, density, path_length):
 
 def test_generate_shortest_path_example():
     g = generate_shorest_path_example(100, 0.01, 10)
+
+    for n, ndata in g.nodes(data=True):
+        assert "source" in ndata
+        assert "target" in ndata
+
     d1 = GraphData.from_networkx(g, feature_key="_features")
     d2 = GraphData.from_networkx(g, feature_key="_target")
 

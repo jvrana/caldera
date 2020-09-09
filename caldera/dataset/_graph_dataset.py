@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.transforms import TransformCallable
+from caldera.transforms._base import TransformCallable
 
 
 class GraphDataset(Dataset):

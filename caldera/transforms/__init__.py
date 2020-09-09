@@ -26,16 +26,29 @@ Preprocessing Transforms
 ------------------------
 
 Networkx
-________
+^^^^^^^^
 
-Transforms on :class:`networkx.Graph` instances
+Methods for transforming :class:`networkx.Graph`
 
 .. autosummary::
+    :toctree: generated/
 
-   networkx
+    networkx.NetworkxApplyToFeature
+    networkx.NetworkxAttachNumpyFeatures
+    networkx.NetworkxAttachNumpyOneHot
+    networkx.NetworkxSetDefaultFeature
+    networkx.NetworkxTransformFeatureData
+    networkx.NetworkxTransformFeatures
+    networkx.NetworkxFlattenEdgeFeature
+    networkx.NetworkxFlattenGlobalFeature
+    networkx.NetworkxFlattenNodeFeature
+    networkx.NetworkxNodesToStr
+    networkx.NetworkxToDirected
+    networkx.NetworkxToUndirected
+    networkx.NetworkxFilterDataKeys
+    networkx.NetworkxDeepCopyFeatures
 """
 from ._add_self_loops import AddSelfLoops
-from ._base import TransformCallable
 from ._compose import Compose
 from ._fully_connected import FullyConnected
 from ._random_edge_mask import RandomEdgeMask
@@ -47,7 +60,6 @@ from ._undirected import Undirected
 
 __all__ = [
     "AddSelfLoops",
-    "TransformCallable",
     "Compose",
     "FullyConnected",
     "RandomHop",

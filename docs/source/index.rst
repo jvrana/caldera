@@ -11,6 +11,7 @@ Caldera
    examples/examples
    gallery/gallery
    narratives/data-processing
+   narratives/shortest_path.rst
    developer
 
 .. jupyter-execute::
