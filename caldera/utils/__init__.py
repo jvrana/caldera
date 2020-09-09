@@ -1,9 +1,4 @@
 r"""
-Utils (:mod:`caldera.utils`)
-==============================
-
-.. currentmodule:: caldera.utils
-
 Caldera utility functions.
 
 .. autosummary::

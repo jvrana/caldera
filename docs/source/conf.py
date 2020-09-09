@@ -7,6 +7,9 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 import caldera as pkg
+from caldera.utils import deterministic_seed
+deterministic_seed(0)
+
 import datetime
 
 now = datetime.datetime.now()
@@ -19,11 +22,10 @@ release = pkg.__version__
 # -- General configuration ---------------------------------------------------
 import glob
 
-autosummary_generate = glob.glob("*.rst")  # Make _autosummary files and include them
+autosummary_generate = True #glob.glob("*.rst")  # Make _autosummary files and include them
 autoclass_content = "both"  # include both class docstring and __init__
 
 autodoc_default_options = {
-    "members": True,
     "member-order": "bysource",
     "special-members": "__init__",
     "exclude-members": "__weakref__",
@@ -44,7 +46,7 @@ extensions = [
 always_document_param_types = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = ["_templates", "_templates/autosummary"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -113,15 +115,16 @@ html_theme_options = {
 }
 
 ## uncomment to add globaltoc sidebar
-# html_sidebars = {
-#     '**': ['globaltoc_sidebar.html'],
-# }
+html_sidebars = {
+    'generated/**': ['api_sidebar.html'],
+    'api/**': ['api_sidebar.html'],
+}
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples, originally taken from scikit-learn's doc/conf.py
 def setup(app):
-    app.add_javascript("copybutton.js")
-    app.add_stylesheet("style.css")
+    app.add_js_file("copybutton.js")
+    app.add_css_file("style.css")
 
 
 # -- Intersphinx ------------------------------------------------

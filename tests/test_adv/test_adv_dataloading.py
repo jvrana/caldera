@@ -2,7 +2,7 @@ import pytest
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
-from caldera.data import GraphDataset
+from caldera.dataset import GraphDataset
 from caldera.transforms import RandomHop
 
 

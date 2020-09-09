@@ -1,9 +1,4 @@
 r"""
-Data (:mod:`caldera.transform`)
-===============================
-
-.. currentmodule:: caldera.transforms.networkx
-
 Methods for transforming :class:`networkx.Graph`s
 
 .. autosummary::

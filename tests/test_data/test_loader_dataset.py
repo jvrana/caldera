@@ -1,8 +1,8 @@
 from caldera.data import GraphBatch
-from caldera.data import GraphBatchDataset
+from caldera.dataset import GraphBatchDataset
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
-from caldera.data import GraphDataset
+from caldera.dataset import GraphDataset
 
 
 def test_loader_dataset():

@@ -1,9 +1,4 @@
 r"""
-Dataset (:mod:`caldera.dataset`)
-==============================
-
-.. currentmodule:: caldera.dataset
-
 Graphdata sets
 
 .. autosummary::

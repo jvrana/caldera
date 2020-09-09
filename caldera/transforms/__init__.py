@@ -1,9 +1,4 @@
 r"""
-Transforms (:mod:`caldera.transform`)
-=====================================
-
-.. currentmodule:: caldera.transforms
-
 Methods for transforming GraphData and GraphBatch
 
 GraphData and GraphBatch

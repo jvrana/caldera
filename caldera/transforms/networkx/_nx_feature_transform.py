@@ -37,6 +37,7 @@ class NetworkxTransformFeatures(NetworkxTransformBase):
         Alternatively, using the functional programming module:
 
         .. code-block::
+
             from caldera.utils.functional import Functional
 
             only_self_loops = Fn.filter_each(lambda x: x[0] == x[1])

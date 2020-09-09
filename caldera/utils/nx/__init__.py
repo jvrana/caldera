@@ -1,9 +1,4 @@
 r"""
-Networkx Utilities (:mod:`caldera.utils.nx`)
-============================================
-
-.. currentmodule:: caldera.utils.nx
-
 Networkx utilities.
 
 .. autosummary::
