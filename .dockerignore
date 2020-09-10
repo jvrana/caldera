@@ -1,4 +1,6 @@
 # ignore .git and .cache folders
 .*
 docs/builds
+docs/generated
+docs/_nb_generated
 examples
