@@ -421,4 +421,4 @@ info "IMAGE ID: $TAG"
 docker run --cidfile $tmpfile $TAG /bin/bash -c "$CMD"
 CID=$(cat $tmpfile)
 info "CONTAINER ID: $CID"
-docker cp $CID:/src/pytest-report.html $DEST
+#docker cp $CID:/src/pytest-report.html $DEST
