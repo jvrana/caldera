@@ -6,6 +6,10 @@ on:
     paths:
       - '**.py'
       - '!docs/**'
+  push:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/tests.yml'
     
 env:
   CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
@@ -32,7 +36,7 @@ jobs:
         tmpfile=$(mktemp /tmp/caldera-build-docs.XXXXXX)
         exec 3>"$tmpfile"
         rm "$tmpfile"
-        docker run --cidfile $tmpfile $CACHE_IMAGE /bin/bash -c "python -m pytest --html pytest-report.html -m 'not slowtest' -x"
+        docker run --cidfile $tmpfile $CACHE_IMAGE /bin/bash -c "pytest --html pytest-report.html -m 'not slowtest' -x"
         CID=$(cat $tmpfile)
         docker cp $CID:/src/pytest-report.html .
     - name: Upload Pytest Report
