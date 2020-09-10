@@ -2,9 +2,9 @@ import pytest
 import torch
 
 from caldera.data import GraphBatch
-from caldera.data import GraphBatchDataset
 from caldera.data import GraphData
-from caldera.data import GraphDataset
+from caldera.dataset import GraphBatchDataset
+from caldera.dataset import GraphDataset
 from caldera.transforms import RandomEdgeMask
 from caldera.transforms import RandomNodeMask
 

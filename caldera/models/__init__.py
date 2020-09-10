@@ -1,9 +1,4 @@
 r"""
-Data (:mod:`caldera.models`)
-==============================
-
-.. currentmodule:: caldera.models
-
 Caldera models
 
 .. autosummary::
