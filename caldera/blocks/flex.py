@@ -165,6 +165,7 @@ class FlexBlock(torch.nn.Module):
 
 
 class Flex:
+    """Flex."""
 
     d = FlexDim
 

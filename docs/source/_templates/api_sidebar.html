@@ -1,0 +1,12 @@
+<div class="d-inline-flex p-2">
+    <h3>
+        <a href="{{ pathto('api/api.html', 1)|e }}">{{ _('API') }}</a>
+    </h3>
+</div>
+{{
+    toctree(
+        includehidden=theme_globaltoc_includehidden,
+        collapse=theme_globaltoc_collapse,
+        maxdepth=6
+    )
+}}

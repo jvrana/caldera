@@ -16,6 +16,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "env(name): mark test to run only on named environment"
     )
+    config.addinivalue_line("markers", "slowtest: marks a long running test")
+    config.addinivalue_line(
+        "markers", "train: marks a test that performs network training (typically slow)"
+    )
 
 
 #############################
@@ -63,7 +67,15 @@ def _pytest_env_mark_setup(item):
         pytest.skip("test requires env in {!r}".format(envnames))
 
 
+def _pytest_auto_mark_benchmark(item):
+    """Automatically mark tests that use the `benchmark` fixture."""
+    marks = [mark for mark in item.iter_markers(name="benchmark")]
+    if not marks and "benchmark" in item.funcargnames:
+        item.add_marker(pytest.mark.benchmark)
+
+
 def pytest_runtest_setup(item):
+    _pytest_auto_mark_benchmark(item)
     _pytest_env_mark_setup(item)
     _pytest_incr_mark_setup(item)
 
