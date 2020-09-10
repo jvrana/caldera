@@ -29,3 +29,5 @@ make tests
 cd docs
 python -m _tools/tools/nb_to_doc.py -f <path_to_ipynb> -o source/_nb_generated
 ```
+
+Triggered
