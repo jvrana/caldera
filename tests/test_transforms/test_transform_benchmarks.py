@@ -23,7 +23,7 @@ transforms = [
 ]
 
 
-@pytest.fixture(params=[1000])
+@pytest.fixture(params=[pytest.param(1000, marks=pytest.mark.slowtest), 100])
 def data(seeds, request):
     data = GraphBatch.random_batch(request.param, 5, 4, 3)
     return data

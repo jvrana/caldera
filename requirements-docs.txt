@@ -324,6 +324,9 @@ pytest-html==2.1.1 \
 pytest-metadata==1.10.0 \
     --hash=sha256:b7e6e0a45adacb17a03a97bf7a2ef60cc1f4e172bcce9732ce5e814191932315 \
     --hash=sha256:fcbcc5781aee450107c620c79c57e50796b6777b82b3c504be9cbc3017201169
+pytest-randomly==3.4.1 \
+    --hash=sha256:5fd0dbeeb218a7ce029690a8100453cd8d6a7972cf9d8e657690352692e92c69 \
+    --hash=sha256:2c4df1390db72a33a4f44fac0c780e7883cd5968238efa2a2bdbdd54e3fc6681
 python-dateutil==2.8.1 \
     --hash=sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c \
     --hash=sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a

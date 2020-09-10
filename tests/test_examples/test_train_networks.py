@@ -905,27 +905,66 @@ def run_test_case(network_case, device):
     return network_case
 
 
+@pytest.mark.benchmark
 class TestTraining:
     @parameterize_by_group(["basic", "block"])
-    def test_train_block(self, network_case, device):
-        run_test_case(network_case, device)
+    def test_train_block(self, network_case, device, benchmark):
+        benchmark.pedantic(
+            run_test_case,
+            args=(network_case, device),
+            iterations=1,
+            rounds=1,
+            warmup_rounds=0,
+        )
 
     @parameterize_by_group(["graph_encoder"])
-    def test_train_encoder(self, network_case, device):
-        run_test_case(network_case, device)
+    def test_train_encoder(self, network_case, device, benchmark):
+        benchmark.pedantic(
+            run_test_case,
+            args=(network_case, device),
+            iterations=1,
+            rounds=1,
+            warmup_rounds=0,
+        )
 
     @parameterize_by_group(["graph_core"])
-    def test_train_core(self, network_case, device):
-        run_test_case(network_case, device)
+    def test_train_core(self, network_case, device, benchmark):
+        benchmark.pedantic(
+            run_test_case,
+            args=(network_case, device),
+            iterations=1,
+            rounds=1,
+            warmup_rounds=0,
+        )
 
     @parameterize_by_group(["boolean_circuit"])
-    def test_train_boolean_circuit(self, network_case, device):
-        run_test_case(network_case, device)
+    def test_train_boolean_circuit(self, network_case, device, benchmark):
+        benchmark.pedantic(
+            run_test_case,
+            args=(network_case, device),
+            iterations=1,
+            rounds=1,
+            warmup_rounds=0,
+        )
 
     @parameterize_by_group(["sigmoid_circuit"])
-    def test_train_sigmoid_circuit(self, network_case, device):
-        run_test_case(network_case, device)
+    def test_train_sigmoid_circuit(self, network_case, device, benchmark):
+        benchmark.pedantic(
+            run_test_case,
+            args=(network_case, device),
+            iterations=1,
+            rounds=1,
+            warmup_rounds=0,
+        )
 
     @parameterize_by_group(["sigmoid_circuit_(multiagg)"])
-    def test_train_sigmoid_circuit_with_multi_agg(self, network_case, device):
-        run_test_case(network_case, device)
+    def test_train_sigmoid_circuit_with_multi_agg(
+        self, network_case, device, benchmark
+    ):
+        benchmark.pedantic(
+            run_test_case,
+            args=(network_case, device),
+            iterations=1,
+            rounds=1,
+            warmup_rounds=0,
+        )

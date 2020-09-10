@@ -81,7 +81,6 @@ def compose(*funcs: Tuple[Callable[[GT], GS], ...]) -> Callable[[GT], GS]:
                     msg += "\nduring composition:"
                     msg += "\n ({}) f: {}".format(i, f)
                     msg += "\n args: {} {}".format(result, result.__class__)
-                    print(msg)
                     raise type(e)(msg) from e
 
             result = _composition_part(result)

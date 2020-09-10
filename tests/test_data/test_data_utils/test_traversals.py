@@ -184,7 +184,7 @@ def test_k_hop_random_graph(k):
     print(subgraph.info())
 
 
-def test_k_hop_random_graph_benchmark():
+def test_k_hop_random_graph_benchmark(benchmark):
     """Bench mark for using tensor_induce for k-hop.
 
     :return:
@@ -192,15 +192,17 @@ def test_k_hop_random_graph_benchmark():
     k = 2
     batch = GraphBatch.random_batch(1000, 50, 20, 30)
 
-    for _ in range(1000):
+    def run():
         nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
         idx = torch.randint(batch.num_nodes, (10,))
         nodes[idx] = True
         node_mask = tensor_induce(batch, nodes, k)
         subgraph = batch.apply_node_mask(node_mask)
 
+    benchmark(run)
 
-def test_k_hop_random_graph_benchmark2():
+
+def test_k_hop_random_graph_benchmark2(benchmark):
     """Benchmark for using floydwarshall for k-hop.
 
     :return:
@@ -208,22 +210,30 @@ def test_k_hop_random_graph_benchmark2():
     k = 2
     batch = GraphBatch.random_batch(1000, 50, 20, 30)
 
-    nodes_list = []
-    for _ in range(1000):
-        nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
-        idx = torch.randint(batch.num_nodes, (10,))
-        nodes[idx] = True
-        nodes_list.append(nodes)
-    nodes_list = tuple(nodes_list)
+    def run(n):
+        nodes_list = []
+        for _ in range(n):
+            nodes = torch.full((batch.num_nodes,), False, dtype=torch.bool)
+            idx = torch.randint(batch.num_nodes, (10,))
+            nodes[idx] = True
+            nodes_list.append(nodes)
+        nodes_list = tuple(nodes_list)
 
-    masks = floyd_warshall_neighbors(batch, nodes_list, depth=k)
+        masks = floyd_warshall_neighbors(batch, nodes_list, depth=k)
 
-    for mask in masks:
-        subgraph = batch.apply_node_mask(mask)
+        for mask in masks:
+            subgraph = batch.apply_node_mask(mask)
+
+    benchmark(run, 1)
 
 
 @pytest.mark.parametrize(
-    "random_data", [(GraphBatch, None, (1000, 5, 4, 3))], indirect=True
+    "random_data",
+    [
+        pytest.param((GraphBatch, None, (1000, 5, 4, 3)), marks=pytest.mark.slowtest),
+        (GraphBatch, None, (10, 5, 4, 3)),
+    ],
+    indirect=True,
 )
 def test_tensor_induce(random_data):
     nodes = torch.LongTensor([0])
@@ -292,9 +302,15 @@ class TestFloydWarshallNeighbors:
         print(x)
 
 
+@pytest.mark.slowtest
 class TestCompareNeighborImplementations:
     @pytest.fixture(
-        params=[(1000, 10000), (1000, 1000), (100, 100), (100, 1000)],
+        params=[
+            pytest.param((1000, 10000), marks=pytest.mark.slowtest),
+            (1000, 1000),
+            (100, 100),
+            pytest.param((100, 1000), marks=pytest.mark.slowtest),
+        ],
         ids=["large-dense", "large-sparse", "small-sparse", "small-dense"],
     )
     def data(self, request):
@@ -305,13 +321,16 @@ class TestCompareNeighborImplementations:
     def nodes(self, request):
         return torch.randint(0, 10, (request.param, 10))
 
-    def test_tensor_neighbors(self, nodes, data):
-        for n in nodes:
-            x = neighbors(data, n)
+    def test_tensor_neighbors(self, nodes, data, benchmark):
+        def run(nodes, data):
+            for n in nodes:
+                x = neighbors(data, n)
 
-    def test_FW_neighbors(self, nodes, data):
+        benchmark(run, nodes, data)
+
+    def test_FW_neighbors(self, nodes, data, benchmark):
         floyd_warshall_neighbors(data, nodes, depth=3)
 
-    def test_bfs_nodes(self, nodes, data):
+    def test_bfs_nodes(self, nodes, data, benchmark):
         for n in nodes:
             bfs_nodes(n, data.edges, depth=3)
