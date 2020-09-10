@@ -12,8 +12,8 @@ env:
 
 
 jobs:
-
   build:
+    if: github.event.pull_request.merged == true || !('pull_request' in github.event)
     runs-on: ubuntu-latest
     steps:
     - name: Checkout master
