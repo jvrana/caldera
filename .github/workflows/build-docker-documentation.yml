@@ -6,9 +6,6 @@ on:
     branches: [ master ]
     types: [ closed ]
 
-  push:
-    branches: [ master ]
-
 env:
   CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
   DOCKER_BUILDKIT: 1
