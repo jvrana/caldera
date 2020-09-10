@@ -1,0 +1,29 @@
+PathAccumulator
+===============
+
+.. currentmodule:: caldera.utils.nx.traversal
+
+.. autoclass:: PathAccumulator
+
+   
+   .. automethod:: __init__
+
+   
+
+   .. rubric:: Methods
+   .. autosummary::
+   
+      ~PathAccumulator.__init__
+      ~PathAccumulator.get
+   
+   
+
+   
+   
+
+   .. rubric:: Attributes
+   .. autosummary::
+   
+      ~PathAccumulator.all
+   
+   

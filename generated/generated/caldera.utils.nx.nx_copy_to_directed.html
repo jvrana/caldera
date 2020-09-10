@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caldera.utils.nx.nx_copy_to_directed &#8212; caldera 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/style.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../_static/thebelab-helper.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="caldera.utils.nx.nx_copy_to_undirected" href="caldera.utils.nx.nx_copy_to_undirected.html" />
+    <link rel="prev" title="caldera.utils.nx.nx_copy" href="caldera.utils.nx.nx_copy.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          Caldera 0.1.0</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../getting_started.html">Getting Started</a></li>
+                <li><a href="../../examples/examples.html">Examples</a></li>
+                <li><a href="../../gallery/gallery.html">Gallery</a></li>
+                <li><a href="../../api/api.html">API</a></li>
+                <li><a href="http://www.github.com/jvrana/caldera">Github</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Caldera <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gallery/gallery.html">Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../narratives/narratives.html">Narratives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../narratives/data-processing.html">Data Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../narratives/shortest_path.html">Shortest-Path</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../narratives/shortest_path.html#fix-path-and-import-caldera">Fix path and import caldera</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../narratives/shortest_path.html#data-generation">Data Generation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../narratives/shortest_path.html#graph-network">Graph Network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../narratives/shortest_path.html#training">Training</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../narratives/link_prediction.html">Link Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../narratives/sorting.html">Sorting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../narratives/unsupervised_sorting.html">Unsupervised Sorting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../narratives/optimal_graph_layout.html">Optimal Graph Layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer.html">Developer Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../developer.html#tests">Tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../developer.html#running-tests">Running tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../developer.html#running-doc-tools-tests">Running doc-tools tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../developer.html#running-dockerized-tests">Running dockerized tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../developer.html#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../developer.html#build-documentation">Build documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../developer.html#dockerized-build">Dockerized build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../developer.html#converting-ipynb-to-rst">Converting ipynb to rst</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../developer.html#github-actions-and-ci">Github Actions and CI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../developer.html#code-quality">Code quality</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/data.html">Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.data.GraphBatch.html">GraphBatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.data.GraphData.html">GraphData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.data.GraphTuple.html">GraphTuple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.data.GraphDataLoader.html">GraphDataLoader</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/dataset.html">Dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.dataset.GraphDataset.html">GraphDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.dataset.GraphBatchDataset.html">GraphBatchDataset</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/blocks.html">Blocks (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.blocks</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/blocks.html#generic-blocks">Generic Blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.Flex.html">Flex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.MLP.html">MLP</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/blocks.html#encoder-decoder-blocks">Encoder/Decoder Blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.NodeBlock.html">NodeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.EdgeBlock.html">EdgeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.GlobalBlock.html">GlobalBlock</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/blocks.html#message-passing-blocks">Message Passing Blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.AggregatingNodeBlock.html">AggregatingNodeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.AggregatingEdgeBlock.html">AggregatingEdgeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.AggregatingGlobalBlock.html">AggregatingGlobalBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.Aggregator.html">Aggregator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.blocks.MultiAggregator.html">MultiAggregator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/models.html">Models (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.models</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.models.GraphEncoder.html">GraphEncoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.models.GraphCore.html">GraphCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../caldera.models.EncodeCoreDecode.html">EncodeCoreDecode</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/transforms.html">Transforms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/transforms.html#graphdata-and-graphbatch">GraphData and GraphBatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/transforms.html#preprocessing-transforms">Preprocessing Transforms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/transforms.html#networkx">Networkx</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxApplyToFeature.html">NetworkxApplyToFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxAttachNumpyFeatures.html">NetworkxAttachNumpyFeatures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxAttachNumpyOneHot.html">NetworkxAttachNumpyOneHot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxSetDefaultFeature.html">NetworkxSetDefaultFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxTransformFeatureData.html">NetworkxTransformFeatureData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxTransformFeatures.html">NetworkxTransformFeatures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxFlattenEdgeFeature.html">NetworkxFlattenEdgeFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxFlattenGlobalFeature.html">NetworkxFlattenGlobalFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxFlattenNodeFeature.html">NetworkxFlattenNodeFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxNodesToStr.html">NetworkxNodesToStr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxToDirected.html">NetworkxToDirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxToUndirected.html">NetworkxToUndirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxFilterDataKeys.html">NetworkxFilterDataKeys</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.transforms.networkx.NetworkxDeepCopyFeatures.html">NetworkxDeepCopyFeatures</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api/utils.html">Utils</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../caldera.utils.dict_join.html">caldera.utils.dict_join</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utils.html#indexing">Indexing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.reindex_tensor.html">caldera.utils.reindex_tensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.unravel_index.html">caldera.utils.unravel_index</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utils.html#tensor">Tensor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.scatter_coo.html">caldera.utils.scatter_coo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.scatter_indices.html">caldera.utils.scatter_indices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.torch_coo_to_scipy_coo.html">caldera.utils.torch_coo_to_scipy_coo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.deterministic_seed.html">caldera.utils.deterministic_seed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.long_isin.html">caldera.utils.long_isin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.same_storage.html">caldera.utils.same_storage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.stable_arg_sort_long.html">caldera.utils.stable_arg_sort_long</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.tensor_is_empty.html">caldera.utils.tensor_is_empty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.torch_scatter_group.html">caldera.utils.torch_scatter_group</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utils.html#functional">Functional</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../caldera.utils.functional.html">caldera.utils.functional</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../api/utils.html#networkx-utilities">Networkx Utilities</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../caldera.utils.nx.html">caldera.utils.nx</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_copy.html">caldera.utils.nx.nx_copy</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">caldera.utils.nx.nx_copy_to_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_copy_to_undirected.html">caldera.utils.nx.nx_copy_to_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_deep_copy.html">caldera.utils.nx.nx_deep_copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_is_directed.html">caldera.utils.nx.nx_is_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_is_undirected.html">caldera.utils.nx.nx_is_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_iter_leaves.html">caldera.utils.nx.nx_iter_leaves</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_iter_roots.html">caldera.utils.nx.nx_iter_roots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_shallow_copy.html">caldera.utils.nx.nx_shallow_copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_to_directed.html">caldera.utils.nx.nx_to_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_to_undirected.html">caldera.utils.nx.nx_to_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.html#traversals">Traversals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.html#generators">Generators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.generators.html">caldera.utils.nx.generators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.traversal.html">caldera.utils.nx.traversal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.types.html">caldera.utils.nx.types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/defaults.html">Defaults</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/exceptions.html">Exceptions</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">caldera.utils.nx.nx_copy_to_directed</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-3">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><div class="d-inline-flex p-2">
+    <h3>
+        <a href="../../api/api.html">API</a>
+    </h3>
+</div>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gallery/gallery.html">Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../narratives/narratives.html">Narratives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer.html">Developer Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../api/data.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/dataset.html">Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/blocks.html">Blocks (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.blocks</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/models.html">Models (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.models</span></code>)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/transforms.html">Transforms</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api/utils.html">Utils</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../caldera.utils.dict_join.html">caldera.utils.dict_join</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utils.html#indexing">Indexing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utils.html#tensor">Tensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utils.html#functional">Functional</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../api/utils.html#networkx-utilities">Networkx Utilities</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../caldera.utils.nx.html">caldera.utils.nx</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_copy.html">caldera.utils.nx.nx_copy</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">caldera.utils.nx.nx_copy_to_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_copy_to_undirected.html">caldera.utils.nx.nx_copy_to_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_deep_copy.html">caldera.utils.nx.nx_deep_copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_is_directed.html">caldera.utils.nx.nx_is_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_is_undirected.html">caldera.utils.nx.nx_is_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_iter_leaves.html">caldera.utils.nx.nx_iter_leaves</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_iter_roots.html">caldera.utils.nx.nx_iter_roots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_shallow_copy.html">caldera.utils.nx.nx_shallow_copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_to_directed.html">caldera.utils.nx.nx_to_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="caldera.utils.nx.nx_to_undirected.html">caldera.utils.nx.nx_to_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.html#traversals">Traversals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.html#generators">Generators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.generators.html">caldera.utils.nx.generators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.traversal.html">caldera.utils.nx.traversal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../caldera.utils.nx.types.html">caldera.utils.nx.types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/defaults.html">Defaults</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/exceptions.html">Exceptions</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-9 content" role="main">
+      
+  <div class="section" id="caldera-utils-nx-nx-copy-to-directed">
+<h1>caldera.utils.nx.nx_copy_to_directed<a class="headerlink" href="#caldera-utils-nx-nx-copy-to-directed" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="caldera.utils.nx.nx_copy_to_directed">
+<code class="sig-prename descclassname">caldera.utils.nx.</code><code class="sig-name descname">nx_copy_to_directed</code><span class="sig-paren">(</span><em class="sig-param">g</em>, <em class="sig-param">graph_class=&lt;class 'networkx.classes.digraph.DiGraph'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/caldera/utils/nx/_tools.html#nx_copy_to_directed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#caldera.utils.nx.nx_copy_to_directed" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>g</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code>) – </p></li>
+<li><p><strong>graph_class</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">DiGraph</span></code>]) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="../../_sources/generated/generated/caldera.utils.nx.nx_copy_to_directed.rst.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2020, Justin Vrana &lt;justin.vrana@gmail.com&gt;.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

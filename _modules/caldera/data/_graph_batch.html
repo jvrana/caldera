@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>caldera.data._graph_batch &#8212; caldera 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/style.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../_static/thebelab-helper.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          Caldera 0.1.0</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../getting_started.html">Getting Started</a></li>
+                <li><a href="../../../examples/examples.html">Examples</a></li>
+                <li><a href="../../../gallery/gallery.html">Gallery</a></li>
+                <li><a href="../../../api/api.html">API</a></li>
+                <li><a href="http://www.github.com/jvrana/caldera">Github</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Caldera <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gallery/gallery.html">Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../narratives/narratives.html">Narratives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../narratives/data-processing.html">Data Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../narratives/shortest_path.html">Shortest-Path</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../narratives/shortest_path.html#fix-path-and-import-caldera">Fix path and import caldera</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../narratives/shortest_path.html#data-generation">Data Generation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../narratives/shortest_path.html#graph-network">Graph Network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../narratives/shortest_path.html#training">Training</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../narratives/link_prediction.html">Link Prediction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../narratives/sorting.html">Sorting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../narratives/unsupervised_sorting.html">Unsupervised Sorting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../narratives/optimal_graph_layout.html">Optimal Graph Layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer.html">Developer Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../developer.html#tests">Tests</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../developer.html#running-tests">Running tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../developer.html#running-doc-tools-tests">Running doc-tools tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../developer.html#running-dockerized-tests">Running dockerized tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../developer.html#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../developer.html#build-documentation">Build documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../developer.html#dockerized-build">Dockerized build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../developer.html#converting-ipynb-to-rst">Converting ipynb to rst</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../developer.html#github-actions-and-ci">Github Actions and CI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../developer.html#code-quality">Code quality</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/data.html">Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.data.GraphBatch.html">GraphBatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.data.GraphData.html">GraphData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.data.GraphTuple.html">GraphTuple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.data.GraphDataLoader.html">GraphDataLoader</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/dataset.html">Dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.dataset.GraphDataset.html">GraphDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.dataset.GraphBatchDataset.html">GraphBatchDataset</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/blocks.html">Blocks (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.blocks</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/blocks.html#generic-blocks">Generic Blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.Flex.html">Flex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.MLP.html">MLP</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/blocks.html#encoder-decoder-blocks">Encoder/Decoder Blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.NodeBlock.html">NodeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.EdgeBlock.html">EdgeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.GlobalBlock.html">GlobalBlock</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/blocks.html#message-passing-blocks">Message Passing Blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.AggregatingNodeBlock.html">AggregatingNodeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.AggregatingEdgeBlock.html">AggregatingEdgeBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.AggregatingGlobalBlock.html">AggregatingGlobalBlock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.Aggregator.html">Aggregator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.blocks.MultiAggregator.html">MultiAggregator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/models.html">Models (<code class="xref py py-mod docutils literal notranslate"><span class="pre">caldera.models</span></code>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.models.GraphEncoder.html">GraphEncoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.models.GraphCore.html">GraphCore</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.models.EncodeCoreDecode.html">EncodeCoreDecode</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/transforms.html">Transforms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/transforms.html#graphdata-and-graphbatch">GraphData and GraphBatch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/transforms.html#preprocessing-transforms">Preprocessing Transforms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/transforms.html#networkx">Networkx</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxApplyToFeature.html">NetworkxApplyToFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxAttachNumpyFeatures.html">NetworkxAttachNumpyFeatures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxAttachNumpyOneHot.html">NetworkxAttachNumpyOneHot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxSetDefaultFeature.html">NetworkxSetDefaultFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxTransformFeatureData.html">NetworkxTransformFeatureData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxTransformFeatures.html">NetworkxTransformFeatures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxFlattenEdgeFeature.html">NetworkxFlattenEdgeFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxFlattenGlobalFeature.html">NetworkxFlattenGlobalFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxFlattenNodeFeature.html">NetworkxFlattenNodeFeature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxNodesToStr.html">NetworkxNodesToStr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxToDirected.html">NetworkxToDirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxToUndirected.html">NetworkxToUndirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxFilterDataKeys.html">NetworkxFilterDataKeys</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.transforms.networkx.NetworkxDeepCopyFeatures.html">NetworkxDeepCopyFeatures</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/caldera.utils.dict_join.html">caldera.utils.dict_join</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html#indexing">Indexing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.reindex_tensor.html">caldera.utils.reindex_tensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.unravel_index.html">caldera.utils.unravel_index</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html#tensor">Tensor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.scatter_coo.html">caldera.utils.scatter_coo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.scatter_indices.html">caldera.utils.scatter_indices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.torch_coo_to_scipy_coo.html">caldera.utils.torch_coo_to_scipy_coo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.deterministic_seed.html">caldera.utils.deterministic_seed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.long_isin.html">caldera.utils.long_isin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.same_storage.html">caldera.utils.same_storage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.stable_arg_sort_long.html">caldera.utils.stable_arg_sort_long</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.tensor_is_empty.html">caldera.utils.tensor_is_empty</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.torch_scatter_group.html">caldera.utils.torch_scatter_group</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html#functional">Functional</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.functional.html">caldera.utils.functional</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utils.html#networkx-utilities">Networkx Utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../generated/caldera.utils.nx.html">caldera.utils.nx</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_copy.html">caldera.utils.nx.nx_copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_copy_to_directed.html">caldera.utils.nx.nx_copy_to_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_copy_to_undirected.html">caldera.utils.nx.nx_copy_to_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_deep_copy.html">caldera.utils.nx.nx_deep_copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_is_directed.html">caldera.utils.nx.nx_is_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_is_undirected.html">caldera.utils.nx.nx_is_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_iter_leaves.html">caldera.utils.nx.nx_iter_leaves</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_iter_roots.html">caldera.utils.nx.nx_iter_roots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_shallow_copy.html">caldera.utils.nx.nx_shallow_copy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_to_directed.html">caldera.utils.nx.nx_to_directed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/generated/caldera.utils.nx.nx_to_undirected.html">caldera.utils.nx.nx_to_undirected</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.utils.nx.html#traversals">Traversals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.utils.nx.html#generators">Generators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.utils.nx.generators.html">caldera.utils.nx.generators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.utils.nx.traversal.html">caldera.utils.nx.traversal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/caldera.utils.nx.types.html">caldera.utils.nx.types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/defaults.html">Defaults</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/exceptions.html">Exceptions</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for caldera.data._graph_batch</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">caldera.data._graph_data</span> <span class="kn">import</span> <span class="n">GraphData</span>
+<span class="kn">from</span> <span class="nn">caldera.utils</span> <span class="kn">import</span> <span class="n">reindex_tensor</span>
+<span class="kn">from</span> <span class="nn">caldera.utils</span> <span class="kn">import</span> <span class="n">stable_arg_sort_long</span>
+<span class="kn">from</span> <span class="nn">caldera.utils</span> <span class="kn">import</span> <span class="n">torch_scatter_group</span>
+<span class="kn">from</span> <span class="nn">caldera.utils.nx.types</span> <span class="kn">import</span> <span class="n">DirectedGraph</span>
+
+
+<div class="viewcode-block" id="GraphBatch"><a class="viewcode-back" href="../../../generated/caldera.data.GraphBatch.html#caldera.data.GraphBatch">[docs]</a><span class="k">class</span> <span class="nc">GraphBatch</span><span class="p">(</span><span class="n">GraphData</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="n">GraphData</span><span class="o">.</span><span class="vm">__slots__</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;node_idx&quot;</span><span class="p">,</span> <span class="s2">&quot;edge_idx&quot;</span><span class="p">]</span>
+
+    <span class="c1"># TODO: global_idx</span>
+<div class="viewcode-block" id="GraphBatch.__init__"><a class="viewcode-back" href="../../../generated/caldera.data.GraphBatch.html#caldera.data.GraphBatch.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">node_attr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
+        <span class="n">edge_attr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensornsor</span><span class="p">,</span>
+        <span class="n">global_attr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
+        <span class="n">edges</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span>
+        <span class="n">node_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span>
+        <span class="n">edge_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">node_attr</span><span class="p">,</span> <span class="n">edge_attr</span><span class="p">,</span> <span class="n">global_attr</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span> <span class="o">=</span> <span class="n">node_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span> <span class="o">=</span> <span class="n">edge_idx</span>
+        <span class="n">GraphBatch</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_same</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">debug</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Wrong tensor type. `node_idx` must be dtype=</span><span class="si">{}</span><span class="s2"> not </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">long</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Wrong tensor type. `edge_idx` must be dtype=</span><span class="si">{}</span><span class="s2"> not </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">long</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Number of graphs in node_idx </span><span class="si">{}</span><span class="s2"> and edge_idx </span><span class="si">{}</span><span class="s2"> mismatch&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Number of node indices </span><span class="si">{}</span><span class="s2"> must match number of node attr </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Number of node indices </span><span class="si">{}</span><span class="s2"> must match number of node attr </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="c1"># if not self.node_idx.min() == 0:</span>
+        <span class="c1">#     raise RuntimeError(</span>
+        <span class="c1">#         &quot;Minimum graph index (node_idx.min()) must start at 0, not {}&quot;.format(self.node_idx.min()))</span>
+        <span class="c1"># if not self.edge_idx.min() == 0:</span>
+        <span class="c1">#     raise RuntimeError(</span>
+        <span class="c1">#         &quot;Minimum graph index (edge_idx.min()) must start at 0, not {}&quot;.format(self.edge_idx.min()))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_data_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data_list</span><span class="p">):</span>
+        <span class="c1"># checks</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">e_features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">g_features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">:</span>
+            <span class="n">n_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">e_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">g_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_same</span><span class="p">(</span><span class="n">n_features</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Node feature dimensions must all be the same&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_same</span><span class="p">(</span><span class="n">e_features</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Edge feature dimensions must all be the same&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_same</span><span class="p">(</span><span class="n">g_features</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Global feature dimensions must all be the same&quot;</span><span class="p">)</span>
+
+        <span class="n">node_repeats</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">])</span>
+        <span class="n">edge_repeats</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">])</span>
+        <span class="n">node_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">node_repeats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">),</span> <span class="n">node_repeats</span>
+        <span class="p">)</span>
+        <span class="n">edge_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">edge_repeats</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">),</span> <span class="n">edge_repeats</span>
+        <span class="p">)</span>
+
+        <span class="c1"># concatenate edges</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">edges</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># cumulated shapes</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">edge_repeats</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># shift concatenated edges</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span> <span class="o">+</span> <span class="n">delta</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">node_attr</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">]),</span>
+            <span class="n">edge_attr</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">e</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">]),</span>
+            <span class="n">global_attr</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">g</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">]),</span>
+            <span class="n">edges</span><span class="o">=</span><span class="n">edges</span><span class="p">,</span>
+            <span class="n">node_idx</span><span class="o">=</span><span class="n">node_idx</span><span class="p">,</span>
+            <span class="n">edge_idx</span><span class="o">=</span><span class="n">edge_idx</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_data_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">GraphData</span><span class="p">]:</span>
+        <span class="n">gidx_n</span><span class="p">,</span> <span class="n">node_attr</span> <span class="o">=</span> <span class="n">torch_scatter_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="p">)</span>
+        <span class="n">gidx_e</span><span class="p">,</span> <span class="n">edge_attr</span> <span class="o">=</span> <span class="n">torch_scatter_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="p">)</span>
+        <span class="n">gidx_edge</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">torch_scatter_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">],</span> <span class="n">b</span><span class="p">))</span>
+
+        <span class="n">ndict</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">gidx_n</span><span class="p">,</span> <span class="n">node_attr</span><span class="p">)</span>
+        <span class="n">edict</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">gidx_e</span><span class="p">,</span> <span class="n">edge_attr</span><span class="p">)</span>
+        <span class="n">edgesdict</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">gidx_edge</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+        <span class="n">datalist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">n_sizes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ndict</span><span class="p">:</span>
+            <span class="n">_edges</span> <span class="o">=</span> <span class="n">edgesdict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">_edges</span> <span class="o">-=</span> <span class="n">n_sizes</span>
+            <span class="n">n_sizes</span> <span class="o">+=</span> <span class="n">ndict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">data</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">(</span><span class="n">ndict</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">edict</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">_edges</span><span class="p">)</span>
+            <span class="n">datalist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">datalist</span>
+
+    <span class="k">def</span> <span class="nf">to_networkx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">from_networkx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">to_networkx_list</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">feature_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;features&quot;</span><span class="p">,</span>
+        <span class="n">global_attr_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+        <span class="n">graph_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">DirectedGraph</span><span class="p">]</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">OrderedMultiDiGraph</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">DirectedGraph</span><span class="p">]:</span>
+        <span class="n">graphs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_data_list</span><span class="p">():</span>
+            <span class="n">graphs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">to_networkx</span><span class="p">(</span>
+                    <span class="n">feature_key</span><span class="p">,</span> <span class="n">global_attr_key</span><span class="o">=</span><span class="n">global_attr_key</span><span class="p">,</span> <span class="n">graph_type</span><span class="o">=</span><span class="n">graph_type</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">graphs</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_networkx_list</span><span class="p">(</span>
+        <span class="n">graphs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DirectedGraph</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;GraphBatch&quot;</span><span class="p">:</span>
+        <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">GraphData</span><span class="o">.</span><span class="n">from_networkx</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">graphs</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">GraphBatch</span><span class="o">.</span><span class="n">from_data_list</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">append_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_attr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">node_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">datalist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_data_list</span><span class="p">()</span>
+        <span class="n">idx</span><span class="p">,</span> <span class="n">groups</span> <span class="o">=</span> <span class="n">torch_scatter_group</span><span class="p">(</span><span class="n">node_attr</span><span class="p">,</span> <span class="n">node_idx</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">datalist</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append_nodes</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">GraphBatch</span><span class="o">.</span><span class="n">from_data_list</span><span class="p">(</span><span class="n">datalist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">g</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">node_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">append_edges</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">edge_attr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">edges</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">edge_idx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Append edges to the graph batch at the specified edge_idx (assumed</span>
+<span class="sd">        to be sorted).</span>
+
+<span class="sd">        :param edge_attr:</span>
+<span class="sd">        :param edges:</span>
+<span class="sd">        :param edge_idx:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="n">edges</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">edge_attr</span><span class="p">])</span>
+        <span class="n">edge_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="p">,</span> <span class="n">edge_idx</span><span class="p">])</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">stable_arg_sort_long</span><span class="p">(</span><span class="n">edge_idx</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span> <span class="o">=</span> <span class="n">edge_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_mask_dispatch</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">node_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">],</span>
+        <span class="n">edge_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">],</span>
+        <span class="n">as_view</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">detach</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">new_inst</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_masks</span><span class="p">(</span><span class="n">node_mask</span><span class="p">,</span> <span class="n">edge_mask</span><span class="p">)</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="n">edge_mask</span><span class="p">,</span> <span class="n">detach</span><span class="p">,</span> <span class="n">as_view</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask_dispatch_reindex_edges</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">node_mask</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">node_mask</span><span class="p">,</span> <span class="n">detach</span><span class="p">,</span> <span class="n">as_view</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">edge_mask</span><span class="p">,</span> <span class="n">detach</span><span class="p">,</span> <span class="n">as_view</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detach</span><span class="p">,</span> <span class="n">as_view</span><span class="p">)</span>
+        <span class="n">node_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">node_mask</span><span class="p">,</span> <span class="n">detach</span><span class="p">,</span> <span class="n">as_view</span><span class="p">)</span>
+        <span class="n">edge_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_mask</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="p">,</span> <span class="n">edge_mask</span><span class="p">,</span> <span class="n">detach</span><span class="p">,</span> <span class="n">as_view</span><span class="p">)</span>
+
+        <span class="n">node_idx</span><span class="p">,</span> <span class="n">edge_idx</span> <span class="o">=</span> <span class="n">reindex_tensor</span><span class="p">(</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">edge_idx</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask_dispatch_constructor</span><span class="p">(</span>
+            <span class="n">new_inst</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">node_idx</span><span class="o">=</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">edge_idx</span><span class="o">=</span><span class="n">edge_idx</span>
+        <span class="p">)</span>
+
+    <span class="c1"># def append_edges</span>
+    <span class="c1"># def collect_and_collate(x1, i1, x2, i2, collate_fn = torch.cat):</span>
+    <span class="c1">#     i1, groups1 = scatter_group(x1, i1)</span>
+    <span class="c1">#     i2, groups2 = scatter_group(x2, i2)</span>
+    <span class="c1">#     d1 = {k.item(): v for k, v in zip(i1, groups1)}</span>
+    <span class="c1">#     d2 = {k.item(): v for k, v in zip(i2, groups2)}</span>
+    <span class="c1">#     return dict_collate(d1, d2, torch.cat)</span>
+    <span class="c1">#</span>
+    <span class="c1">#</span>
+    <span class="c1"># i = stable_arg_sort_long(edge_idx)</span>
+    <span class="c1"># edge_attr = edge_attr[i]</span>
+    <span class="c1"># edges = edges[:, i]</span>
+    <span class="c1">#</span>
+    <span class="c1"># d = collect_and_collate(edge_attr, edge_idx, self.e, self.edge_idx)</span>
+    <span class="c1"># keys = sorted(d)</span>
+    <span class="c1"># e = torch.cat([d[k] for k in keys])</span>
+    <span class="c1">#</span>
+    <span class="c1"># d = collect_and_collate(edges.T, edge_idx, self.edges.T, self.edge_idx)</span>
+    <span class="c1"># keys = sorted(d)</span>
+    <span class="c1"># edges = torch.cat([d[k] for k in keys], dim=0)</span>
+    <span class="c1">#</span>
+    <span class="c1"># d = collect_and_collate(edge_idx, edge_idx, self.edge_idx, self.edge_idx)</span>
+    <span class="c1"># keys = sorted(d)</span>
+    <span class="c1"># edge_idx = torch.cat([d[k] for k in keys], dim=0)</span>
+    <span class="c1">#</span>
+    <span class="c1"># self.e = e</span>
+    <span class="c1"># self.edges = edges.T</span>
+    <span class="c1"># self.edge_idx = edge_idx</span>
+    <span class="c1"># self.debug()</span>
+    <span class="c1"># return self</span>
+    <span class="c1"># e = torch.cat([d[k] for k in keys])</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># def collate_shape(x):</span>
+    <span class="c1">#     return [[i] * _x.shape[0] for i, _x in enumerate(x)]</span>
+    <span class="c1">#</span>
+    <span class="c1"># d = dict_collate(d1, d2, collate_shape)</span>
+    <span class="c1"># u = [torch.Tensor(functools.reduce(operator.add, v)) for v in d.values()]</span>
+    <span class="c1"># edge_idx = torch.cumsum(torch.cat(u), 0)</span>
+    <span class="c1">#</span>
+    <span class="c1"># self.e = e</span>
+    <span class="c1"># self.edge_idx = edge_idx</span>
+    <span class="c1"># self.debug()</span>
+    <span class="c1"># return self</span>
+
+    <span class="c1"># i1, g1 = scatter_group(self.x, self.node_idx)</span>
+    <span class="c1"># i2, g2 = scatter_group(node_attr, node_idx)</span>
+    <span class="c1"># d1 = {k.item(): v for k, v in zip(i1, g1)}</span>
+    <span class="c1"># d2 = {k.item(): v for k, v in zip(i2, g2)}</span>
+    <span class="c1">#</span>
+    <span class="c1"># # collate</span>
+    <span class="c1"># d = dict_collate(d1, d2, torch.cat)</span>
+    <span class="c1"># keys = sorted(d.keys())</span>
+    <span class="c1"># x = torch.cat([d[k] for k in keys])</span>
+    <span class="c1">#</span>
+    <span class="c1"># # collect node indices</span>
+    <span class="c1"># node_idx = []</span>
+    <span class="c1"># for k in keys:</span>
+    <span class="c1">#     node_idx += [k] * d[k].shape[0]</span>
+    <span class="c1">#</span>
+    <span class="c1"># # correct edges</span>
+    <span class="c1"># def get_shape(x):</span>
+    <span class="c1">#     return [[i] * _x.shape[0] for i, _x in enumerate(x)]</span>
+    <span class="c1">#</span>
+    <span class="c1"># u = [torch.Tensor(functools.reduce(operator.add, v)) for v in dict_collate(d1, d2, get_shape).values()]</span>
+    <span class="c1"># delta_edges = torch.cumsum(torch.cat(u), 0)</span>
+    <span class="c1"># self.edges += delta_edges</span>
+    <span class="c1"># self.x = x</span>
+    <span class="c1"># self.node_idx = torch.tensor(node_idx, dtype=torch.long)</span>
+    <span class="c1"># self.debug()</span>
+    <span class="c1">#</span>
+    <span class="c1"># def append_nodes(self, edge_attr: torch.Tensor, edge_idx: torch.Tensor):</span>
+    <span class="c1">#     i1, g1 = scatter_group(self.x, self.node_idx)</span>
+    <span class="c1">#     i2, g2 = scatter_group(edge_attr, node_idx)</span>
+    <span class="c1">#     d1 = {k.item(): v for k, v in zip(i1, g1)}</span>
+    <span class="c1">#     d2 = {k.item(): v for k, v in zip(i2, g2)}</span>
+    <span class="c1">#</span>
+    <span class="c1">#     # collate</span>
+    <span class="c1">#     d = dict_collate(d1, d2, torch.cat)</span>
+    <span class="c1">#     keys = sorted(d.keys())</span>
+    <span class="c1">#     x = torch.cat([d[k] for k in keys])</span>
+    <span class="c1">#</span>
+    <span class="c1">#     # collect node indices</span>
+    <span class="c1">#     node_idx = []</span>
+    <span class="c1">#     for k in keys:</span>
+    <span class="c1">#         node_idx += [k] * d[k].shape[0]</span>
+    <span class="c1">#</span>
+    <span class="c1">#     self.x = x</span>
+    <span class="c1">#     self.node_idx = torch.tensor(node_idx, dtype=torch.long)</span>
+    <span class="c1">#     self.debug()</span>
+
+    <span class="k">def</span> <span class="nf">_eq_helper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cannot compare batches&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">allclose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cannot compare batches&quot;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">random</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">random_batch</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">n_feat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">e_feat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">g_feat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">min_nodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">max_nodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">min_edges</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">max_edges</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">requires_grad</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphBatch</span><span class="p">:</span>
+        <span class="n">datalist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+            <span class="n">datalist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">GraphData</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
+                    <span class="n">n_feat</span><span class="p">,</span>
+                    <span class="n">e_feat</span><span class="p">,</span>
+                    <span class="n">g_feat</span><span class="p">,</span>
+                    <span class="n">min_nodes</span><span class="o">=</span><span class="n">min_nodes</span><span class="p">,</span>
+                    <span class="n">max_nodes</span><span class="o">=</span><span class="n">max_nodes</span><span class="p">,</span>
+                    <span class="n">min_edges</span><span class="o">=</span><span class="n">min_edges</span><span class="p">,</span>
+                    <span class="n">max_edges</span><span class="o">=</span><span class="n">max_edges</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_data_list</span><span class="p">(</span><span class="n">datalist</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">requires_grad</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="n">requires_grad</span>
+        <span class="k">return</span> <span class="n">batch</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cannot compare batches&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">view</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">e_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">g_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">edges_slice</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">slice</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphData</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">x_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">e_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">g_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">g_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">edges_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">edges_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[:,</span> <span class="n">x_slice</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">[:,</span> <span class="n">e_slice</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">[:,</span> <span class="n">g_slice</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">[:,</span> <span class="n">edges_slice</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="p">[:],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="p">[</span><span class="n">e_slice</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">disjoint_union</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">GraphBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphBatch</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Disjoint union between two GraphBatches.</span>
+
+<span class="sd">        :param other:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">g</span><span class="p">)</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">node_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">node_idx</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">edge_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">edge_idx</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">edges</span> <span class="o">+</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">node_idx</span><span class="p">,</span> <span class="n">edge_idx</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">reindex_tensor</span><span class="p">(</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">edge_idx</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">GraphBatch</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">node_idx</span><span class="p">,</span> <span class="n">edge_idx</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">shuffle_graphs_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="p">)</span>
+        <span class="n">ridx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">[</span><span class="n">ridx</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">node_idx</span><span class="p">,</span> <span class="n">edge_idx</span> <span class="o">=</span> <span class="n">reindex_tensor</span><span class="p">(</span><span class="n">ridx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_idx</span> <span class="o">=</span> <span class="n">node_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_idx</span> <span class="o">=</span> <span class="n">edge_idx</span>
+
+    <span class="k">def</span> <span class="nf">shuffle_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphBatch</span><span class="p">:</span>
+        <span class="n">cloned</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">cloned</span><span class="o">.</span><span class="n">shuffle_graphs_</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cloned</span>
+
+    <span class="k">def</span> <span class="nf">shuffle_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle_graphs_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle_nodes_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle_edges_</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GraphBatch</span><span class="p">:</span>
+        <span class="n">cloned</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">cloned</span><span class="o">.</span><span class="n">shuffle_</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cloned</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+      
+    </p>
+    <p>
+        &copy; Copyright 2020, Justin Vrana &lt;justin.vrana@gmail.com&gt;.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
