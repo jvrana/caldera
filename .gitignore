@@ -685,4 +685,6 @@ docs/source/generated
 tests/pytest_runs/**/*
 experiments/runs/**/*
 tmp
+
+# wandb
 **/wandb
