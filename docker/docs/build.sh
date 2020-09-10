@@ -16,7 +16,7 @@ exec 3>"$tmpfile"
 rm "$tmpfile"
 echo "Building caldera documentation"
 echo "IMAGE ID: $IMAGE"
-docker run --cidfile $tmpfile $IMAGE /bin/bash -c "cd docs && make clean && make html"
+docker run --cidfile $tmpfile $IMAGE /bin/bash -c "cd docs && make html"
 CID=$(cat $tmpfile)
 echo "CONTAINER ID: $CID"
 docker cp $CID:/src/docs/build/html $DEST
