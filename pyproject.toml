@@ -50,7 +50,7 @@ xtests = ["pytest-sugar"]
 nbexamples = ["matplotlib", "seaborn", "tqdm"]
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.4.2"
+pytest = "6"
 flaky = "^3.7.0"
 dictdiffer = "^0.8.1"
 pytest-html = "^2.1.1"
