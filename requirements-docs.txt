@@ -287,12 +287,14 @@ prometheus-client==0.8.0 \
 prompt-toolkit==3.0.7 \
     --hash=sha256:83074ee28ad4ba6af190593d4d4c607ff525272a504eb159199b6dd9f950c950 \
     --hash=sha256:822f4605f28f7d2ba6b0b09a31e25e140871e96364d1d377667b547bb3bf4489
-ptyprocess==0.6.0; sys_platform != "win32" or os_name != "nt" or python_version >= "3.3" and sys_platform != "win32" \
+ptyprocess==0.6.0; python_version >= "3.3" and sys_platform != "win32" or sys_platform != "win32" or os_name != "nt" or python_version >= "3.3" and sys_platform != "win32" and (python_version >= "3.3" and sys_platform != "win32" or sys_platform != "win32") \
     --hash=sha256:d7cc528d76e76342423ca640335bd3633420dc1366f258cb31d05e865ef5ca1f \
     --hash=sha256:923f299cc5ad920c68f2bc0bc98b75b9f838b93b599941a6b63ddbc2476394c0
 py==1.9.0 \
     --hash=sha256:366389d1db726cd2fcfc79732e75410e5fe4d31db13692115529d34069a043c2 \
     --hash=sha256:9ca6883ce56b4e8da7e79ac18787889fa5206c79dcc67fb065376cd2fe03f342
+py-cpuinfo==7.0.0 \
+    --hash=sha256:9aa2e49675114959697d25cf57fec41c29b55887bff3bc4809b44ac6f5730097
 pycodestyle==2.6.0 \
     --hash=sha256:2295e7b2f6b5bd100585ebcb1f616591b652db8a741695b3d8f5d28bdc934367 \
     --hash=sha256:c58a7d2815e0e8d7972bf1803331fb0152f867bd89adf8a01dfd55085434192e
@@ -313,6 +315,9 @@ pyrsistent==0.14.11 \
 pytest==5.4.3 \
     --hash=sha256:5c0db86b698e8f170ba4582a492248919255fcd4c79b1ee64ace34301fb589a1 \
     --hash=sha256:7979331bfcba207414f5e1263b5a0f8f521d0f457318836a7355531ed1a4c7d8
+pytest-benchmark==3.2.3 \
+    --hash=sha256:ad4314d093a3089701b24c80a05121994c7765ce373478c8f4ba8d23c9ba9528 \
+    --hash=sha256:01f79d38d506f5a3a0a9ada22ded714537bbdfc8147a881a35c1655db07289d9
 pytest-html==2.1.1 \
     --hash=sha256:6a4ac391e105e391208e3eb9bd294a60dd336447fd8e1acddff3a6de7f4e57c5 \
     --hash=sha256:9e4817e8be8ddde62e8653c8934d0f296b605da3d2277a052f762c56a8b32df2

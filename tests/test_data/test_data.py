@@ -88,11 +88,6 @@ class Comparator:
 
 # TODO: test data for numpy or torch
 class TestGraphData:
-    def test_0D_graph_data(self):
-        GraphData(
-            torch.tensor(0.0), torch.tensor(0.0), torch.tensor(0.0), torch.zeros(2, 0)
-        )
-
     def test_graph_data_init_0(self):
         data = GraphData(
             torch.randn(10, 5),
