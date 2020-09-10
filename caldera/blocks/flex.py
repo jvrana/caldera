@@ -1,12 +1,16 @@
 from functools import wraps
 from typing import Any
 from typing import Dict
+from typing import Generator
 from typing import Tuple
 from typing import Type
-from typing import Generator
+from typing import TypeVar
+
 import torch
 
 from caldera.exceptions import CalderaException
+
+T = TypeVar("T")
 
 
 class InvalidFlexZeroDimension(Exception):
@@ -163,10 +167,14 @@ class FlexBlock(torch.nn.Module):
             )
             return s
 
-def _iter_modules_of_type(module: torch.nn.Module, module_type: Type[T]) -> Generator[T, None, None]:
+
+def _iter_modules_of_type(
+    module: torch.nn.Module, module_type: Type[T]
+) -> Generator[T, None, None]:
     for m in module.modules():
         if issubclass(m.__class__, module_type):
             yield m
+
 
 def _iter_flex_blocks(module: torch.nn.Module) -> Generator[FlexBlock, None, None]:
     yield from _iter_modules_of_type(module, FlexBlock)
