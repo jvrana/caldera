@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    if: github.event.pull_request.merged == true || github.event == "pull_request"
+    if: github.event.pull_request.merged == true || github.event == 'pull_request'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout master
