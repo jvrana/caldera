@@ -3,7 +3,7 @@ from typing import Any
 from typing import Dict
 from typing import Tuple
 from typing import Type
-
+from typing import Generator
 import torch
 
 from caldera.exceptions import CalderaException
@@ -163,6 +163,14 @@ class FlexBlock(torch.nn.Module):
             )
             return s
 
+def _iter_modules_of_type(module: torch.nn.Module, module_type: Type[T]) -> Generator[T, None, None]:
+    for m in module.modules():
+        if issubclass(m.__class__, module_type):
+            yield m
+
+def _iter_flex_blocks(module: torch.nn.Module) -> Generator[FlexBlock, None, None]:
+    yield from _iter_modules_of_type(module, FlexBlock)
+
 
 class Flex:
     """Flex."""
@@ -192,3 +200,16 @@ class Flex:
         :return: initialized torch.nn.Module
         """
         return FlexBlock(self.module_type, *args, **kwargs)
+
+    @staticmethod
+    def has_flex_blocks(module: torch.nn.Module):
+        for m in _iter_flex_blocks(module):
+            if issubclass(m.__class__, FlexBlock):
+                return True
+
+    @staticmethod
+    def has_unresolved_flex_blocks(module: torch.nn.Module):
+        for m in _iter_flex_blocks(module):
+            if not m.is_resolved():
+                return True
+        return False
