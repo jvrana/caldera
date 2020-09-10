@@ -688,3 +688,6 @@ tmp
 
 # wandb
 **/wandb
+
+# lightning logs
+**/lightning_logs
