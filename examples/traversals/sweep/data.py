@@ -1,14 +1,20 @@
-from caldera.testing import annotate_shortest_path
-from caldera.transforms import Compose
-from caldera.transforms.networkx import NetworkxSetDefaultFeature, NetworkxAttachNumpyOneHot, NetworkxNodesToStr, \
-    NetworkxToDirected
-from caldera.utils._tools import _resolve_range
-from caldera.utils.nx.generators import compose_and_connect, random_graph, chain_graph, _uuid_chain
 import networkx as nx
 import numpy as np
 
+from caldera.testing import annotate_shortest_path
+from caldera.transforms import Compose
+from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
+from caldera.transforms.networkx import NetworkxNodesToStr
+from caldera.transforms.networkx import NetworkxSetDefaultFeature
+from caldera.transforms.networkx import NetworkxToDirected
+from caldera.utils._tools import _resolve_range
+from caldera.utils.nx.generators import _uuid_chain
+from caldera.utils.nx.generators import chain_graph
+from caldera.utils.nx.generators import compose_and_connect
+from caldera.utils.nx.generators import random_graph
 
-def generate_shorest_path_example(n_nodes, density, path_length, compose_density = None):
+
+def generate_shorest_path_example(n_nodes, density, path_length, compose_density=None):
     d = _resolve_range(density)
     l = _resolve_range(path_length)
     if compose_density is None:

@@ -1,32 +1,40 @@
-from caldera.blocks import MLP, Flex, EdgeBlock, NodeBlock, GlobalBlock, AggregatingEdgeBlock, AggregatingNodeBlock, \
-    MultiAggregator, AggregatingGlobalBlock
-from caldera.data import GraphBatch
-from caldera.defaults import CalderaDefaults as defaults
 import torch
 
-from caldera.models import GraphEncoder, GraphCore
+from caldera.blocks import AggregatingEdgeBlock
+from caldera.blocks import AggregatingGlobalBlock
+from caldera.blocks import AggregatingNodeBlock
+from caldera.blocks import EdgeBlock
+from caldera.blocks import Flex
+from caldera.blocks import GlobalBlock
+from caldera.blocks import MLP
+from caldera.blocks import MultiAggregator
+from caldera.blocks import NodeBlock
+from caldera.data import GraphBatch
+from caldera.defaults import CalderaDefaults as defaults
+from caldera.models import GraphCore
+from caldera.models import GraphEncoder
 
 
 class Network(torch.nn.Module):
     def __init__(
-            self,
-            latent_sizes=(32, 32, 32),
-            out_sizes=(1, 1, 1),
-            latent_depths=(1, 1, 1),
-            dropout: float = None,
-            pass_global_to_edge: bool = True,
-            pass_global_to_node: bool = True,
-            activation=defaults.activation,
-            out_activation=defaults.activation,
-            edge_to_node_aggregators=tuple(["add", "max", "mean", "min"]),
-            edge_to_global_aggregators=tuple(["add", "max", "mean", "min"]),
-            node_to_global_aggregators=tuple(["add", "max", "mean", "min"]),
-            aggregator_activation=defaults.activation,
+        self,
+        latent_sizes=(32, 32, 32),
+        out_sizes=(1, 1, 1),
+        latent_depths=(1, 1, 1),
+        dropout: float = None,
+        pass_global_to_edge: bool = True,
+        pass_global_to_node: bool = True,
+        activation=defaults.activation,
+        out_activation=defaults.activation,
+        edge_to_node_aggregators=tuple(["add", "max", "mean", "min"]),
+        edge_to_global_aggregators=tuple(["add", "max", "mean", "min"]),
+        node_to_global_aggregators=tuple(["add", "max", "mean", "min"]),
+        aggregator_activation=defaults.activation,
     ):
         super().__init__()
         self.config = {
             "sizes": {
-                'latent': {
+                "latent": {
                     "edge": latent_sizes[0],
                     "node": latent_sizes[1],
                     "global": latent_sizes[2],
@@ -34,14 +42,14 @@ class Network(torch.nn.Module):
                     "node_depth": latent_depths[1],
                     "global_depth": latent_depths[2],
                 },
-                'out': {
-                    'edge': out_sizes[0],
-                    'node': out_sizes[1],
-                    'global': out_sizes[2],
-                    'activation': out_activation,
-                }
+                "out": {
+                    "edge": out_sizes[0],
+                    "node": out_sizes[1],
+                    "global": out_sizes[2],
+                    "activation": out_activation,
+                },
             },
-            'activation': activation,
+            "activation": activation,
             "dropout": dropout,
             "node_block_aggregator": edge_to_node_aggregators,
             "global_block_to_node_aggregator": node_to_global_aggregators,
@@ -62,25 +70,59 @@ class Network(torch.nn.Module):
 
     def _init_encoder(self):
         return GraphEncoder(
-            EdgeBlock(Flex(MLP)(Flex.d(), self.config['sizes']['latent']['edge'], dropout=self.config['dropout'])),
-            NodeBlock(Flex(MLP)(Flex.d(), self.config['sizes']['latent']['node'], dropout=self.config['dropout'])),
-            GlobalBlock(Flex(MLP)(Flex.d(), self.config['sizes']['latent']['global'], dropout=self.config['dropout'])),
+            EdgeBlock(
+                Flex(MLP)(
+                    Flex.d(),
+                    self.config["sizes"]["latent"]["edge"],
+                    dropout=self.config["dropout"],
+                )
+            ),
+            NodeBlock(
+                Flex(MLP)(
+                    Flex.d(),
+                    self.config["sizes"]["latent"]["node"],
+                    dropout=self.config["dropout"],
+                )
+            ),
+            GlobalBlock(
+                Flex(MLP)(
+                    Flex.d(),
+                    self.config["sizes"]["latent"]["global"],
+                    dropout=self.config["dropout"],
+                )
+            ),
         )
 
     def _init_core(self):
-        edge_layers = [self.config['sizes']['latent']['edge']] * self.config['sizes']['latent']['edge_depth']
-        node_layers = [self.config['sizes']['latent']['node']] * self.config['sizes']['latent']['node_depth']
-        global_layers = [self.config['sizes']['latent']['global']] * self.config['sizes']['latent']['global_depth']
+        edge_layers = [self.config["sizes"]["latent"]["edge"]] * self.config["sizes"][
+            "latent"
+        ]["edge_depth"]
+        node_layers = [self.config["sizes"]["latent"]["node"]] * self.config["sizes"][
+            "latent"
+        ]["node_depth"]
+        global_layers = [self.config["sizes"]["latent"]["global"]] * self.config[
+            "sizes"
+        ]["latent"]["global_depth"]
 
         return GraphCore(
             AggregatingEdgeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), *edge_layers, dropout=self.config['dropout'], layer_norm=True),
+                    Flex(MLP)(
+                        Flex.d(),
+                        *edge_layers,
+                        dropout=self.config["dropout"],
+                        layer_norm=True
+                    ),
                 )
             ),
             AggregatingNodeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), *node_layers, dropout=self.config['dropout'], layer_norm=True),
+                    Flex(MLP)(
+                        Flex.d(),
+                        *node_layers,
+                        dropout=self.config["dropout"],
+                        layer_norm=True
+                    ),
                 ),
                 Flex(MultiAggregator)(
                     Flex.d(),
@@ -91,7 +133,10 @@ class Network(torch.nn.Module):
             AggregatingGlobalBlock(
                 torch.nn.Sequential(
                     Flex(MLP)(
-                        Flex.d(), *global_layers, dropout=self.config['dropout'], layer_norm=True
+                        Flex.d(),
+                        *global_layers,
+                        dropout=self.config["dropout"],
+                        layer_norm=True
                     ),
                 ),
                 edge_aggregator=Flex(MultiAggregator)(
@@ -113,22 +158,28 @@ class Network(torch.nn.Module):
         return GraphEncoder(
             EdgeBlock(
                 torch.nn.Sequential(
-                    Flex(torch.nn.Linear)(Flex.d(), self.config['sizes']['out']['edge']),
-                    self.config['sizes']['out']['activation']()
+                    Flex(torch.nn.Linear)(
+                        Flex.d(), self.config["sizes"]["out"]["edge"]
+                    ),
+                    self.config["sizes"]["out"]["activation"](),
                 )
             ),
             NodeBlock(
                 torch.nn.Sequential(
-                    Flex(torch.nn.Linear)(Flex.d(), self.config['sizes']['out']['node']),
-                    self.config['sizes']['out']['activation']()
+                    Flex(torch.nn.Linear)(
+                        Flex.d(), self.config["sizes"]["out"]["node"]
+                    ),
+                    self.config["sizes"]["out"]["activation"](),
                 )
             ),
             GlobalBlock(
                 torch.nn.Sequential(
-                    Flex(torch.nn.Linear)(Flex.d(), self.config['sizes']['out']['global']),
-                    self.config['sizes']['out']['activation']()
+                    Flex(torch.nn.Linear)(
+                        Flex.d(), self.config["sizes"]["out"]["global"]
+                    ),
+                    self.config["sizes"]["out"]["activation"](),
                 )
-            )
+            ),
         )
 
     def _forward_encode(self, data):

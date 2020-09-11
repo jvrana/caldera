@@ -1,29 +1,36 @@
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Any
+from typing import List
+from typing import Optional
 from typing import Tuple
-from typing import Optional, List, Any, Union
-from dataclasses import dataclass, field
-from omegaconf import MISSING, DictConfig, OmegaConf
-from hydra.core.config_store import ConfigStore
+from typing import Union
+
 import hydra
+from hydra.core.config_store import ConfigStore
+from omegaconf import DictConfig
+from omegaconf import MISSING
+from omegaconf import OmegaConf
 
 
 @dataclass
 class NetworkConfig:
-    """Your parameters"""
+    """Your parameters."""
 
 
 @dataclass
 class TrainConfig:
-    """Your parameters"""
+    """Your parameters."""
 
 
 @dataclass
 class DataLoaderConfig:
-    """Your parameters"""
+    """Your parameters."""
 
 
 @dataclass
 class DataConfig:
-    """Your parameters"""
+    """Your parameters."""
 
 
 defaults = [

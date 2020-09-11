@@ -1,12 +1,14 @@
-from os.path import join, isfile
 import sys
+from os.path import isfile
+from os.path import join
+
 
 def find_pkg(name: str, depth: int):
     if depth <= 0:
         ret = None
     else:
-        d = ['..'] * depth
-        path_parts = d + [name, '__init__.py']
+        d = [".."] * depth
+        path_parts = d + [name, "__init__.py"]
 
         if isfile(join(*path_parts)):
             ret = d

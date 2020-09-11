@@ -1,9 +1,8 @@
 #################################################################################
 # FIX `sys.path` and import modules
 #################################################################################
-
-import sys
 import os
+import sys
 
 SCRIPT_DIR = os.path.dirname(
     os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__)))
@@ -15,10 +14,9 @@ from .utils import find_and_ins_syspath
 try:
     import caldera
 except ImportError:
-    find_and_ins_syspath('caldera', 4)
+    find_and_ins_syspath("caldera", 4)
     import caldera
 
 #################################################################################
 # MAIN
 #################################################################################
-
