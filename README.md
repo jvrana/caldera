@@ -3,6 +3,7 @@
 ![Code Quality](https://github.com/jvrana/caldera/workflows/Code%20Quality/badge.svg)
 ![Tests](https://github.com/jvrana/caldera/workflows/Tests/badge.svg)
 ![Documentation](https://github.com/jvrana/caldera/workflows/Documentation/badge.svg)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 **SOFTWARE IS IN ALPHA, README IS PENDING**
 

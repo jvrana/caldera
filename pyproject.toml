@@ -43,12 +43,13 @@ matplotlib = {version = "^3.3.1", optional = true}
 tqdm = {version = "^4.48.2", optional = true}
 pytest-randomly = "^3.4.1"
 pytorch-lightning = {version = "^0.9.0", optional = true}
+hydra-core = {version = "^1.0.0", optional = true}
 
 [tool.poetry.extras]
 docs = ["sphinx", "sphinx_bootstrap_theme", "sphinx_autodoc_typehints", "autodocsumm", "keats", "nbformat", "nbconvert", "jupyter-sphinx"]
 lint = ["black", "pytest-cov", "pre-commit", "pylint"]
 xtests = ["pytest-sugar"]
-nbexamples = ["matplotlib", "seaborn", "tqdm", "pytorch-lightning"]
+nbexamples = ["matplotlib", "seaborn", "tqdm", "pytorch-lightning", "hydra-core"]
 
 [tool.poetry.dev-dependencies]
 pytest = "6"

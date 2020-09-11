@@ -10,9 +10,6 @@ on:
       - 'docs/**'
       - '.github/workflows/build-docker-documentation.yml'
 
-  push:
-    branches: [ master ]
-
 env:
   CACHE_IMAGE: jvrana/caldera-ci-docs:latest-docs
   DOCKER_BUILDKIT: 1

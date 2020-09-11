@@ -218,6 +218,6 @@ class Flex:
     @staticmethod
     def has_unresolved_flex_blocks(module: torch.nn.Module):
         for m in _iter_flex_blocks(module):
-            if not m.is_resolved():
+            if not m.is_resolved:
                 return True
         return False

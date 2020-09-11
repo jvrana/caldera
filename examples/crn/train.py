@@ -102,7 +102,7 @@ def train(**kwargs):
     """
 
     # Set up your default hyperparameters before wandb.init
-    # so they get properly set in the sweep
+    # so they get properly set in the train
     hyperparameter_defaults = dict(defaults)
 
     # Pass your defaults to wandb.init
