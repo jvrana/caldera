@@ -70,7 +70,7 @@ def _pytest_env_mark_setup(item):
 def _pytest_auto_mark_benchmark(item):
     """Automatically mark tests that use the `benchmark` fixture."""
     marks = [mark for mark in item.iter_markers(name="benchmark")]
-    if not marks and "benchmark" in item.funcargnames:
+    if not marks and "benchmark" in item.fixturenames:
         item.add_marker(pytest.mark.benchmark)
 
 
