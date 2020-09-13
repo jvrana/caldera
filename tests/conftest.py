@@ -2,8 +2,10 @@ from functools import partial
 from os.path import abspath
 from os.path import dirname
 from os.path import join
+from typing import Dict
+from typing import Tuple
 
-import torch
+import pytest
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
@@ -29,9 +31,6 @@ def pytest_configure(config):
 """
 Use `pytest.mark.incremental` on pytest Class definition to do incremental tests.
 """
-
-from typing import Dict, Tuple
-import pytest
 
 # store history of failures per test class name and per index in parametrize (if parametrize used)
 _test_failed_incremental: Dict[str, Dict[Tuple[int, ...], str]] = {}

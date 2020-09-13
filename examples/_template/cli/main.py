@@ -9,7 +9,7 @@ SCRIPT_DIR = os.path.dirname(
 )
 sys.path.insert(0, SCRIPT_DIR)
 
-from .utils import find_and_ins_syspath
+from utils import find_and_ins_syspath
 
 try:
     import caldera
@@ -20,3 +20,7 @@ except ImportError:
 #################################################################################
 # MAIN
 #################################################################################
+
+from conf_schemas import cs
+
+print(cs)

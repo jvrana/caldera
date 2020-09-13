@@ -1,9 +1,8 @@
 #################################################################################
 # FIX `sys.path` and import modules
 #################################################################################
-
-import sys
 import os
+import sys
 
 SCRIPT_DIR = os.path.dirname(
     os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__)))
@@ -15,7 +14,7 @@ from .utils import find_and_ins_syspath
 try:
     import caldera
 except ImportError:
-    find_and_ins_syspath('caldera', 4)
+    find_and_ins_syspath("caldera", 4)
     import caldera
 
 #################################################################################
@@ -36,8 +35,8 @@ class NetworkConfig:
     out_sizes: Tuple[int, int, int] = (1, 1, 1)
     latent_depths: Tuple[int, int, int] = (1, 1, 1)
     dropout: Optional[float] = None
-    pass_global_to_edge: bool = True,
-    pass_global_to_node: bool = True,
+    pass_global_to_edge: bool = True
+    pass_global_to_node: bool = True
 
 
 @dataclass
@@ -81,6 +80,7 @@ cs.store(name="config", node=Config)
 @hydra.main(conf_paht="conf")
 def train():
     pass
+
 
 if __name__ == "__main__":
     train()
