@@ -1,18 +1,19 @@
-"""
-Single file to store configuration methods, types, and classes
-"""
+"""Single file to store configuration methods, types, and classes."""
+from dataclasses import dataclass
+from dataclasses import field
+from typing import List
+from typing import Optional
+from typing import Tuple
 
-from typing import Tuple, Optional, List
-from omegaconf import MISSING
-from omegaconf import DictConfig
 from hydra.conf import ConfigStore
+from omegaconf import DictConfig
+from omegaconf import MISSING
 from omegaconf import OmegaConf
-from dataclasses import dataclass, field
 
 
 @dataclass
 class GraphLayerConfig:
-    """Configuration for an edge, node, or global graph layer"""
+    """Configuration for an edge, node, or global graph layer."""
 
     size: int = 1
     depth: int = 1
@@ -21,9 +22,10 @@ class GraphLayerConfig:
     dropout: str = "${network.activation}"
     layers: List[int] = field(default_factory=lambda: [1, 2])
 
+
 @dataclass
 class GraphNetConfig:
-    """Configuration for caldera Graph Network"""
+    """Configuration for caldera Graph Network."""
 
     node_encode: GraphLayerConfig = field(default_factory=GraphLayerConfig)
     edge_encode: GraphLayerConfig = field(default_factory=GraphLayerConfig)
@@ -63,11 +65,11 @@ class Config:
     network: GraphNetConfig = field(default_factory=GraphNetConfig)
 
 
-OmegaConf.register_resolver("mul", lambda x,y: [x]*y)
+OmegaConf.register_resolver("mul", lambda x, y: [x] * y)
 
 
 def initialize_config():
-    """Initialize structured configuration"""
+    """Initialize structured configuration."""
     cs = ConfigStore()
     cs.store(group="network", name="default", node=GraphNetConfig)
     cs.store(name="config", node=Config)

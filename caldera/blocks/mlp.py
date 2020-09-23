@@ -18,8 +18,7 @@ class MLPBlock(nn.Module):
         dropout: float = None,
         activation: Callable = D.activation,
     ):
-        """
-        Initialize a multi-layer perceptron.
+        """Initialize a multi-layer perceptron.
 
         :param input_size:
         :param output_size:

@@ -1,19 +1,20 @@
 import functools
 from functools import wraps
-from typing import Any, Optional
+from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import Generic
+from typing import Optional
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
-from typing import Generic
 
 import torch
 
 from caldera.exceptions import CalderaException
 
 T = TypeVar("T")
-M = TypeVar('M', bound=torch.nn.Module)
+M = TypeVar("M", bound=torch.nn.Module)
 
 
 class InvalidFlexZeroDimension(Exception):
@@ -71,14 +72,21 @@ class FlexBlock(torch.nn.Module, Generic[M]):
         self._apply_history = None
         self.__resolved = False
 
-        for fname in ['__call__', 'forward']:
+        for fname in ["__call__", "forward"]:
             if hasattr(self.module, fname):
-                setattr(self,
-                        fname,
-                        functools.wraps(getattr(self.module, fname))(
-                            functools.partial(getattr(self.__class__, fname), self)
-                        ))
-                docstr = "Flex." + fname + " bound to function of " + str(getattr(self.module, fname))
+                setattr(
+                    self,
+                    fname,
+                    functools.wraps(getattr(self.module, fname))(
+                        functools.partial(getattr(self.__class__, fname), self)
+                    ),
+                )
+                docstr = (
+                    "Flex."
+                    + fname
+                    + " bound to function of "
+                    + str(getattr(self.module, fname))
+                )
                 if getattr(self.module, fname).__doc__:
                     docstr += "\n" + getattr(self.module, fname).__doc__
                 getattr(self, fname).__doc__ = docstr
@@ -107,7 +115,6 @@ class FlexBlock(torch.nn.Module, Generic[M]):
             else:
                 rargs.append(a)
         return rargs
-
 
     # TODO: implement resolve_kwargs
     def resolve_kwargs(self, input_args: Tuple[Any, ...], input_kwargs: Dict[str, Any]):
@@ -218,8 +225,12 @@ class Flex(Generic[M]):
         self._update_docstr()
 
     def _update_docstr(self):
-        docstr = "Flex({m}). A module with flexible dimensions that wraps the {m} module.".format(m=self.module_type.__name__)
-        docstr += "\nInitialize using Flex({m})(*args, **kwargs) according to the documentation below.\n".format(m=self.module_type.__name__)
+        docstr = "Flex({m}). A module with flexible dimensions that wraps the {m} module.".format(
+            m=self.module_type.__name__
+        )
+        docstr += "\nInitialize using Flex({m})(*args, **kwargs) according to the documentation below.\n".format(
+            m=self.module_type.__name__
+        )
         if self.module_type.__doc__:
             docstr += "\n{}\n".format(self.module_type.__name__)
             docstr += self.module_type.__doc__

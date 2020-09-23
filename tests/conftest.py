@@ -6,12 +6,12 @@ from typing import Dict
 from typing import Tuple
 
 import pytest
+import torch
 
 from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.utils import deterministic_seed
 from caldera.utils.tensorboard import new_writer as new_summary_writer
-import torch
 
 
 def pytest_configure(config):

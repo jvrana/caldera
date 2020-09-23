@@ -1,11 +1,10 @@
 # flake8: noqa
-
 ##########################################################
 # Relative Imports
 ##########################################################
-
-from os.path import join, isfile
 import sys
+from os.path import isfile
+from os.path import join
 
 
 def find_pkg(name: str, depth: int):

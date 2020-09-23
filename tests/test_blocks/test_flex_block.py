@@ -82,7 +82,6 @@ def test_flex_block_to_playback(dtype, dtype2):
 
 
 class TestFlexDocString:
-
     def test_module_doc_string(self):
         f = Flex(torch.nn.Linear)
         assert torch.nn.Linear.__doc__ in f.__call__.__doc__
