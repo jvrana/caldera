@@ -2051,7 +2051,7 @@ nbexamples = ["matplotlib", "seaborn", "tqdm", "pytorch-lightning", "hydra-core"
 xtests = ["pytest-sugar"]
 
 [metadata]
-content-hash = "26579e904408897a82d83f5d03bb3e1de0cff97726b995968bed91b41c97a49c"
+content-hash = "39575ce8b7033a9aa8f5de0df6b098f813dcefcc03be4ece7c1dac51a88a9e81"
 lock-version = "1.0"
 python-versions = "^3.7"
 
