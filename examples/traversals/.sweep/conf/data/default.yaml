@@ -1,4 +1,0 @@
-# @package _group_
-n_nodes:
-density:
-n_nodes, density, path_length, compose_density = None
