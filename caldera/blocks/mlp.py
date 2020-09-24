@@ -50,6 +50,13 @@ class MLP(nn.Module):
         dropout: float = None,
         activation: Callable = D.activation
     ):
+        """
+
+        :param latent_sizes:
+        :param layer_norm:
+        :param dropout:
+        :param activation:
+        """
         super().__init__()
         self.layers = nn.Sequential(
             *[

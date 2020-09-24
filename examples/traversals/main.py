@@ -6,6 +6,8 @@ import sys
 from os.path import isfile
 from os.path import join
 
+from pytorch_lightning import Trainer
+
 
 def find_pkg(name: str, depth: int):
     if depth <= 0:
@@ -45,27 +47,77 @@ from examples.traversals.configuration import (
     GraphNetConfig,
     DictConfig,
     OmegaConf,
+    Uniform,
+    DiscreteUniform,
 )
-from examples.traversals.model import TrainingModule
+from examples.traversals.training import TrainingModule
 import hydra
+from typing import TypeVar, Type
+from examples.traversals.data import DataGenerator, DataConfig
+import torch
 
 
+C = TypeVar("C")
+
+
+# TODO: @bind(Config)(class Foo)   Foo.from_dict_config(cfg)
 @hydra.main(config_path="conf", config_name="config")
-def main(cfg: Config):
-    print(OmegaConf.to_yaml(cfg))
-    training_module = TrainingModule(cfg)
+def main(hydra_cfg: DictConfig):
+    # really unclear why hydra has so many unclear validation issues with structure configs using ConfigStore
+    # this correctly assigns the correct structured config
+    # and updates from the passed hydra config
+    # annoying... but this resolves all these issues
+    cfg = OmegaConf.structured(Config())
+    cfg.update(hydra_cfg)
 
-    # cfg = GraphNetConfig(
-    #     edge=GraphLayerConfig(size=3, depth=2, out=1, layer_norm=True),
-    #     node=GraphLayerConfig(size=3, depth=2, out=1, layer_norm=True),
-    #     glob=GraphLayerConfig(size=3, depth=2, out=1, layer_norm=True),
-    #     dropout=0.2,
-    #     pass_global_to_edge=True,
-    #     pass_global_to_node=True,
-    #     activation='leakyrelu',
-    #     out_activation='sigmoid',
-    #     aggregator_activation=('min', 'max', 'mean', 'sum')
-    # )
+    # debug
+    print(OmegaConf.to_yaml(cfg))
+
+    # defaults
+    cfg.hyperparameters.lr = 1e-3
+    cfg.hyperparameters.train_core_processing_steps = 10
+    cfg.hyperparameters.eval_core_processing_steps = 10
+
+    cfg.data.eval.num_graphs = 50
+    cfg.data.eval.num_nodes = DiscreteUniform(10, 100)
+
+    cfg.data.eval.density = Uniform(0.01, 0.03)
+    cfg.data.eval.path_length = DiscreteUniform(5, 10)
+    cfg.data.eval.composition_density = Uniform(0.01, 0.02)
+    cfg.data.eval.batch_size = "${data.eval.num_graphs}"
+    cfg.data.eval.shuffle = False
+
+    cfg.data.train.num_graphs = 50
+    cfg.data.train.num_nodes = DiscreteUniform(10, 100)
+    cfg.data.train.density = Uniform(0.01, 0.03)
+    cfg.data.train.path_length = DiscreteUniform(5, 10)
+    cfg.data.train.composition_density = Uniform(0.01, 0.02)
+    cfg.data.train.batch_size = 512
+    cfg.data.train.shuffle = False
+
+    # explicitly convert the DictConfig back to Config object
+    # has the added benefit of performing validation upfront
+    # before any expensive training or logging initiates
+    config = Config.from_dict_config(cfg)
+
+    # initialize the training module
+    training_module = TrainingModule(config)
+    data = DataGenerator(config.data)
+    data.init()
+
+    data.train_loader()
+    data.eval_loader()
+
+    for a, b in data.train_loader():
+        training_module.model.forward(a, 10)
+        break
+
+    trainer = Trainer(gpus=0)
+    trainer.fit(
+        training_module,
+        train_dataloader=data.train_loader(),
+        val_dataloaders=data.eval_loader(),
+    )
 
 
 if __name__ == "__main__":

@@ -24,16 +24,16 @@ from caldera.transforms.networkx import NetworkxNodesToStr
 from caldera.transforms.networkx import NetworkxSetDefaultFeature
 from caldera.transforms.networkx import NetworkxToDirected
 from caldera.utils._tools import _resolve_range
-from caldera.utils.nx.generators import _uuid_chain
 from caldera.utils.nx.generators import chain_graph
 from caldera.utils.nx.generators import compose_and_connect
 from caldera.utils.nx.generators import random_graph
+from caldera.utils.nx.generators import uuid_sequence
 
 
 def generate_shorest_path_example(n_nodes, density, path_length):
     d = _resolve_range(density)
     l = _resolve_range(path_length)
-    path = list(_uuid_chain(l))
+    path = list(uuid_sequence(l))
     h = chain_graph(path, nx.Graph)
     g = random_graph(n_nodes, density=d)
     graph = compose_and_connect(g, h, d)

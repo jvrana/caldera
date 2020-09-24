@@ -18,6 +18,7 @@ def _resolve_range(x: Union[Tuple[float, float], float]) -> float:
     ...
 
 
+# TODO: rename and have this choose from distributions instead
 def _resolve_range(x: Union[Tuple[int, int], int]) -> int:
     if isinstance(x, int) or isinstance(x, float):
         return x

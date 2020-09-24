@@ -1,4 +1,6 @@
 import functools
+import inspect
+import sys
 from functools import wraps
 from typing import Any
 from typing import Dict
@@ -10,6 +12,7 @@ from typing import Type
 from typing import TypeVar
 
 import torch
+from colorama import Fore
 
 from caldera.exceptions import CalderaException
 
@@ -56,7 +59,7 @@ class FlexBlock(torch.nn.Module, Generic[M]):
     """Flexible Block that is resolve upon calling of `forward` with an
     example."""
 
-    def __init__(self, module_fn: Type[M], *args, **kwargs):
+    def __init__(self, module_fn: Type[M], *args, _from_frame=None, **kwargs):
         """A Flexible torch.nn.Module whose dimensions are resolved when
         provided with an example.
 
@@ -71,6 +74,7 @@ class FlexBlock(torch.nn.Module, Generic[M]):
         self.resolved_module: Optional[M] = None
         self._apply_history = None
         self.__resolved = False
+        self._from_frame = _from_frame or str(sys._getframe(1))
 
         for fname in ["__call__", "forward"]:
             if hasattr(self.module, fname):
@@ -127,9 +131,19 @@ class FlexBlock(torch.nn.Module, Generic[M]):
         try:
             self.resolved_module = self.module(*resolved_args, **resolved_kwargs)
         except Exception as e:
-            raise ResolveError(
-                "There was an error resolving module {}: {}".format(self.module, str(e))
-            ) from e
+            msg = Fore.RED + "There was an error resolving module {}".format(
+                self.module
+            )
+            msg += "\n  Flex or FlexBlock initialized in {}".format(self._from_frame)
+            msg += "\nExpected Signature: {}".format(inspect.signature(self.module))
+            tokens = [str(a) for a in resolved_args]
+            tokens += ["{}={}".format(k, v) for k, v in resolved_kwargs.items()]
+            msg += "\nReceived: ({})".format(", ".join(tokens))
+            msg += "\nReceived the following exception:"
+            msg += Fore.RESET
+            msg += "\n"
+            msg += str(e)
+            raise ResolveError(msg) from e
         if self._apply_history:
             self._play_apply()
 
@@ -223,6 +237,7 @@ class Flex(Generic[M]):
         """
         self.module_type = module_type
         self._update_docstr()
+        self._from_frame = str(sys._getframe(1))
 
     def _update_docstr(self):
         docstr = "Flex({m}). A module with flexible dimensions that wraps the {m} module.".format(
@@ -247,7 +262,9 @@ class Flex(Generic[M]):
         :param kwargs: the initialization keyword arguments
         :return: initialized torch.nn.Module
         """
-        return FlexBlock(self.module_type, *args, **kwargs)
+        return FlexBlock(
+            self.module_type, *args, _from_frame=self._from_frame, **kwargs
+        )
 
     @staticmethod
     def has_flex_blocks(module: torch.nn.Module):
