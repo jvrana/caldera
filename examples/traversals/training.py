@@ -7,6 +7,7 @@ from pytorch_lightning.metrics import functional as FM
 from torch.nn import functional as F
 
 from .configuration import Config
+from .configuration.tools import dataclass_to_dict
 from .model import Network
 from caldera.data import GraphBatch
 
@@ -16,6 +17,7 @@ class TrainingModule(LightningModule):
         super().__init__()
         self.config = config
         self.model: Network = Network(config.network)
+        self.hparams = dataclass_to_dict(config)
 
     def training_step(self, batch: GraphBatch, batch_idx: int) -> pl.TrainResult:
         input_batch, target_batch = batch
@@ -23,11 +25,11 @@ class TrainingModule(LightningModule):
             input_batch, steps=self.config.hyperparameters.train_core_processing_steps
         )
 
-        loss = torch.tensor(0.0)
         for out_batch in out_batch_list:
-            loss += F.mse_loss(target_batch.x, out_batch.x)
-            loss += F.mse_loss(target_batch.e, out_batch.e)
-            loss += F.mse_loss(target_batch.g, out_batch.g)
+            node_loss = F.mse_loss(target_batch.x, out_batch.x)
+            edge_loss = F.mse_loss(target_batch.e, out_batch.e)
+            glob_loss = F.mse_loss(target_batch.g, out_batch.g)
+        loss = node_loss + edge_loss + glob_loss
 
         result = pl.TrainResult(loss)
         result.log(
@@ -43,11 +45,11 @@ class TrainingModule(LightningModule):
             input_batch, steps=self.config.hyperparameters.train_core_processing_steps
         )
 
-        loss = torch.tensor(0.0)
         for out_batch in out_batch_list:
-            loss += F.mse_loss(target_batch.x, out_batch.x)
-            loss += F.mse_loss(target_batch.e, out_batch.e)
-            loss += F.mse_loss(target_batch.g, out_batch.g)
+            node_loss = F.mse_loss(target_batch.x, out_batch.x)
+            edge_loss = F.mse_loss(target_batch.e, out_batch.e)
+            glob_loss = F.mse_loss(target_batch.g, out_batch.g)
+        loss = node_loss + edge_loss + glob_loss
 
         result = pl.EvalResult(checkpoint_on=loss)
         result.log(

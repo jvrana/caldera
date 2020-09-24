@@ -1,0 +1,72 @@
+# @package _group_
+encode:
+    node:
+        size: 12
+        depth: 1
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+    edge:
+        size: 32
+        depth: 1
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+    glob:
+        size: 32
+        depth: 1
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+core:
+    node:
+        size: 32
+        depth: 3
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+    edge:
+        size: 32
+        depth: 3
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+    glob:
+        size: 32
+        depth: 3
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+out:
+    node:
+        size: 1
+        depth: 1
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+    edge:
+        size: 1
+        depth: 1
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+    glob:
+        size: 1
+        depth: 1
+        layer_norm: ${network.layer_norm}
+        activation: ${network.activation}
+        dropout: ${network.dropout}
+
+# defaults
+dropout: 0.2
+activation: LeakyReLU
+layer_norm: true
+aggregator_activation: LeakyReLU
+pass_global_to_edge: true
+pass_global_to_node: true
+edge_block_to_node_aggregators:
+    - add
+global_block_to_node_aggregators:
+    - add
+global_block_to_edge_aggregators:
+    - add

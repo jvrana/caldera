@@ -1,3 +1,4 @@
+Warning: The lock file is not up to date with the latest changes in pyproject.toml. You may be getting outdated dependencies. Run update to update them.
 absl-py==0.10.0 \
     --hash=sha256:b20f504a7871a580be5268a18fbad48af4203df5d33dbc9272426cb806245a45 \
     --hash=sha256:ea07d7d437798bffc14f39fccec3909d251a1e76e233205ded72b71c267e0178

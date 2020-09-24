@@ -1,16 +1,14 @@
-from dataclasses import dataclass
-from dataclasses import field
+import os
 from multiprocessing import Pool
 from typing import Callable
-from typing import Generic
 from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import Type
 from typing import TypeVar
 
 import networkx as nx
 import numpy as np
+from rich.progress import Progress
 from tqdm import tqdm
 
 from .configuration import DataConfig
@@ -23,7 +21,6 @@ from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
 from caldera.transforms.networkx import NetworkxNodesToStr
 from caldera.transforms.networkx import NetworkxSetDefaultFeature
 from caldera.transforms.networkx import NetworkxToDirected
-from caldera.utils._tools import _resolve_range as resolve_range
 from caldera.utils.mp import multiprocess
 from caldera.utils.nx.generators import chain_graph
 from caldera.utils.nx.generators import compose_and_connect
@@ -114,7 +111,10 @@ class DataGenerator:
         )
 
     def _create_raw_data(
-        self, data_config: DataGenConfig, desc: Optional[str] = None
+        self,
+        data_config: DataGenConfig,
+        desc: Optional[str] = None,
+        callback: Callable = None,
     ) -> List[nx.DiGraph]:
         graphs = []
 
@@ -137,13 +137,16 @@ class DataGenerator:
             )
 
             if desc is None:
-                desc = "generating {} data".format(data_config.name)
-            pbar = tqdm(total=data_config.num_graphs, desc=desc)
+                desc = "generating {} data ({} cpus)".format(
+                    data_config.name, os.cpu_count()
+                )
+            # pbar = tqdm(total=data_config.num_graphs, desc=desc)
             while True:
                 try:
                     result = next(results)
                     graphs.append(result)
-                    pbar.update()
+                    if callback:
+                        callback(result)
                 except StopIteration:
                     break
 
@@ -152,17 +155,29 @@ class DataGenerator:
     def _create_dataloader(
         self, input_feature_key: str, target_feature_key: str, config: DataGenConfig
     ):
-        graphs = self._create_raw_data(config)
-        input_datalist = []
-        target_datalist = []
+        with Progress() as progress:
+            task1 = progress.add_task(
+                "[red]Generating data...", total=config.num_graphs
+            )
+            task2 = progress.add_task(
+                "[purple]Converting data...", total=config.num_graphs
+            )
 
-        for graph in tqdm(graphs, desc="converting networkx to GraphData"):
-            input_datalist.append(
-                GraphData.from_networkx(graph, feature_key=input_feature_key)
+            graphs = self._create_raw_data(
+                config, callback=lambda _: progress.update(task1, advance=1)
             )
-            target_datalist.append(
-                GraphData.from_networkx(graph, feature_key=target_feature_key)
-            )
+            input_datalist = []
+            target_datalist = []
+
+            for graph in graphs:
+                input_datalist.append(
+                    GraphData.from_networkx(graph, feature_key=input_feature_key)
+                )
+                progress.update(task2, advance=0.5)
+                target_datalist.append(
+                    GraphData.from_networkx(graph, feature_key=target_feature_key)
+                )
+                progress.update(task2, advance=0.5)
 
         loader = GraphDataLoader(
             input_datalist,

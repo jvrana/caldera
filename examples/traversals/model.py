@@ -6,7 +6,7 @@ from typing import Type
 
 import torch
 
-from .configuration import GraphNetConfig
+from .configuration import NetConfig
 from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock
@@ -102,7 +102,7 @@ class LinearTransformation(torch.nn.Module):
 
 
 class Network(torch.nn.Module):
-    def __init__(self, config: GraphNetConfig):
+    def __init__(self, config: NetConfig):
         """Do stuff with cfg.
 
         Use your interpreter/IDE to help construction
@@ -111,70 +111,70 @@ class Network(torch.nn.Module):
         self.config = config
         self.encoder = self.init_encoder()
         self.core = self.init_core()
-        self.decoder = self.init_decoder()
+        self.decoder = self.init_encoder()
         self.output_transform = self.init_out_transform()
 
     # TODO: this size is going to be different, right??
     def init_encoder(self) -> GraphEncoder:
         return GraphEncoder(
             edge_block=EdgeBlockEncoder(
-                self.config.edge_encode.size,
-                self.config.edge_encode.dropout,
-                self.config.get_activation(self.config.edge_encode.activation),
+                self.config.encode.edge.size,
+                self.config.encode.edge.dropout,
+                self.config.get_activation(self.config.encode.edge.activation),
             ),
             node_block=NodeBlockEncoder(
-                self.config.node_encode.size,
-                self.config.node_encode.dropout,
-                self.config.get_activation(self.config.node_encode.activation),
+                self.config.encode.node.size,
+                self.config.encode.node.dropout,
+                self.config.get_activation(self.config.encode.node.activation),
             ),
             global_block=GlobalBlockEncoder(
-                self.config.glob_encode.size,
-                self.config.glob_encode.dropout,
-                self.config.get_activation(self.config.glob_encode.activation),
+                self.config.encode.glob.size,
+                self.config.encode.glob.dropout,
+                self.config.get_activation(self.config.encode.glob.activation),
             ),
         )
 
-    def init_decoder(self) -> GraphEncoder:
-        return GraphEncoder(
-            edge_block=EdgeBlockEncoder(
-                self.config.edge_decode.size,
-                self.config.edge_decode.dropout,
-                self.config.get_activation(self.config.edge_decode.activation),
-            ),
-            node_block=NodeBlockEncoder(
-                self.config.node_decode.size,
-                self.config.node_decode.dropout,
-                self.config.get_activation(self.config.node_decode.activation),
-            ),
-            global_block=GlobalBlockEncoder(
-                self.config.glob_decode.size,
-                self.config.glob_decode.dropout,
-                self.config.get_activation(self.config.glob_decode.activation),
-            ),
-        )
+    # def init_decoder(self) -> GraphEncoder:
+    #     return GraphEncoder(
+    #         edge_block=EdgeBlockEncoder(
+    #             self.config.decode.edge.size,
+    #             self.config.decode.edge.dropout,
+    #             self.config.get_activation(self.config.decode.edge.activation),
+    #         ),
+    #         node_block=NodeBlockEncoder(
+    #             self.config.decode.node.size,
+    #             self.config.decode.node.dropout,
+    #             self.config.get_activation(self.config.decode.node.activation),
+    #         ),
+    #         global_block=GlobalBlockEncoder(
+    #             self.config.decode.glob.size,
+    #             self.config.decode.glob.dropout,
+    #             self.config.get_activation(self.config.decode.glob.activation),
+    #         ),
+    #     )
 
     def init_core(self):
         return GraphCore(
             edge_block=EdgeBlockCore(
-                layers=self.config.edge_core.layers,
-                dropout=self.config.edge_core.dropout,
-                layer_norm=self.config.edge_core.layer_norm,
+                layers=self.config.core.edge.layers,
+                dropout=self.config.core.edge.dropout,
+                layer_norm=self.config.core.edge.layer_norm,
             ),
             node_block=NodeBlockCore(
-                layers=self.config.node_core.layers,
-                dropout=self.config.node_core.dropout,
+                layers=self.config.core.node.layers,
+                dropout=self.config.core.node.dropout,
                 aggregator=self.config.edge_block_to_node_aggregators,
                 aggregator_activation=self.config.get_activation(
                     self.config.aggregator_activation
                 ),
-                layer_norm=self.config.node_core.layer_norm,
+                layer_norm=self.config.core.node.layer_norm,
             ),
             global_block=GlobalBlockCore(
-                layers=self.config.glob_core.layers,
-                dropout=self.config.glob_core.dropout,
+                layers=self.config.core.glob.layers,
+                dropout=self.config.core.glob.dropout,
                 edge_aggregator=self.config.global_block_to_edge_aggregators,
                 node_aggregator=self.config.global_block_to_node_aggregators,
-                layer_norm=self.config.glob_core.layer_norm,
+                layer_norm=self.config.core.glob.layer_norm,
                 aggregator_activation=self.config.get_activation(
                     self.config.aggregator_activation
                 ),
@@ -188,20 +188,20 @@ class Network(torch.nn.Module):
         return GraphEncoder(
             edge_block=EdgeBlock(
                 LinearTransformation(
-                    self.config.edge_out.size,
-                    self.config.get_activation(self.config.edge_out.activation),
+                    self.config.out.edge.size,
+                    self.config.get_activation(self.config.out.edge.activation),
                 ),
             ),
             node_block=NodeBlock(
                 LinearTransformation(
-                    self.config.node_out.size,
-                    self.config.get_activation(self.config.node_out.activation),
+                    self.config.out.node.size,
+                    self.config.get_activation(self.config.out.node.activation),
                 )
             ),
             global_block=GlobalBlock(
                 LinearTransformation(
-                    self.config.glob_out.size,
-                    self.config.get_activation(self.config.glob_out.activation),
+                    self.config.out.glob.size,
+                    self.config.get_activation(self.config.out.glob.activation),
                 )
             ),
         )
