@@ -19,6 +19,10 @@ docs:
 	make -C docs html
 
 
+docker-docs:
+	docker build . -f docker/docs/Dockerfile -t jvrana/caldera-docs:latest
+	.scripts/build_docs.sh -t jvrana/caldera-docs:latest
+
 #docs:
 #	@echo "Updating documentation..."
 #
