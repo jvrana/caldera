@@ -2,7 +2,10 @@ from functools import partial
 from os.path import abspath
 from os.path import dirname
 from os.path import join
+from typing import Dict
+from typing import Tuple
 
+import pytest
 import torch
 
 from caldera.data import GraphBatch
@@ -29,9 +32,6 @@ def pytest_configure(config):
 """
 Use `pytest.mark.incremental` on pytest Class definition to do incremental tests.
 """
-
-from typing import Dict, Tuple
-import pytest
 
 # store history of failures per test class name and per index in parametrize (if parametrize used)
 _test_failed_incremental: Dict[str, Dict[Tuple[int, ...], str]] = {}
@@ -70,7 +70,7 @@ def _pytest_env_mark_setup(item):
 def _pytest_auto_mark_benchmark(item):
     """Automatically mark tests that use the `benchmark` fixture."""
     marks = [mark for mark in item.iter_markers(name="benchmark")]
-    if not marks and "benchmark" in item.funcargnames:
+    if not marks and "benchmark" in item.fixturenames:
         item.add_marker(pytest.mark.benchmark)
 
 

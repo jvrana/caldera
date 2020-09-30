@@ -18,6 +18,14 @@ class MLPBlock(nn.Module):
         dropout: float = None,
         activation: Callable = D.activation,
     ):
+        """Initialize a multi-layer perceptron.
+
+        :param input_size:
+        :param output_size:
+        :param layer_norm:
+        :param dropout:
+        :param activation:
+        """
         super().__init__()
         if output_size is None:
             output_size = input_size
@@ -42,6 +50,13 @@ class MLP(nn.Module):
         dropout: float = None,
         activation: Callable = D.activation
     ):
+        """
+
+        :param latent_sizes:
+        :param layer_norm:
+        :param dropout:
+        :param activation:
+        """
         super().__init__()
         self.layers = nn.Sequential(
             *[

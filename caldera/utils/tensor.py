@@ -61,7 +61,7 @@ def stable_arg_sort(arr, mn: float, mx: float):
         raise ValueError("only last dimension sort is supported. Try reshaping tensor.")
     delta_shape = list(arr.shape)
     delta_shape[dim] = 1
-    delta = torch.linspace(mn, mx, arr.shape[dim])
+    delta = torch.linspace(mn, mx, arr.shape[dim], device=arr.device)
     delta = delta.repeat(delta_shape)
     return torch.argsort(arr + delta, dim=dim)
 

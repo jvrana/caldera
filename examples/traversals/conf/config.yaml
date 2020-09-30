@@ -1,0 +1,11 @@
+defaults:
+- network: default
+- data: default
+- hyperparameters: default
+- settings/out: disable
+- settings/help: default
+- hydra/job_logging: colorlog
+- hydra/hydra_logging: colorlog
+gpus: 1
+log_level: WARNING
+offline: false

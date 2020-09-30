@@ -1,12 +1,20 @@
 r"""
 Methods for transforming :class:`networkx.Graph`s
 
+.. currentmodule:: caldera.transforms.networkx
+
+.. warning::
+
+    You should assume all transforms are performed in place. Use
+    :class:`NetworkxDeepcopy` if a copy of the graph is wanted.
+
 .. autosummary::
     :toctree: generated/
 
     NetworkxApplyToFeature
     NetworkxAttachNumpyFeatures
     NetworkxAttachNumpyOneHot
+    NetworkxAttachNumpyBool
     NetworkxSetDefaultFeature
     NetworkxTransformFeatureData
     NetworkxTransformFeatures
@@ -17,13 +25,14 @@ Methods for transforming :class:`networkx.Graph`s
     NetworkxToDirected
     NetworkxToUndirected
     NetworkxFilterDataKeys
-    NetworkxDeepCopyFeatures
+    NetworkxDeepcpy
 """
 from ._nx_apply_to_graph import NetworkxApply
-from ._nx_apply_to_key import NetworkxApplyToFeature
+from ._nx_apply_to_key import NetworkxApplyToKey
+from ._nx_attach_np_features import NetworkxAttachNumpyBool
 from ._nx_attach_np_features import NetworkxAttachNumpyFeatures
 from ._nx_attach_np_features import NetworkxAttachNumpyOneHot
-from ._nx_deepcopy import NetworkxDeepCopyFeatures
+from ._nx_deepcopy import NetworkxDeepcopy
 from ._nx_defaults import NetworkxSetDefaultFeature
 from ._nx_feature_transform import NetworkxTransformFeatureData
 from ._nx_feature_transform import NetworkxTransformFeatures
@@ -39,17 +48,18 @@ from ._nx_to_undirected import NetworkxToUndirected
 __all__ = [
     "NetworkxAttachNumpyFeatures",
     "NetworkxAttachNumpyOneHot",
+    "NetworkxAttachNumpyBool",
     "NetworkxSetDefaultFeature",
     "NetworkxTransformFeatureData",
     "NetworkxTransformFeatures",
     "NetworkxNodesToStr",
     "NetworkxToDirected",
     "NetworkxToUndirected",
-    "NetworkxApplyToFeature",
+    "NetworkxApplyToKey",
     "NetworkxFlattenNodeFeature",
     "NetworkxFlattenEdgeFeature",
     "NetworkxFlattenGlobalFeature",
     "NetworkxFilterDataKeys",
     "NetworkxApply",
-    "NetworkxDeepCopyFeatures",
+    "NetworkxDeepcopy",
 ]

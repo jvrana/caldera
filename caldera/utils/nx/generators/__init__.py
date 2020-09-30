@@ -34,15 +34,15 @@ def rand_n_nodes_n_edges(
     n_edges: Optional[Union[int, Tuple[int, int]]] = None,
     density: Optional[Union[float, Tuple[float, float]]] = None,
 ):
-    n = _resolve_range(n_nodes)
+    n = int(n_nodes)
     if n_edges is None and density is None:
         raise ValueError("Either density or n_edges must be provided.")
     elif n_edges is None:
-        d = _resolve_range(density)
+        d = float(density)
         e = int((d * n * (n - 1)) / 2)
         e = max(1, e)
     else:
-        e = _resolve_range(n_edges)
+        e = int(n_edges)
     return n, e
 
 
@@ -159,10 +159,10 @@ def chain_graph(sequence, graph_class, edge_data: Optional[Dict] = None):
     return g
 
 
-_uuid_chain = Fn.compose(
+uuid_sequence = Fn.compose(
     lambda x: range(x), Fn.map_each(lambda _: str(uuid.uuid4())[-5:])
 )
 
 
 def unique_chain_graph(n: int, graph_class, edge_data: Optional[Dict] = None):
-    return chain_graph(_uuid_chain(n), graph_class, edge_data)
+    return chain_graph(uuid_sequence(n), graph_class, edge_data)

@@ -23,8 +23,6 @@ clean:
 	@echo "Cleaning"
 	rm -rf $(BUILDDIR)/*
 	rm -rf $(SOURCEDIR)/generated
-	keats version up
-	keats changelog up
 
 # execute each notebook and generate files for each notebook
 .PHONY: nbexamples

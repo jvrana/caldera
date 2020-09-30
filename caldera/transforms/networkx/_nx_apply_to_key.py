@@ -11,7 +11,7 @@ S = TypeVar("S")
 K = TypeVar("K")
 
 
-class NetworkxApplyToFeature(NetworkxTransformFeatureData):
+class NetworkxApplyToKey(NetworkxTransformFeatureData):
     def __init__(
         self,
         key: str,
@@ -19,7 +19,7 @@ class NetworkxApplyToFeature(NetworkxTransformFeatureData):
         edge_func: Callable[[S], T] = None,
         glob_func: Callable[[S], T] = None,
     ):
-        """Transformation to apply a function to the a keyed value for a
+        """Transformation to apply a function to the a keyed value for a]
         networkx graph.
 
         :param key: key to find the value to apply the function to.
@@ -34,6 +34,7 @@ class NetworkxApplyToFeature(NetworkxTransformFeatureData):
 
             def _apply_to_key(d: Dict[K, S]) -> T:
                 d[key] = f(d[key])
+                return d
 
             return _apply_to_key
 

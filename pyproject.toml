@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "caldera"
-version = "0.1.0"
+name = "pytorch-caldera"
+version = "0.1.0a0"
 description = ""
 homepage = "http://www.github.com/jvrana/caldera"
 authors = ["Justin Vrana <justin.vrana@gmail.com>"]
@@ -18,6 +18,10 @@ classifiers = [
     'Topic :: Software Development :: Libraries :: Python Modules'
 ]
 keywords = ["pytorch", "machine learning", "network", "graph"]
+packages = [
+    {include="caldera"},
+    {include="examples"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -42,12 +46,19 @@ seaborn = {version = "^0.11.0", optional = true}
 matplotlib = {version = "^3.3.1", optional = true}
 tqdm = {version = "^4.48.2", optional = true}
 pytest-randomly = "^3.4.1"
+pytorch-lightning = {version = "^0.9.0", optional = true}
+hydra-core = {version = "^1.0.0", optional = true}
+attrs = "^20.2.0"
+dill = "^0.3.2"
+colorama = "^0.4.3"
+rich = {version = "^7.0.0", optional = true}
+h5py = {version = "^2.10.0", optional = true}
 
 [tool.poetry.extras]
 docs = ["sphinx", "sphinx_bootstrap_theme", "sphinx_autodoc_typehints", "autodocsumm", "keats", "nbformat", "nbconvert", "jupyter-sphinx"]
 lint = ["black", "pytest-cov", "pre-commit", "pylint"]
 xtests = ["pytest-sugar"]
-nbexamples = ["matplotlib", "seaborn", "tqdm"]
+nbexamples = ["matplotlib", "seaborn", "tqdm", "pytorch-lightning", "hydra-core", "rich", 'h5py']
 
 [tool.poetry.dev-dependencies]
 pytest = "6"
@@ -55,6 +66,7 @@ flaky = "^3.7.0"
 dictdiffer = "^0.8.1"
 pytest-html = "^2.1.1"
 pytest-benchmark = "^3.2.3"
+pytest-xdist = "^2.1.0"
 
 [build-system]
 requires = ["poetry>=0.12"]

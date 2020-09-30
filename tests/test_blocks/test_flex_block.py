@@ -79,3 +79,15 @@ def test_flex_block_to_playback(dtype, dtype2):
     for p in net.parameters():
         if dtype2:
             assert p.dtype is dtype2
+
+
+class TestFlexDocString:
+    def test_module_doc_string(self):
+        f = Flex(torch.nn.Linear)
+        assert torch.nn.Linear.__doc__ in f.__call__.__doc__
+
+    def test_call(self):
+        f = Flex(torch.nn.Linear)(10, 10)
+        print(torch.nn.Linear(10, 10).__call__.__str__())
+        print(f.forward.__doc__)
+        print(f.__call__.__doc__)

@@ -1,16 +1,23 @@
+import functools
+import inspect
+import sys
 from functools import wraps
 from typing import Any
 from typing import Dict
 from typing import Generator
+from typing import Generic
+from typing import Optional
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
 
 import torch
+from colorama import Fore
 
 from caldera.exceptions import CalderaException
 
 T = TypeVar("T")
+M = TypeVar("M", bound=torch.nn.Module)
 
 
 class InvalidFlexZeroDimension(Exception):
@@ -48,11 +55,11 @@ class FlexDim:
         return "{}({}, {})".format(self.__class__.__name__, self.pos, self.dim)
 
 
-class FlexBlock(torch.nn.Module):
+class FlexBlock(torch.nn.Module, Generic[M]):
     """Flexible Block that is resolve upon calling of `forward` with an
     example."""
 
-    def __init__(self, module_fn: Type[torch.nn.Module], *args, **kwargs):
+    def __init__(self, module_fn: Type[M], *args, _from_frame=None, **kwargs):
         """A Flexible torch.nn.Module whose dimensions are resolved when
         provided with an example.
 
@@ -61,12 +68,32 @@ class FlexBlock(torch.nn.Module):
         :param kwargs:
         """
         super().__init__()
-        self.module = module_fn
+        self.module: Type[M] = module_fn
         self.args = args
         self.kwargs = kwargs
-        self.resolved_module = None
+        self.resolved_module: Optional[M] = None
         self._apply_history = None
         self.__resolved = False
+        self._from_frame = _from_frame or str(sys._getframe(1))
+
+        for fname in ["__call__", "forward"]:
+            if hasattr(self.module, fname):
+                setattr(
+                    self,
+                    fname,
+                    functools.wraps(getattr(self.module, fname))(
+                        functools.partial(getattr(self.__class__, fname), self)
+                    ),
+                )
+                docstr = (
+                    "Flex."
+                    + fname
+                    + " bound to function of "
+                    + str(getattr(self.module, fname))
+                )
+                if getattr(self.module, fname).__doc__:
+                    docstr += "\n" + getattr(self.module, fname).__doc__
+                getattr(self, fname).__doc__ = docstr
 
     @property
     def is_resolved(self):
@@ -93,6 +120,7 @@ class FlexBlock(torch.nn.Module):
                 rargs.append(a)
         return rargs
 
+    # TODO: implement resolve_kwargs
     def resolve_kwargs(self, input_args: Tuple[Any, ...], input_kwargs: Dict[str, Any]):
         return self.kwargs
 
@@ -103,9 +131,19 @@ class FlexBlock(torch.nn.Module):
         try:
             self.resolved_module = self.module(*resolved_args, **resolved_kwargs)
         except Exception as e:
-            raise ResolveError(
-                "There was an error resolving module {}: {}".format(self.module, str(e))
-            ) from e
+            msg = Fore.RED + "There was an error resolving module {}".format(
+                self.module
+            )
+            msg += "\n  Flex or FlexBlock initialized in {}".format(self._from_frame)
+            msg += "\nExpected Signature: {}".format(inspect.signature(self.module))
+            tokens = [str(a) for a in resolved_args]
+            tokens += ["{}={}".format(k, v) for k, v in resolved_kwargs.items()]
+            msg += "\nReceived: ({})".format(", ".join(tokens))
+            msg += "\nReceived the following exception:"
+            msg += Fore.RESET
+            msg += "\n"
+            msg += str(e)
+            raise ResolveError(msg) from e
         if self._apply_history:
             self._play_apply()
 
@@ -180,12 +218,13 @@ def _iter_flex_blocks(module: torch.nn.Module) -> Generator[FlexBlock, None, Non
     yield from _iter_modules_of_type(module, FlexBlock)
 
 
-class Flex:
+# TODO: allow Flex to intake a function in addition to torch.nn.Module
+class Flex(Generic[M]):
     """Flex."""
 
     d = FlexDim
 
-    def __init__(self, module_type: Type[torch.nn.Module]):
+    def __init__(self, module_type: Type[M]):
         """Initialize a module as a FlexBlock with flexible dimensions.
 
         Usage:
@@ -197,8 +236,24 @@ class Flex:
         :param module_type: module type (e.g. `torch.nn.Linear`
         """
         self.module_type = module_type
+        self._update_docstr()
+        self._from_frame = str(sys._getframe(1))
 
-        self.__call__ = wraps(module_type.__init__)(self.__class__.__call__)
+    def _update_docstr(self):
+        docstr = "Flex({m}). A module with flexible dimensions that wraps the {m} module.".format(
+            m=self.module_type.__name__
+        )
+        docstr += "\nInitialize using Flex({m})(*args, **kwargs) according to the documentation below.\n".format(
+            m=self.module_type.__name__
+        )
+        if self.module_type.__doc__:
+            docstr += "\n{}\n".format(self.module_type.__name__)
+            docstr += self.module_type.__doc__
+        if self.module_type.__init__.__doc__:
+            docstr += "\n__init__\n"
+            docstr += self.module_type.__init__.__doc__
+        self.__call__ = wraps(self.module_type)(self.__class__.__call__)
+        self.__call__.__doc__ = docstr
 
     def __call__(self, *args, **kwargs) -> FlexBlock:
         """Initialize the flexible module.
@@ -207,7 +262,9 @@ class Flex:
         :param kwargs: the initialization keyword arguments
         :return: initialized torch.nn.Module
         """
-        return FlexBlock(self.module_type, *args, **kwargs)
+        return FlexBlock(
+            self.module_type, *args, _from_frame=self._from_frame, **kwargs
+        )
 
     @staticmethod
     def has_flex_blocks(module: torch.nn.Module):
@@ -218,6 +275,6 @@ class Flex:
     @staticmethod
     def has_unresolved_flex_blocks(module: torch.nn.Module):
         for m in _iter_flex_blocks(module):
-            if not m.is_resolved():
+            if not m.is_resolved:
                 return True
         return False

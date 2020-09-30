@@ -1,6 +1,3 @@
-
-
-
 repos:
 -   repo: https://github.com/psf/black
     rev: 20.8b1
@@ -10,7 +7,7 @@ repos:
     rev: 3.8.3
     hooks:
     -   id: flake8
-        exclude: (^tests/)|(^docsrc/)|(^experiments)
+        exclude: (^tests/)|(^docsrc/)|(^experiments)|(^examples)
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
@@ -29,14 +26,17 @@ repos:
     hooks:
     -   id: reorder-python-imports
         args: [--py3-plus]
--   repo: https://github.com/jvrana/poetry-export-hook
-    rev: 0.0.2
+-   repo: https://github.com/jvrana/poetry-hooks
+    rev: 0.2.1
     hooks:
+    -   id: poetry-version-up
     -   id: poetry-export
-        args: ['-vvv']
     -   id: poetry-export
         name: export-docs
-        args: ['--requirements', 'requirements-docs.txt', '--dev', '-E', 'docs', '-vvv']
+        args: ['--requirements', 'requirements-docs.txt', '--dev', '-E', 'docs']
     -   id: poetry-export
         name: export-dev
-        args: ['--requirements', 'requirements-dev.txt', '--dev', '-vvv']
+        args: ['--requirements', 'requirements-dev.txt', '--dev']
+    -   id: poetry-export
+        name: export-examples
+        args: [ '--requirements', 'requirements-examples.txt', '-E', 'nbexamples']

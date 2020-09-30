@@ -6,6 +6,7 @@ from typing import Optional
 from typing import overload
 from typing import Tuple
 from typing import TypeVar
+from typing import Union
 
 import torch
 from torch.utils.data import DataLoader
@@ -46,19 +47,9 @@ def collate_zip(data_list: List[Tuple[GraphData, ...]]) -> Tuple[GraphBatch, ...
 
 
 class GraphDataLoader(DataLoader):
-    @overload
-    def __init__(self, dataset: Dataset, batch_size: ..., shuffle: ..., **kwargs):
-        ...
-
-    @overload
-    def __init__(
-        self, dataset: List[GraphData], batch_size: ..., shuffle: ..., **kwargs
-    ):
-        ...
-
     def __init__(
         self,
-        *dataset: List[GraphBatch],
+        *dataset: Union[List[GraphBatch], Dataset],
         batch_size: int = 1,
         shuffle: bool = False,
         **kwargs

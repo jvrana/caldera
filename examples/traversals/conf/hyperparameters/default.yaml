@@ -1,0 +1,4 @@
+# @package _group_
+lr: 0.001
+train_core_processing_steps: 10
+eval_core_processing_steps: 10
