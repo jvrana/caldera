@@ -1,5 +1,13 @@
 r"""
 This module provide objects for representing graphs as `torch` tensors.
+
+.. autosummary::
+    :toctree: generated/
+
+    GraphBatch
+    GraphData
+    GraphTuple
+    GraphDataLoader
 """
 from ._graph_batch import GraphBatch
 from ._graph_data import GraphData

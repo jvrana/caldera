@@ -90,9 +90,10 @@ class GlobalBlockCore(AggregatingGlobalBlock):
 class LinearTransformation(torch.nn.Module):
     def __init__(self, size: int, activation: Type[torch.nn.Module]):
         super().__init__()
-        self.layer = torch.nn.Sequential(
-            Flex(torch.nn.Linear)(Flex.d(), size), activation()
-        )
+        layers = [Flex(torch.nn.Linear)(Flex.d(), size)]
+        if activation is not None:
+            layers.append(activation())
+        self.layer = torch.nn.Sequential(*layers)
 
     def forward(self, data):
         return self.layer(data)

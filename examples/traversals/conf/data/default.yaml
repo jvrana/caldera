@@ -1,5 +1,5 @@
 # @package _group_
-train:
+train:  # training data generation
     name: train
     batch_size: 512
     shuffle: true
@@ -17,10 +17,10 @@ train:
         high: 15
         name: discrete_uniform
     composition_density:
-        low: 0.01
-        high: 0.02
+        low: 0.002
+        high: 0.01
         name: uniform
-eval:
+eval:  # evaluation data generation
     name: eval
     batch_size: "${data.eval.num_graphs}"
     shuffle: false
@@ -38,6 +38,6 @@ eval:
         high: 15
         name: discrete_uniform
     composition_density:
-        low: 0.01
-        high: 0.02
+        low: 0.002
+        high: 0.01
         name: uniform

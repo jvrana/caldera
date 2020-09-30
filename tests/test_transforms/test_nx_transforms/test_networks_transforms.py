@@ -4,6 +4,8 @@ import networkx as nx
 import numpy as np
 import pytest
 
+from caldera.transforms.networkx import NetworkxApplyToKey
+from caldera.transforms.networkx import NetworkxAttachNumpyBool
 from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
 from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
 from caldera.transforms.networkx import NetworkxFilterDataKeys
@@ -49,6 +51,16 @@ class TestTransformBase:
         assert x2 == (1, 2, 3)
 
 
+class TestApplyToKey:
+    def test_(self):
+        g = nx.DiGraph()
+        g.add_node(1, features=2)
+        t = NetworkxApplyToKey("features", node_func=lambda x: x * 10)
+        t(g)
+        print(g.nodes(data=True))
+        assert g.nodes[1]["features"] == 20
+
+
 def np_same(a, b):
     if not a.shape == b.shape:
         return False
@@ -84,6 +96,35 @@ class TestOneHot:
         assert np_same(g.nodes[3]["x"], a2)
 
         assert set(g.nodes[1]) == {"features", "x"}
+
+    def test_one_hot_bool_class(self):
+        g = nx.DiGraph()
+        g.add_node(1, **{"features": True})
+        g.add_node(2, **{"features": False})
+        g.add_node(3, **{"features": False})
+
+        transform = NetworkxAttachNumpyBool("node", "features", "x")
+
+        transform(g)
+        assert np_same(g.nodes[1]["x"], np.array([1]))
+        assert np_same(g.nodes[2]["x"], np.array([0]))
+        assert np_same(g.nodes[3]["x"], np.array([0]))
+        #
+        # transform(transform([g]))[0]
+        #
+        # a1 = np.zeros(10)
+        # a1[0] = 1
+        # a2 = np.zeros(10)
+        # a2[1] = 1
+        #
+        # a1 = np.hstack([a1, a1])
+        # a2 = np.hstack([a2, a2])
+        #
+        # assert np_same(g.nodes[1]["x"], a1)
+        # assert np_same(g.nodes[2]["x"], a2)
+        # assert np_same(g.nodes[3]["x"], a2)
+        #
+        # assert set(g.nodes[1]) == {"features", "x"}
 
     def test_edges_to_one_hot(self):
         g = nx.DiGraph()

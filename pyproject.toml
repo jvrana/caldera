@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "caldera"
-version = "0.1.0"
+name = "pytorch-caldera"
+version = "0.1.0a0"
 description = ""
 homepage = "http://www.github.com/jvrana/caldera"
 authors = ["Justin Vrana <justin.vrana@gmail.com>"]
@@ -18,6 +18,10 @@ classifiers = [
     'Topic :: Software Development :: Libraries :: Python Modules'
 ]
 keywords = ["pytorch", "machine learning", "network", "graph"]
+packages = [
+    {include="caldera"},
+    {include="examples"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -48,12 +52,13 @@ attrs = "^20.2.0"
 dill = "^0.3.2"
 colorama = "^0.4.3"
 rich = {version = "^7.0.0", optional = true}
+h5py = {version = "^2.10.0", optional = true}
 
 [tool.poetry.extras]
 docs = ["sphinx", "sphinx_bootstrap_theme", "sphinx_autodoc_typehints", "autodocsumm", "keats", "nbformat", "nbconvert", "jupyter-sphinx"]
 lint = ["black", "pytest-cov", "pre-commit", "pylint"]
 xtests = ["pytest-sugar"]
-nbexamples = ["matplotlib", "seaborn", "tqdm", "pytorch-lightning", "hydra-core", "rich"]
+nbexamples = ["matplotlib", "seaborn", "tqdm", "pytorch-lightning", "hydra-core", "rich", 'h5py']
 
 [tool.poetry.dev-dependencies]
 pytest = "6"

@@ -1,66 +1,66 @@
 # @package _group_
 encode:
     node:
-        size: 12
+        size: 16
         depth: 1
-        layer_norm: ${network.layer_norm}
+        layer_norm: false
         activation: ${network.activation}
         dropout: ${network.dropout}
     edge:
-        size: 32
+        size: 16
         depth: 1
-        layer_norm: ${network.layer_norm}
+        layer_norm: false
         activation: ${network.activation}
         dropout: ${network.dropout}
     glob:
-        size: 32
+        size: 16
         depth: 1
-        layer_norm: ${network.layer_norm}
+        layer_norm: false
         activation: ${network.activation}
         dropout: ${network.dropout}
 core:
     node:
-        size: 32
-        depth: 3
-        layer_norm: ${network.layer_norm}
+        size: 16
+        depth: 1
+        layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     edge:
-        size: 32
-        depth: 3
-        layer_norm: ${network.layer_norm}
+        size: 16
+        depth: 1
+        layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     glob:
-        size: 32
-        depth: 3
-        layer_norm: ${network.layer_norm}
+        size: 16
+        depth: 1
+        layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
 out:
     node:
-        size: 1
+        size: 2
         depth: 1
-        layer_norm: ${network.layer_norm}
-        activation: ${network.activation}
-        dropout: ${network.dropout}
+        layer_norm: false
+        activation: Softmax
+        dropout: 0.0
     edge:
-        size: 1
+        size: 2
         depth: 1
-        layer_norm: ${network.layer_norm}
-        activation: ${network.activation}
-        dropout: ${network.dropout}
+        layer_norm: false
+        activation: Softmax
+        dropout: 0.0
     glob:
         size: 1
         depth: 1
-        layer_norm: ${network.layer_norm}
-        activation: ${network.activation}
-        dropout: ${network.dropout}
+        layer_norm: false
+        activation: Softmax
+        dropout: 0.0
 
 # defaults
 dropout: 0.2
 activation: LeakyReLU
-layer_norm: true
+layer_norm: false
 aggregator_activation: LeakyReLU
 pass_global_to_edge: true
 pass_global_to_node: true

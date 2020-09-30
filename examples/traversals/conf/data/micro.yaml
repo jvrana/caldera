@@ -1,9 +1,9 @@
 # @package _group_
 train:  # training data generation
     name: train
-    batch_size: 512
+    batch_size: 10
     shuffle: true
-    num_graphs: 5000
+    num_graphs: 50
     density:
         low: 0.01
         high: 0.03
@@ -24,7 +24,7 @@ eval:  # evaluation data generation
     name: eval
     batch_size: "${data.eval.num_graphs}"
     shuffle: false
-    num_graphs: 500
+    num_graphs: 50
     density:
         low: 0.01
         high: 0.03

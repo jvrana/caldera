@@ -9,14 +9,6 @@
 
 **Caldera** is a Pytorch extension for learning on graphical data. It learns underlying causal relationships in data.
 
-**Inspirations**
-
-* Pytorch Geometric [ADD REF]
-* GraphNets [ADD REF]
-* Pyro Probabilistic Programming Language
-* Pearl, J. (2009). Causality: Models, Reasoning and Inference.
-* Pearl, J. (2018). Theoretical impediments to machine learning with seven sparks from the causal revolution.
-
 ## Gallery
 
 ## Usage
@@ -51,3 +43,12 @@ scatter methods in pytorch. Necessary for graph attribute aggregation
 * PGN - provided a blueprint for implementing this library
 
 ## References
+
+**Inspirations**
+
+* Pytorch Geometric [ADD REF]
+* GraphNets [ADD REF]
+* Pyro Probabilistic Programming Language
+* Pearl, J. (2009). Causality: Models, Reasoning and Inference.
+* Pearl, J. (2018). Theoretical impediments to machine learning with seven sparks from the causal revolution.
+

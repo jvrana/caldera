@@ -7,3 +7,5 @@ defaults:
 - hydra/job_logging: colorlog
 - hydra/hydra_logging: colorlog
 gpus: 1
+log_level: WARNING
+offline: false

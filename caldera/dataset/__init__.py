@@ -1,5 +1,13 @@
 r"""
 Graphdata sets
+
+.. currentmodule:: caldera.dataset
+
+.. autosummary::
+    :toctree: generated/
+
+    GraphDataset
+    GraphBatchDataset
 """
 from ._graph_dataset import GraphBatchDataset
 from ._graph_dataset import GraphDataset

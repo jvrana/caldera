@@ -16,7 +16,7 @@ class LayerConfig(ConfigObj):
     size: int = 1
     depth: int = 1
     layer_norm: bool = "${network.layer_norm}"
-    activation: str = "${network.activation}"
+    activation: Optional[str] = "${network.activation}"
     dropout: float = "${network.dropout}"
 
     @property
@@ -58,4 +58,6 @@ class NetConfig(ConfigObj):
 
     @staticmethod
     def get_activation(activation: str):
+        if activation is None:
+            return torch.nn.Identity
         return getattr(torch.nn, activation)

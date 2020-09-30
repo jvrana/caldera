@@ -1,4 +1,5 @@
 r"""
+
 Caldera utility functions.
 
 .. autosummary::
@@ -55,7 +56,6 @@ Extra :mod:`networkx` utilities
     :toctree: generated/
     :recursive:
 
-    nx
 """
 from ._dict_join import dict_join
 from ._iteration import _first

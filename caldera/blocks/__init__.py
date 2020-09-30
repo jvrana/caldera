@@ -1,7 +1,4 @@
 r"""
-Blocks (:mod:`caldera.blocks`)
-==============================
-
 .. currentmodule:: caldera.blocks
 
 Network building blocks for creating graph neural networks.

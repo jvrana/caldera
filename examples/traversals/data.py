@@ -9,14 +9,15 @@ from typing import TypeVar
 import networkx as nx
 import numpy as np
 from rich.progress import Progress
-from tqdm import tqdm
 
 from .configuration import DataConfig
 from .configuration import DataGenConfig
+from .progress import safe_update
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
 from caldera.testing import annotate_shortest_path
 from caldera.transforms import Compose
+from caldera.transforms.networkx import NetworkxAttachNumpyBool
 from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
 from caldera.transforms.networkx import NetworkxNodesToStr
 from caldera.transforms.networkx import NetworkxSetDefaultFeature
@@ -72,11 +73,17 @@ def generate_shortest_path_example(n_nodes, density, path_length, compose_densit
                 "node", "shortest_path", "_target", classes=[False, True]
             ),
             NetworkxSetDefaultFeature(
-                node_default={"_features": np.array([0.0]), "_target": np.array([0.0])},
-                edge_default={"_features": np.array([0.0]), "_target": np.array([0.0])},
+                node_default={
+                    "_features": np.array([1.0, 0.0]),
+                    "_target": np.array([1.0, 0.0]),
+                },
+                edge_default={
+                    "_features": np.array([1.0, 0.0]),
+                    "_target": np.array([1.0, 0.0]),
+                },
                 global_default={
-                    "_features": np.array([0.0]),
-                    "_target": np.array([0.0]),
+                    "_features": np.array([1.0]),
+                    "_target": np.array([1.0]),
                 },
             ),
             NetworkxNodesToStr(),
@@ -97,10 +104,11 @@ def graph_to_data(graph, key):
 
 
 class DataGenerator:
-    def __init__(self, config: DataConfig):
+    def __init__(self, config: DataConfig, progress_bar: bool = True):
         self.config = config
         self._train_loader = None
         self._eval_loader = None
+        self.progress_bar = progress_bar
 
     def _create_nxg(self, data_config):
         return generate_shortest_path_example(
@@ -140,7 +148,6 @@ class DataGenerator:
                 desc = "generating {} data ({} cpus)".format(
                     data_config.name, os.cpu_count()
                 )
-            # pbar = tqdm(total=data_config.num_graphs, desc=desc)
             while True:
                 try:
                     result = next(results)
@@ -153,18 +160,30 @@ class DataGenerator:
         return graphs
 
     def _create_dataloader(
-        self, input_feature_key: str, target_feature_key: str, config: DataGenConfig
+        self,
+        input_feature_key: str,
+        target_feature_key: str,
+        config: DataGenConfig,
+        progress_bar: Optional[bool] = None,
     ):
-        with Progress() as progress:
+        progress_bar = progress_bar or self.progress_bar
+        with Progress(auto_refresh=True, refresh_per_second=1) as progress:
+
             task1 = progress.add_task(
-                "[red]Generating data...", total=config.num_graphs
+                "[red]Generating {} data...".format(config.name),
+                total=config.num_graphs,
+                visible=progress_bar,
             )
             task2 = progress.add_task(
-                "[purple]Converting data...", total=config.num_graphs
+                "[purple]Converting {} data...".format(config.name),
+                total=config.num_graphs,
+                visible=progress_bar,
             )
 
+            update = safe_update(progress, every=0.1)
+
             graphs = self._create_raw_data(
-                config, callback=lambda _: progress.update(task1, advance=1)
+                config, callback=lambda _: update(task1, advance=1, refresh=False)
             )
             input_datalist = []
             target_datalist = []
@@ -173,11 +192,11 @@ class DataGenerator:
                 input_datalist.append(
                     GraphData.from_networkx(graph, feature_key=input_feature_key)
                 )
-                progress.update(task2, advance=0.5)
+                update(task2, advance=0.5, refresh=False)
                 target_datalist.append(
                     GraphData.from_networkx(graph, feature_key=target_feature_key)
                 )
-                progress.update(task2, advance=0.5)
+                update(task2, advance=0.5, refresh=False)
 
         loader = GraphDataLoader(
             input_datalist,

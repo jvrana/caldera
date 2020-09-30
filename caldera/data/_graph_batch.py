@@ -96,13 +96,21 @@ class GraphBatch(GraphData):
         if not cls._same(g_features):
             raise RuntimeError("Global feature dimensions must all be the same")
 
-        node_repeats = torch.tensor([data.x.shape[0] for data in data_list])
-        edge_repeats = torch.tensor([data.e.shape[0] for data in data_list])
+        device = data_list[0].x.device
+
+        node_repeats = torch.tensor(
+            [data.x.shape[0] for data in data_list], device=device
+        )
+        edge_repeats = torch.tensor(
+            [data.e.shape[0] for data in data_list], device=device
+        )
         node_idx = torch.repeat_interleave(
-            torch.arange(0, node_repeats.shape[0], dtype=torch.long), node_repeats
+            torch.arange(0, node_repeats.shape[0], dtype=torch.long, device=device),
+            node_repeats,
         )
         edge_idx = torch.repeat_interleave(
-            torch.arange(0, edge_repeats.shape[0], dtype=torch.long), edge_repeats
+            torch.arange(0, edge_repeats.shape[0], dtype=torch.long, device=device),
+            edge_repeats,
         )
 
         # concatenate edges
@@ -110,7 +118,10 @@ class GraphBatch(GraphData):
 
         # cumulated shapes
         c = torch.cumsum(
-            torch.tensor([0] + [data.x.shape[0] for data in data_list[:-1]]), dim=0
+            torch.tensor(
+                [0] + [data.x.shape[0] for data in data_list[:-1]], device=device
+            ),
+            dim=0,
         )
         delta = torch.repeat_interleave(c, edge_repeats).repeat(2, 1)
 
@@ -149,10 +160,18 @@ class GraphBatch(GraphData):
         return datalist
 
     def to_networkx(self, *args, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError(
+            "Method not implemented for batches. Use `{}`".format(
+                self.to_networkx_list.__name__
+            )
+        )
 
     def from_networkx(self, *args, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError(
+            "Method not implemented for batches. Use `{}`".format(
+                self.from_networkx_list.__name__
+            )
+        )
 
     def to_networkx_list(
         self,

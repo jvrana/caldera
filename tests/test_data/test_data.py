@@ -755,6 +755,19 @@ class TestView:
         assert data_view.share_storage(data)
 
 
+class TestCudaData:
+    def test_to_datalist(self, device):
+        batch = GraphBatch.random_batch(2, 5, 4, 3)
+        batch = batch.to(device)
+        datalist = batch.to_data_list()
+
+    def test_from_datalist(self, device):
+        batch = GraphBatch.random_batch(2, 5, 4, 3)
+        batch = batch.to(device)
+        datalist = batch.to_data_list()
+        GraphBatch.from_data_list(datalist)
+
+
 def test_():
 
     data1 = GraphData(
