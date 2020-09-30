@@ -2,6 +2,7 @@ Caldera API
 ===========
 
 .. toctree::
+   :name: API
    :caption: Python API
    :maxdepth: 1
    :glob:
