@@ -1,7 +1,6 @@
 ##########################################################
 # Relative Imports
 ##########################################################
-
 import sys
 from os.path import isfile
 from os.path import join
@@ -41,8 +40,13 @@ except ImportError:
 
 from caldera.transforms import Compose
 import numpy as np
-from caldera.transforms.networkx import NetworkxSetDefaultFeature, NetworkxAttachNumpyOneHot, \
-    NetworkxAttachNumpyFeatures, NetworkxNodesToStr, NetworkxToDirected
+from caldera.transforms.networkx import (
+    NetworkxSetDefaultFeature,
+    NetworkxAttachNumpyOneHot,
+    NetworkxAttachNumpyFeatures,
+    NetworkxNodesToStr,
+    NetworkxToDirected,
+)
 from caldera.utils import functional as fn
 from caldera.utils.nx.generators import random_graph
 
@@ -60,7 +64,9 @@ preprocess = Compose(
             "node", "target", "_features", classes=[False, True]
         ),  # label nodes as 'end'
         # attached weight
-        NetworkxAttachNumpyFeatures('edge', 'weight', '_features', encoding=fn.map_each(lambda x: np.array([x]))),
+        NetworkxAttachNumpyFeatures(
+            "edge", "weight", "_features", encoding=fn.map_each(lambda x: np.array([x]))
+        ),
         NetworkxAttachNumpyOneHot(
             "edge", "shortest_path", "_target", classes=[False, True]
         ),  # label edge as shortest_path
@@ -82,5 +88,3 @@ preprocess = Compose(
 from caldera.models import GraphEncoder, GraphCore
 
 GraphCore
-
-

@@ -10,11 +10,11 @@ from caldera.data import GraphData
 
 
 class EdgeBlock(Block):
-    def __init__(self, mlp: nn.Module):
-        super().__init__({"mlp": mlp}, independent=True)
+    def __init__(self, module: nn.Module):
+        super().__init__({"module": module}, independent=True)
 
     def forward(self, edge_attr: torch.FloatTensor):
-        results = self.block_dict["mlp"](edge_attr)
+        results = self.block_dict["module"](edge_attr)
         return results
 
     def forward_from_data(self, data: GraphData):
@@ -22,8 +22,8 @@ class EdgeBlock(Block):
 
 
 class AggregatingEdgeBlock(EdgeBlock):
-    def __init__(self, mlp: nn.Module):
-        super().__init__(mlp)
+    def __init__(self, module: nn.Module):
+        super().__init__(module)
         self._independent = False
 
     def forward(
@@ -44,7 +44,7 @@ class AggregatingEdgeBlock(EdgeBlock):
             to_agg += (global_attr[edge_idx],)
         out = torch.cat([*to_agg, edge_attr], 1)
 
-        return self.block_dict["mlp"](out)
+        return self.block_dict["module"](out)
 
     def forward_from_data(self, data: GraphData):
         return self(data.e, data.x.data.edges)

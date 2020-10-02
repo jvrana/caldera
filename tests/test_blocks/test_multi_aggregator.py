@@ -16,14 +16,3 @@ def test_aggregators(methods, hard_select, attn):
     x = torch.randn(shape)
     out = block(x, idx, dim=0, dim_size=20)
     assert out.shape == (20, 5)
-
-
-@pytest.mark.parametrize("methods", [["min", "max"]])
-def test_aggregators_uniform(methods):
-    shape = (10, 5)
-    block = MultiAggregator(shape[1], methods, uniform=False)
-    print(block)
-    idx = torch.randint(0, 20, (shape[0],))
-    x = torch.randn(shape)
-    out = block(x, idx, dim=0, dim_size=20)
-    assert out.shape == (20, 5)

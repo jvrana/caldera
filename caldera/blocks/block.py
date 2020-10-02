@@ -6,6 +6,11 @@ from torch import nn
 
 class Block(nn.Module, ABC):
     def __init__(self, module_dict: Dict[str, nn.Module], independent: bool):
+        """A generic Graph Neural Network block.
+
+        :param module_dict:
+        :param independent:
+        """
         super().__init__()
         self._independent = independent
         self.block_dict = nn.ModuleDict(

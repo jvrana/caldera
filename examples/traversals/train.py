@@ -2,10 +2,10 @@
 ##########################################################
 # Relative Imports
 ##########################################################
+import argparse
 import sys
 from os.path import isfile
 from os.path import join
-import argparse
 
 
 def find_pkg(name: str, depth: int):
@@ -62,7 +62,9 @@ def prime_the_model(model: TrainingModule, config: Config):
     config_copy: DataConfig = copy.deepcopy(config.data)
     config_copy.train.num_graphs = 10
     config_copy.eval.num_graphs = 0
-    data_copy = DataGenerator(config_copy, train_config=config.training, progress_bar=False)
+    data_copy = DataGenerator(
+        config_copy, train_config=config.training, progress_bar=False
+    )
     for a, b in data_copy.train_loader():
         model.model.forward(a, 10)
         break
@@ -128,7 +130,9 @@ def main():
 
     # initialize logger
     if config.logging.disabled is False:
-        wandb_logger = WandbLogger(project=config.logging.project, offline=config.logging.offline)
+        wandb_logger = WandbLogger(
+            project=config.logging.project, offline=config.logging.offline
+        )
     else:
         wandb_logger = None
 
@@ -152,10 +156,15 @@ def main():
 
     # training
     logger.info("Beginning training...")
-    trainer = Trainer(max_epochs=config.training.max_epochs, gpus=config.training.gpus, logger=wandb_logger, check_val_every_n_epoch=config.training.check_val_every_n_epoch)
+    trainer = Trainer(
+        max_epochs=config.training.max_epochs,
+        gpus=config.training.gpus,
+        logger=wandb_logger,
+        check_val_every_n_epoch=config.training.check_val_every_n_epoch,
+    )
 
     if not config.logging.disabled and config.logging.log_all:
-        wandb_logger.experiment.watch(training_module.model, log='all')
+        wandb_logger.experiment.watch(training_module.model, log="all")
 
     trainer.fit(
         training_module,
@@ -171,10 +180,10 @@ def main():
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--wandb')
+    parser.add_argument("--wandb")
     ns, _ = parser.parse_known_args(sys.argv[1:])
     # if ns.wandb:
     if True:
-        sys.argv = [a.strip('--') for a in sys.argv if 'wandb' not in a]
+        sys.argv = [a.strip("--") for a in sys.argv if "wandb" not in a]
     print(sys.argv)
     main()

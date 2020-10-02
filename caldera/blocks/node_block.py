@@ -7,11 +7,11 @@ from caldera.data import GraphBatch
 
 
 class NodeBlock(Block):
-    def __init__(self, mlp: nn.Module):
-        super().__init__({"mlp": mlp}, independent=True)
+    def __init__(self, module: nn.Module):
+        super().__init__({"module": module}, independent=True)
 
     def forward(self, node_attr):
-        return self.block_dict["mlp"](node_attr)
+        return self.block_dict["module"](node_attr)
 
     def forward_from_data(self, data: GraphBatch):
         return self(data.x)
@@ -50,7 +50,7 @@ class AggregatingNodeBlock(NodeBlock):
                 )
             aggregated += (global_attr[node_idx],)
         out = torch.cat([node_attr, *aggregated], dim=1)
-        return self.block_dict["mlp"](out)
+        return self.block_dict["module"](out)
 
     def forward_from_data(self, data: GraphBatch):
         return self(data.x, data.e, data.edges)

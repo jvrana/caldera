@@ -1,5 +1,3 @@
-from caldera.utils.nx.generators import random_graph
-
 import random
 from abc import ABC
 from abc import abstractmethod
@@ -9,6 +7,8 @@ from typing import Any
 from typing import Optional
 
 from omegaconf import MISSING
+
+from caldera.utils.nx.generators import random_graph
 
 
 class IntNumber(ABC):
@@ -76,5 +76,5 @@ class Uniform(Distribution):
 def test_random_graph():
     g = random_graph(Uniform(1, 100), density=0.3, weight=Uniform(1, 10))
 
-    for w in g.edges(data='weight'):
+    for w in g.edges(data="weight"):
         print(w)

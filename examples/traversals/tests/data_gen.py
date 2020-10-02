@@ -2,15 +2,22 @@
 ##########################################################
 # Relative Imports
 ##########################################################
+import argparse
 import sys
 from os.path import isfile
 from os.path import join
-import argparse
 
 from caldera.transforms import Compose
-from caldera.transforms.networkx import NetworkxToDirected, NetworkxNodesToStr, NetworkxSetDefaultFeature, \
-    NetworkxAttachNumpyOneHot, NetworkxAttachNumpyFeatures, NetworkxAttachNumpyBool
-from caldera.utils.nx.generators import uuid_sequence, chain_graph, random_graph, compose_and_connect
+from caldera.transforms.networkx import NetworkxAttachNumpyBool
+from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
+from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
+from caldera.transforms.networkx import NetworkxNodesToStr
+from caldera.transforms.networkx import NetworkxSetDefaultFeature
+from caldera.transforms.networkx import NetworkxToDirected
+from caldera.utils.nx.generators import chain_graph
+from caldera.utils.nx.generators import compose_and_connect
+from caldera.utils.nx.generators import random_graph
+from caldera.utils.nx.generators import uuid_sequence
 
 
 def find_pkg(name: str, depth: int):
@@ -47,9 +54,8 @@ import networkx as nx
 import numpy as np
 from caldera.utils import functional as fn
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     uniform = Uniform(0.1, 100)
-
 
     preprocess = Compose(
         [
@@ -64,7 +70,12 @@ if __name__ == '__main__':
                 "node", "target", "_features"
             ),  # label nodes as 'end'
             # attached weight
-            NetworkxAttachNumpyFeatures('edge', 'weight', '_features', encoding=fn.map_each(lambda x: np.array([x]))),
+            NetworkxAttachNumpyFeatures(
+                "edge",
+                "weight",
+                "_features",
+                encoding=fn.map_each(lambda x: np.array([x])),
+            ),
             NetworkxAttachNumpyBool(
                 "edge", "shortest_path", "_target"
             ),  # label edge as shortest_path
@@ -83,30 +94,38 @@ if __name__ == '__main__':
     )
 
     for i in range(1):
-        g = generate_shortest_path_example(100, 0.01, path_length=10, weight=uniform, weight_key='weight')
+        g = generate_shortest_path_example(
+            100, 0.01, path_length=10, weight=uniform, weight_key="weight"
+        )
 
         for _, _, edata in g.edges(data=True):
-            assert 'weight' in edata
+            assert "weight" in edata
 
         sources = []
         targets = []
         for n, ndata in g.nodes(data=True):
-            if ndata['source']:
+            if ndata["source"]:
                 sources.append(n)
-            if ndata['target']:
+            if ndata["target"]:
                 targets.append(n)
         assert len(sources) == 1
         assert len(targets) == 1
 
         shortest_paths = set()
         for n1, n2, edata in g.edges(data=True):
-            if edata['shortest_path']:
+            if edata["shortest_path"]:
                 shortest_paths.add(n1)
                 shortest_paths.add(n2)
         import networkx as nx
 
-        path = nx.shortest_path(g, source=sources[0], target=targets[0], weight='weight')
-        paths = list(nx.all_shortest_paths(g, source=sources[0], target=targets[0], weight='weight'))
+        path = nx.shortest_path(
+            g, source=sources[0], target=targets[0], weight="weight"
+        )
+        paths = list(
+            nx.all_shortest_paths(
+                g, source=sources[0], target=targets[0], weight="weight"
+            )
+        )
         assert len(paths) == 1
         print(path)
         print(shortest_paths)
@@ -125,7 +144,7 @@ if __name__ == '__main__':
 
         _path = []
         for _, _, edata in g.edges(data=True):
-            if edata['_features'][0].item() == 1.:
+            if edata["_features"][0].item() == 1.0:
                 _path.append(_)
 
         print(sorted(set(shortest_paths)))

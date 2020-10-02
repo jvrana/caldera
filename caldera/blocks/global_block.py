@@ -1,15 +1,16 @@
 import torch
+from torch import nn
 
 from caldera.blocks.block import Block
 from caldera.data import GraphBatch
 
 
 class GlobalBlock(Block):
-    def __init__(self, mlp):
-        super().__init__({"mlp": mlp}, independent=True)
+    def __init__(self, module: nn.Module):
+        super().__init__({"module": module}, independent=True)
 
     def forward(self, global_attr):
-        return self.block_dict["mlp"](global_attr)
+        return self.block_dict["module"](global_attr)
 
     def forward_from_data(self, data: GraphBatch):
         return self(data.g)
@@ -39,7 +40,7 @@ class AggregatingGlobalBlock(GlobalBlock):
             )
 
         out = torch.cat(aggregated, dim=1)
-        return self.block_dict["mlp"](out)
+        return self.block_dict["module"](out)
 
     def forward_from_data(self, data: GraphBatch):
         return self(data.g, data.x, data.e, data.edges, data.node_idx, data.edge_idx)

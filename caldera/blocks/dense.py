@@ -50,8 +50,8 @@ class DenseBlock(nn.Module):
 class Dense(nn.Module):
     """A dense module comprised of multiple linear and activation layers.
 
-    .. versionchanged:: 0.1.0a0
-        Renamed from MLP to Dense"""
+    .. versionchanged:: 0.1.0a0     Renamed from MLP to Dense
+    """
 
     def __init__(
         self,
@@ -60,8 +60,7 @@ class Dense(nn.Module):
         dropout: float = None,
         activation: Callable = D.activation
     ):
-        """
-        Initialize a Dense neural network. For each layer, implements:
+        """Initialize a Dense neural network. For each layer, implements:
 
         Linear -> Activation -> [Optional]LayerNorm -> [Optional]Dropout
 
