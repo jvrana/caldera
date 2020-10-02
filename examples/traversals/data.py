@@ -1,4 +1,7 @@
+import hashlib
+import json
 import os
+import pickle
 from multiprocessing import Pool
 from typing import Callable
 from typing import List
@@ -10,14 +13,17 @@ import networkx as nx
 import numpy as np
 from rich.progress import Progress
 
+import caldera.utils.functional as fn
 from .configuration import DataConfig
 from .configuration import DataGenConfig
+from .configuration import TrainingConfig
 from .progress import safe_update
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
+from caldera.dataset import GraphDataset
 from caldera.testing import annotate_shortest_path
 from caldera.transforms import Compose
-from caldera.transforms.networkx import NetworkxAttachNumpyBool
+from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
 from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
 from caldera.transforms.networkx import NetworkxNodesToStr
 from caldera.transforms.networkx import NetworkxSetDefaultFeature
@@ -31,7 +37,15 @@ from caldera.utils.nx.generators import uuid_sequence
 T = TypeVar("T")
 
 
-def generate_shortest_path_example(n_nodes, density, path_length, compose_density=None):
+def generate_shortest_path_example(
+    n_nodes,
+    density,
+    path_length,
+    weight,
+    weight_key="weight",
+    compose_density=None,
+    composition_weight=None,
+):
     d = float(density)
     l = int(path_length)
     if compose_density is None:
@@ -40,8 +54,15 @@ def generate_shortest_path_example(n_nodes, density, path_length, compose_densit
         cd = float(compose_density)
     path = list(uuid_sequence(l))
     h = chain_graph(path, nx.Graph)
-    g = random_graph(n_nodes, density=d)
-    graph = compose_and_connect(g, h, cd)
+    composition_weight = composition_weight or weight
+    g = random_graph(n_nodes, density=d, weight=weight, weight_key=weight_key)
+    graph = compose_and_connect(
+        g, h, cd, lambda n1, n2: {weight_key: float(composition_weight)}
+    )
+
+    for _, _, edata in graph.edges(data=True):
+        if "weight" not in edata:
+            edata["weight"] = 1.0
 
     annotate_shortest_path(
         graph,
@@ -52,6 +73,7 @@ def generate_shortest_path_example(n_nodes, density, path_length, compose_densit
         path_key="shortest_path",
         source=path[0],
         target=path[-1],
+        weight=weight_key,
     )
 
     preprocess = Compose(
@@ -62,25 +84,24 @@ def generate_shortest_path_example(n_nodes, density, path_length, compose_densit
             ),
             NetworkxAttachNumpyOneHot(
                 "node", "source", "_features", classes=[False, True]
-            ),
+            ),  # label nodes as 'start'
             NetworkxAttachNumpyOneHot(
                 "node", "target", "_features", classes=[False, True]
+            ),  # label nodes as 'end'
+            # attached weight
+            NetworkxAttachNumpyFeatures(
+                "edge",
+                "weight",
+                "_features",
+                encoding=fn.map_each(lambda x: np.array([x])),
             ),
             NetworkxAttachNumpyOneHot(
                 "edge", "shortest_path", "_target", classes=[False, True]
-            ),
+            ),  # label edge as shortest_path
             NetworkxAttachNumpyOneHot(
                 "node", "shortest_path", "_target", classes=[False, True]
-            ),
+            ),  # label node as shortest_path
             NetworkxSetDefaultFeature(
-                node_default={
-                    "_features": np.array([1.0, 0.0]),
-                    "_target": np.array([1.0, 0.0]),
-                },
-                edge_default={
-                    "_features": np.array([1.0, 0.0]),
-                    "_target": np.array([1.0, 0.0]),
-                },
                 global_default={
                     "_features": np.array([1.0]),
                     "_target": np.array([1.0]),
@@ -91,7 +112,8 @@ def generate_shortest_path_example(n_nodes, density, path_length, compose_densit
         ]
     )
 
-    return preprocess([graph])[0]
+    g = preprocess([graph])[0]
+    return g
 
 
 def _star_generate_shortest_path_example(args):
@@ -104,10 +126,18 @@ def graph_to_data(graph, key):
 
 
 class DataGenerator:
-    def __init__(self, config: DataConfig, progress_bar: bool = True):
+    def __init__(
+        self,
+        config: DataConfig,
+        train_config: TrainingConfig,
+        progress_bar: bool = True,
+    ):
         self.config = config
+        self.train_config = train_config
         self._train_loader = None
         self._eval_loader = None
+        self._train_datasets: Tuple[GraphDataset] = None
+        self._eval_datasets: Tuple[GraphDataset] = None
         self.progress_bar = progress_bar
 
     def _create_nxg(self, data_config):
@@ -115,7 +145,10 @@ class DataGenerator:
             data_config.num_nodes,
             data_config.density,
             data_config.path_length,
+            data_config.weight,
+            "weight",
             data_config.composition_density,
+            data_config.composition_weight,
         )
 
     def _create_raw_data(
@@ -131,7 +164,10 @@ class DataGenerator:
                 data_config.num_nodes,
                 data_config.density,
                 data_config.path_length,
+                data_config.weight,
+                "weight",
                 data_config.composition_density,
+                data_config.composition_weight,
             )
 
         def new_args(n):
@@ -159,7 +195,7 @@ class DataGenerator:
 
         return graphs
 
-    def _create_dataloader(
+    def _create_dataset(
         self,
         input_feature_key: str,
         target_feature_key: str,
@@ -198,19 +234,55 @@ class DataGenerator:
                 )
                 update(task2, advance=0.5, refresh=False)
 
-        loader = GraphDataLoader(
-            input_datalist,
-            target_datalist,
-            batch_size=config.batch_size,
-            shuffle=config.shuffle,
-        )
+        return GraphDataset(input_datalist), GraphDataset(target_datalist)
+
+    def _create_dataloader(self, *datasets, **kwargs):
+        loader = GraphDataLoader(*datasets, **kwargs)
         return loader
 
     def _create_train_loader(self):
-        return self._create_dataloader("_features", "_target", self.config.train)
+        return GraphDataLoader(
+            *self.train_datasets,
+            batch_size=self.train_config.train_batch_size,
+            shuffle=self.train_config.train_shuffle
+        )
+        return self._create_dataloader(
+            "_features",
+            "_target",
+            self.config.train,
+            batch_size=self.train_config.train_batch_size,
+            shuffle=self.train_config.train_shuffle,
+        )
 
     def _create_eval_loader(self):
-        return self._create_dataloader("_features", "_target", self.config.eval)
+        return GraphDataLoader(
+            *self.eval_datasets,
+            batch_size=self.train_config.eval_batch_size,
+            shuffle=self.train_config.eval_shuffle
+        )
+        return self._create_dataloader(
+            "_features",
+            "_target",
+            self.config.eval,
+            batch_size=self.train_config.eval_batch_size,
+            shuffle=self.train_config.eval_shuffle,
+        )
+
+    @property
+    def train_datasets(self):
+        if self._train_datasets is None:
+            self._train_datasets = self._create_dataset(
+                "_features", "_target", self.config.train
+            )
+        return self._train_datasets
+
+    @property
+    def eval_datasets(self):
+        if self._eval_datasets is None:
+            self._eval_datasets = self._create_dataset(
+                "_features", "_target", self.config.eval
+            )
+        return self._eval_datasets
 
     def train_loader(self) -> GraphDataLoader:
         if self._train_loader is None:
@@ -223,10 +295,48 @@ class DataGenerator:
         return self._eval_loader
 
     def reset(self) -> None:
+        self._train_datasets = None
         self._train_loader = None
+        self._eval_datasets = None
         self._eval_loader = None
 
     def init(self) -> Tuple[GraphDataLoader, GraphDataLoader]:
         self.train_loader()
         self.eval_loader()
         return self
+
+    @staticmethod
+    def _checksum(config):
+        hashed = config.to_dict()
+        hashed = json.dumps(hashed, sort_keys=True)
+        hashed = hashlib.md5(hashed.encode("utf-8")).hexdigest()
+        return hashed
+
+    @classmethod
+    def _checksum_filepath(cls, config):
+        here = os.path.abspath(os.path.dirname(__file__))
+        filename = cls._checksum(config) + ".data.pkl"
+        filedir = os.path.join(here, "cached_data")
+        if not os.path.isdir(filedir):
+            os.mkdir(filedir)
+        filepath = os.path.join(filedir, filename)
+        return filepath
+
+    def dump(self):
+        filepath = self._checksum_filepath(self.config)
+        with open(filepath, "wb") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, config: DataConfig, train_config: TrainingConfig, *args, **kwargs):
+        filepath = cls._checksum_filepath(config)
+        if os.path.isfile(filepath):
+            with open(filepath, "rb") as f:
+                loaded: cls = pickle.load(f)
+                loaded.train_config = train_config
+                loaded._eval_loader = None
+                loaded._train_loader = None
+                loaded.init()
+                return loaded
+        else:
+            return cls(config, train_config, *args, **kwargs)

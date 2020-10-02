@@ -35,23 +35,23 @@ def node_colors(g, key, cmap):
 def plot_graph(g, ax, cmap, key="features", seed=1):
     pos = nx.layout.spring_layout(g, seed=seed)
     nx.draw_networkx_edges(
-        g, ax=ax, pos=pos, edge_color=edge_colors(g, key, cmap), arrows=False, width=1.5
+        g, ax=ax, pos=pos, edge_color=edge_colors(g, key, cmap), arrows=False, width=0.5
     )
     nx.draw_networkx_nodes(
-        g, ax=ax, pos=pos, node_size=5, node_color=node_colors(g, key, cmap)
+        g, ax=ax, pos=pos, node_size=3, node_color=node_colors(g, key, cmap)
     )
 
 
-def comparison_plot(out_g, expected_g):
+def comparison_plot(out_g, expected_g, cmap=cm.cool):
     fig, axes = plt.subplots(1, 2, figsize=(5, 2.5))
     axes[0].axis("off")
     axes[1].axis("off")
 
     axes[0].set_title("out")
-    plot_graph(out_g, axes[0], cm.plasma)
+    plot_graph(out_g, axes[0], cmap)
 
     axes[1].set_title("expected")
-    plot_graph(expected_g, axes[1], cm.plasma)
+    plot_graph(expected_g, axes[1], cmap)
     return fig, axes
 
 

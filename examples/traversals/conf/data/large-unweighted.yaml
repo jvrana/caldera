@@ -3,20 +3,20 @@ train:  # training data generation
     name: train
     num_graphs: 5000
     density:
-        low: 0.01
-        high: 0.03
+        low: 0.02
+        high: 0.04
         name: uniform
     num_nodes:
         low: 10
-        high: 100
+        high: 150
         name: discrete_uniform
     path_length:
-        low: 5
-        high: 15
+        low: 10
+        high: 30
         name: discrete_uniform
     composition_density:
-        low: 0.002
-        high: 0.01
+        low: 0.02
+        high: 0.04
         name: uniform
     weight:
         low: 1
@@ -30,20 +30,20 @@ eval:  # evaluation data generation
     name: eval
     num_graphs: 500
     density:
-        low: 0.01
-        high: 0.03
+        low: 0.02
+        high: 0.04
         name: uniform
     num_nodes:
-        low: 10
-        high: 100
+        low: 50
+        high: 250
         name: discrete_uniform
     path_length:
-        low: 5
-        high: 15
+        low: 25
+        high: 50
         name: discrete_uniform
     composition_density:
-        low: 0.002
-        high: 0.01
+        low: 0.02
+        high: 0.04
         name: uniform
     weight:
         low: 1

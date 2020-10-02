@@ -1,0 +1,102 @@
+program: train.py
+project: caldera-shortest-path
+name: shortest-path-large-unweighted
+method: bayes
+metric:
+  name: eval_loss
+  goal: minimize
+parameters:
+  training.validate_plot:
+    value: true
+  training.check_val_every_n_epoch:
+    value: 5
+  training.max_epochs:
+    value: 40
+  wandb:
+    value: true
+  hyperparameters.lr:
+    distribution: uniform
+    min: 0.0001
+    max: 0.01
+  training.train_batch_size:
+    distribution: int_uniform
+    min: 128
+    max: 1000
+  training.optimizer:
+    distribution: categorical
+    values:
+        - adam
+        - sgd
+  hyperparameters.train_core_processing_steps:
+    distribution: int_uniform
+    min: 1
+    max: 15
+  hyperparameters.eval_core_processing_steps:
+    distribution: int_uniform
+    min: 1
+    max: 15
+  network.dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.5
+  network.pass_global_to_edge:
+    distribution: categorical
+    values:
+        - true
+        - false
+  network.pass_global_to_node:
+      distribution: categorical
+      values:
+          - true
+          - false
+  network.edge_block_to_node_aggregators:
+      distribution: categorical
+      values:
+          - [add, min, max, mean]
+          - [add]
+  network.global_block_to_node_aggregators:
+      distribution: categorical
+      values:
+          - [add, min, max, mean]
+          - [add]
+  network.global_block_to_edge_aggregators:
+      distribution: categorical
+      values:
+          - [add, min, max, mean]
+          - [add]
+  network.encode.node.size:
+    distribution: int_uniform
+    min: 8
+    max: 64
+  network.encode.edge.size:
+    distribution: int_uniform
+    min: 8
+    max: 64
+  network.encode.glob.size:
+    distribution: int_uniform
+    min: 8
+    max: 64
+  network.core.node.size:
+    distribution: int_uniform
+    min: 8
+    max: 64
+  network.core.edge.size:
+    distribution: int_uniform
+    min: 8
+    max: 64
+  network.core.glob.size:
+    distribution: int_uniform
+    min: 8
+    max: 64
+  network.core.node.depth:
+      distribution: int_uniform
+      min: 1
+      max: 5
+  network.core.edge.depth:
+      distribution: int_uniform
+      min: 1
+      max: 5
+  network.core.glob.depth:
+      distribution: int_uniform
+      min: 1
+      max: 5

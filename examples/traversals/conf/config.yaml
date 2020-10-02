@@ -1,11 +1,26 @@
 defaults:
 - network: default
-- data: default
+- data: large-weighted
 - hyperparameters: default
 - settings/out: disable
 - settings/help: default
 - hydra/job_logging: colorlog
 - hydra/hydra_logging: colorlog
-gpus: 1
-log_level: WARNING
-offline: false
+- hydra/sweeper: nevergrad
+training:
+    gpus: 1
+    validate_plot: true
+    max_epochs: 100
+    check_val_every_n_epoch: 5
+    train_batch_size: 512
+    eval_batch_size: "${data.eval.num_graphs}"
+    train_shuffle: true
+    eval_shuffle: false
+    optimizer: sgd
+logging:
+    disabled: false
+    log_level: WARNING
+    offline: false
+    project: caldera-test
+    log_all: true
+dry_run: false

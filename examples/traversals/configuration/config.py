@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass
 from dataclasses import field
 from typing import List
+from typing import Optional
 from typing import Union
 
 from hydra.conf import ConfigStore
@@ -17,6 +18,28 @@ from .data import Uniform
 from .hyperparameters import HyperParamConfig
 from .network import NetConfig
 from .tools import ConfigObj
+
+
+@dataclass
+class TrainingConfig(ConfigObj):
+    gpus: int = 1
+    validate_plot: bool = True
+    max_epochs: Optional[int] = None
+    check_val_every_n_epoch: int = 1
+    train_batch_size: int = 128
+    eval_batch_size: int = 128
+    train_shuffle: bool = True
+    eval_shuffle: bool = False
+    optimizer: str = "sgd"
+
+
+@dataclass
+class LoggingConfig(ConfigObj):
+    disabled: bool = False
+    offline: bool = False
+    project: str = "caldera-default"
+    log_level: str = "WARNING"
+    log_all: bool = False
 
 
 @dataclass
@@ -38,9 +61,10 @@ class Config(ConfigObj):
     network: NetConfig = field(default_factory=NetConfig)
     hyperparameters: HyperParamConfig = field(default_factory=HyperParamConfig)
     data: DataConfig = field(default_factory=DataConfig)
-    gpus: int = 1
-    log_level: str = "WARNING"
-    offline: bool = False
+    training: TrainingConfig = TrainingConfig()
+    logging: LoggingConfig = LoggingConfig()
+    dry_run: bool = False
+    cache_data: bool = True
 
 
 def initialize_config():

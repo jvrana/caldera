@@ -1,39 +1,39 @@
 # @package _group_
 encode:
     node:
-        size: 16
+        size: 8
         depth: 1
-        layer_norm: false
+        layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     edge:
-        size: 16
+        size: 8
         depth: 1
-        layer_norm: false
+        layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     glob:
-        size: 16
+        size: 8
         depth: 1
-        layer_norm: false
+        layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
 core:
     node:
-        size: 16
-        depth: 1
+        size: 32
+        depth: 3
         layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     edge:
-        size: 16
-        depth: 1
+        size: 32
+        depth: 3
         layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     glob:
-        size: 16
-        depth: 1
+        size: 32
+        depth: 3
         layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}

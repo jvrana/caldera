@@ -1,0 +1,11 @@
+# @package hydra.sweeper
+_target_: hydra_plugins.hydra_nevergrad_sweeper.core.NevergradSweeper
+optim:
+  optimizer: OnePlusOne
+  budget: 80
+  num_workers: 1
+  noisy: false
+  maximize: false
+  seed: null
+parametrization: {}
+version: 1

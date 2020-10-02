@@ -5,6 +5,7 @@
 import sys
 from os.path import isfile
 from os.path import join
+import argparse
 
 
 def find_pkg(name: str, depth: int):
@@ -43,8 +44,7 @@ import copy
 import hydra
 from examples.traversals.training import TrainingModule
 from examples.traversals.data import DataGenerator, DataConfig
-from examples.traversals.configuration import Config
-from examples.traversals.configuration.data import Uniform, DiscreteUniform
+from examples.traversals.configuration import Config, get_config
 from typing import TypeVar
 from pytorch_lightning import Trainer
 from examples.traversals.loggers import logger
@@ -62,7 +62,7 @@ def prime_the_model(model: TrainingModule, config: Config):
     config_copy: DataConfig = copy.deepcopy(config.data)
     config_copy.train.num_graphs = 10
     config_copy.eval.num_graphs = 0
-    data_copy = DataGenerator(config_copy, progress_bar=False)
+    data_copy = DataGenerator(config_copy, train_config=config.training, progress_bar=False)
     for a, b in data_copy.train_loader():
         model.model.forward(a, 10)
         break
@@ -82,39 +82,30 @@ def print_yaml(cfg: Config):
     print(Syntax(OmegaConf.to_yaml(cfg), "yaml"))
 
 
-# def config_override(cfg: DictConfig):
-#     # defaults
-#     cfg.hyperparameters.lr = 1e-3
-#     cfg.hyperparameters.train_core_processing_steps = 10
-#     cfg.hyperparameters.eval_core_processing_steps = 10
-#
-#     cfg.data.train.num_graphs = 5000
-#     cfg.data.train.num_nodes = DiscreteUniform(10, 100)
-#     cfg.data.train.density = Uniform(0.01, 0.03)
-#     cfg.data.train.path_length = DiscreteUniform(5, 10)
-#     cfg.data.train.composition_density = Uniform(0.01, 0.02)
-#     cfg.data.train.batch_size = 512
-#     cfg.data.train.shuffle = False
-#
-#     cfg.data.eval.num_graphs = 500
-#     cfg.data.eval.num_nodes = DiscreteUniform(10, 100)
-#     cfg.data.eval.density = Uniform(0.01, 0.03)
-#     cfg.data.eval.path_length = DiscreteUniform(5, 10)
-#     cfg.data.eval.composition_density = Uniform(0.01, 0.02)
-#     cfg.data.eval.batch_size = "${data.eval.num_graphs}"
-#     cfg.data.eval.shuffle = False
+def dry_run(config: Config):
+    config.data.train.num_graphs = 10
+    config.data.eval.num_graphs = 10
+    config.logging.disabled = True
+    config.logging.log_level = "DEBUG"
+    config.logging.offline = True
+    config.training.max_epochs = 5
+    config.training.validate_plot = False
+    config.training.check_val_every_n_epoch = 3
+    config.cache_data = False
+    return config
 
 
-@hydra.main(config_path="conf", config_name="config")
-def main(hydra_cfg: DictConfig):
-
+# @hydra.main(config_path="conf", config_name="config")
+def main():
+    hydra_cfg = get_config(overrides=sys.argv[1:])
     print_title()
 
-    logger.setLevel(hydra_cfg.log_level)
-    if hydra_cfg.log_level.upper() == "DEBUG":
+    logger.setLevel(hydra_cfg.logging.log_level)
+    if hydra_cfg.logging.log_level.upper() == "DEBUG":
         verbose = True
     else:
         verbose = False
+
     # really unclear why hydra has so many unclear validation issues with structure configs using ConfigStore
     # this correctly assigns the correct structured config
     # and updates from the passed hydra config
@@ -132,8 +123,14 @@ def main(hydra_cfg: DictConfig):
     # has the added benefit of performing validation upfront
     # before any expensive training or logging initiates
     config = Config.from_dict_config(cfg)
+    if config.dry_run:
+        config = dry_run(config)
 
-    wandb_logger = WandbLogger(project="pytorchlightning", offline=config.offline)
+    # initialize logger
+    if config.logging.disabled is False:
+        wandb_logger = WandbLogger(project=config.logging.project, offline=config.logging.offline)
+    else:
+        wandb_logger = None
 
     # initialize the training module
     training_module = TrainingModule(config)
@@ -145,12 +142,20 @@ def main(hydra_cfg: DictConfig):
     if verbose:
         print_model(training_module)
 
+    # data generation
+    # TODO: save Dataset, not Dataloader!
     logger.info("Generating data...")
-    data = DataGenerator(config.data)
+    data = DataGenerator.load(config.data, config.training)
     data.init()
+    if config.cache_data:
+        data.dump()
 
+    # training
     logger.info("Beginning training...")
-    trainer = Trainer(gpus=config.gpus, logger=wandb_logger, check_val_every_n_epoch=5)
+    trainer = Trainer(max_epochs=config.training.max_epochs, gpus=config.training.gpus, logger=wandb_logger, check_val_every_n_epoch=config.training.check_val_every_n_epoch)
+
+    if not config.logging.disabled and config.logging.log_all:
+        wandb_logger.experiment.watch(training_module.model, log='all')
 
     trainer.fit(
         training_module,
@@ -158,6 +163,18 @@ def main(hydra_cfg: DictConfig):
         val_dataloaders=data.eval_loader(),
     )
 
+    result = trainer.test(test_dataloaders=data.eval_loader())
+    print(result)
+    return result
+
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--wandb')
+    ns, _ = parser.parse_known_args(sys.argv[1:])
+    # if ns.wandb:
+    if True:
+        sys.argv = [a.strip('--') for a in sys.argv if 'wandb' not in a]
+    print(sys.argv)
     main()

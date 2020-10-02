@@ -1,6 +1,5 @@
 """File containing the network."""
 from functools import wraps
-from typing import Callable
 from typing import List
 from typing import Type
 
@@ -10,10 +9,10 @@ from .configuration import NetConfig
 from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock
+from caldera.blocks import Dense
 from caldera.blocks import EdgeBlock
 from caldera.blocks import Flex
 from caldera.blocks import GlobalBlock
-from caldera.blocks import MLP
 from caldera.blocks import MultiAggregator
 from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
@@ -24,21 +23,21 @@ from caldera.models import GraphEncoder
 class EdgeBlockEncoder(EdgeBlock):
     def __init__(self, size: int, dropout: float, activation: Type[torch.nn.Module]):
         super().__init__(
-            Flex(MLP)(Flex.d(), size, dropout=dropout, activation=activation)
+            Flex(Dense)(Flex.d(), size, dropout=dropout, activation=activation)
         )
 
 
 class NodeBlockEncoder(NodeBlock):
     def __init__(self, size: int, dropout: float, activation: Type[torch.nn.Module]):
         super().__init__(
-            Flex(MLP)(Flex.d(), size, dropout=dropout, activation=activation)
+            Flex(Dense)(Flex.d(), size, dropout=dropout, activation=activation)
         )
 
 
 class GlobalBlockEncoder(GlobalBlock):
     def __init__(self, size: int, dropout: float, activation: Type[torch.nn.Module]):
         super().__init__(
-            Flex(MLP)(Flex.d(), size, dropout=dropout, activation=activation)
+            Flex(Dense)(Flex.d(), size, dropout=dropout, activation=activation)
         )
 
 
@@ -52,7 +51,7 @@ class NodeBlockCore(AggregatingNodeBlock):
         aggregator_activation: Type[torch.nn.Module],
     ):
         super().__init__(
-            Flex(MLP)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm),
+            Flex(Dense)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm),
             Flex(MultiAggregator)(
                 Flex.d(), aggregators=aggregator, activation=aggregator_activation
             ),
@@ -62,7 +61,7 @@ class NodeBlockCore(AggregatingNodeBlock):
 class EdgeBlockCore(AggregatingEdgeBlock):
     def __init__(self, layers, dropout: float, layer_norm: bool):
         super().__init__(
-            Flex(MLP)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm)
+            Flex(Dense)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm)
         )
 
 
@@ -77,7 +76,7 @@ class GlobalBlockCore(AggregatingGlobalBlock):
         aggregator_activation,
     ):
         super().__init__(
-            mlp=Flex(MLP)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm),
+            mlp=Flex(Dense)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm),
             edge_aggregator=Flex(MultiAggregator)(
                 Flex.d(), aggregators=edge_aggregator, activation=aggregator_activation
             ),
@@ -114,6 +113,23 @@ class Network(torch.nn.Module):
         self.core = self.init_core()
         self.decoder = self.init_encoder()
         self.output_transform = self.init_out_transform()
+        self.preencode = GraphEncoder(
+            edge_block=EdgeBlockEncoder(
+                64,
+                0.0,
+                self.config.get_activation(self.config.encode.edge.activation),
+            ),
+            node_block=NodeBlockEncoder(
+                64,
+                0.0,
+                self.config.get_activation(self.config.encode.node.activation),
+            ),
+            global_block=GlobalBlockEncoder(
+                64,
+                0.0,
+                self.config.get_activation(self.config.encode.glob.activation),
+            ),
+        )
 
     # TODO: this size is going to be different, right??
     def init_encoder(self) -> GraphEncoder:
@@ -231,6 +247,11 @@ class Network(torch.nn.Module):
     def forward(
         self, data: GraphBatch, steps: int, save_all: bool = False
     ) -> List[GraphBatch]:
+        _data = self.preencode(data)
+        data = GraphBatch(
+            _data.x, _data.e, _data.g, data.edges, data.node_idx, data.edge_idx
+        )
+
         data = self.encode(data)
         latent0 = data
 

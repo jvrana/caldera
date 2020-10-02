@@ -116,9 +116,9 @@ class DataGenConfig(ConfigObj):
     num_nodes: DiscreteUniform = field(default_factory=DiscreteUniform)
     path_length: DiscreteUniform = field(default_factory=DiscreteUniform)
     composition_density: Uniform = field(default_factory=Uniform)
-    batch_size: int = MISSING
-    shuffle: bool = MISSING
     name: str = ""
+    weight: Uniform = field(default_factory=Uniform)
+    composition_weight: Uniform = field(default_factory=Uniform)
 
 
 @dataclass

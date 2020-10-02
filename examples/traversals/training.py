@@ -5,11 +5,26 @@ from pytorch_lightning import LightningModule
 
 from .configuration import Config
 from .configuration.tools import dataclass_to_dict
+from .loggers import logger
+from .loggers import warn_once
 from .model import Network
 from .plotting import comparison_plot
-from .plotting import fig_to_pil
 from .plotting import figs_to_pils
 from caldera.data import GraphBatch
+
+
+def requires_logger_experiment(f):
+    def wrapped(self, *args, **kwargs):
+        if self.logger is None:
+            warn_once("No self.logger present. Skipping call to '{}'".format(f))
+        elif not hasattr(self.logger, "experiment"):
+            warn_once(
+                "self.logger has not attr 'experiment'. Skipping call to '{}'".format(f)
+            )
+        else:
+            return f(self, *args, **kwargs)
+
+    return wrapped
 
 
 class TrainingModule(LightningModule):
@@ -20,8 +35,12 @@ class TrainingModule(LightningModule):
         self.hparams = dataclass_to_dict(config)
         # self._loss_fn = torch.nn.BCEWithLogitsLoss(reduction='mean')
 
-    def on_fit_start(self):
+    @requires_logger_experiment
+    def logger_experiment_update_hparams(self):
         self.logger.experiment.config.update(self.hparams)
+
+    def on_fit_start(self):
+        self.logger_experiment_update_hparams()
 
     def training_step(self, batch: GraphBatch, batch_idx: int) -> pl.TrainResult:
         input_batch, target_batch = batch
@@ -32,21 +51,28 @@ class TrainingModule(LightningModule):
         )
 
         _loss_f = torch.nn.BCELoss()
+        losses = []
         for out_batch in out_batch_list:
             node_loss = _loss_f(out_batch.x, target_batch.x)
             edge_loss = _loss_f(out_batch.e, target_batch.e)
             glob_loss = _loss_f(out_batch.g, target_batch.g)
-        loss = (node_loss + edge_loss + glob_loss) / len(out_batch_list)
+            _loss = (node_loss + edge_loss + glob_loss) / len(out_batch_list)
+            losses.append(_loss)
+        from functools import reduce
+        from operator import add
+
+        loss = reduce(add, losses)
 
         result = pl.TrainResult(loss)
-        result.log(
-            "train_loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True
-        )
-        self.logger.experiment.log({"train_loss": loss})
+        result.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.experiment_log({"train_loss": loss})
         return pl.TrainResult(loss)
 
-    def validation_step(self, batch, batch_idx):
+    @requires_logger_experiment
+    def experiment_log(self, *args, **kwargs):
+        self.logger.experiment.log(*args, **kwargs)
 
+    def validation_step(self, batch, batch_idx):
         input_batch, target_batch = batch
         out_batch_list = self.model.forward(
             input_batch, steps=self.config.hyperparameters.train_core_processing_steps
@@ -59,15 +85,17 @@ class TrainingModule(LightningModule):
         loss = (node_loss + edge_loss + glob_loss) / len(out_batch_list)
 
         result = pl.EvalResult(checkpoint_on=loss)
-        result.log(
-            "eval_loss", loss, on_step=False, on_epoch=True, prog_bar=False, logger=True
-        )
+        result.log("eval_loss", loss, on_step=False, on_epoch=True, prog_bar=False)
+        self.experiment_log({"eval_loss": loss})
 
         if batch_idx == 0:
             self.validate_plot(batch)
         return result
 
+    @requires_logger_experiment
     def validate_plot(self, batch, num_graphs=10):
+        if self.logger is None:
+            return
         x, y = batch
         x.to_data_list()
         y.to_data_list()
@@ -78,14 +106,15 @@ class TrainingModule(LightningModule):
         y_graphs = y.to_networkx_list()
         y_hat_graphs = y_hat.to_networkx_list()
 
-        figs = []
-        for idx in range(len(y_graphs)):
-            yg = y_graphs[idx]
-            yhg = y_hat_graphs[idx]
-            fig, axes = comparison_plot(yhg, yg)
-            figs.append(fig)
-        with figs_to_pils(figs) as pils:
-            self.logger.experiment.log({"image": [wandb.Image(pil) for pil in pils]})
+        if self.config.training.validate_plot:
+            figs = []
+            for idx in range(len(y_graphs)):
+                yg = y_graphs[idx]
+                yhg = y_hat_graphs[idx]
+                fig, axes = comparison_plot(yhg, yg)
+                figs.append(fig)
+            with figs_to_pils(figs) as pils:
+                self.experiment_log({"image": [wandb.Image(pil) for pil in pils]})
 
     # def validation_step(self, batch: Tuple[GraphBatch, GraphBatch], batch_idx: int) -> pl.EvalResult:
     #     x, y = batch
@@ -102,6 +131,12 @@ class TrainingModule(LightningModule):
     #     return result
 
     def configure_optimizers(self):
-        return torch.optim.Adam(
-            self.model.parameters(), lr=self.config.hyperparameters.lr
-        )
+        if self.config.training.optimizer == "sgd":
+            return torch.optim.SGD(
+                self.model.parameters(), lr=self.config.hyperparameters.lr
+            )
+        else:
+            return torch.optim.Adam(
+                self.model.parameters(), lr=self.config.hyperparameters.lr
+            )
+        raise ValueError("optimizer not recognized")
