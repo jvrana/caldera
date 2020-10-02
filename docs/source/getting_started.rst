@@ -37,9 +37,9 @@ Installation
                 "pass_global_to_node": pass_global_to_node,
             }
             self.encoder = GraphEncoder(
-                EdgeBlock(Flex(MLP)(Flex.d(), latent_sizes[0], dropout=dropout)),
-                NodeBlock(Flex(MLP)(Flex.d(), latent_sizes[1], dropout=dropout)),
-                GlobalBlock(Flex(MLP)(Flex.d(), latent_sizes[2], dropout=dropout)),
+                EdgeBlock(Flex(Dense)(Flex.d(), latent_sizes[0], dropout=dropout)),
+                NodeBlock(Flex(Dense)(Flex.d(), latent_sizes[1], dropout=dropout)),
+                GlobalBlock(Flex(Dense)(Flex.d(), latent_sizes[2], dropout=dropout)),
             )
 
             edge_layers = [self.config["latent_size"]["edge"]] * self.config["latent_size"][
@@ -55,13 +55,13 @@ Installation
             self.core = GraphCore(
                 AggregatingEdgeBlock(
                     torch.nn.Sequential(
-                        Flex(MLP)(Flex.d(), *edge_layers, dropout=dropout, layer_norm=True),
+                        Flex(Dense)(Flex.d(), *edge_layers, dropout=dropout, layer_norm=True),
                         # Flex(torch.nn.Linear)(Flex.d(), edge_layers[-1])
                     )
                 ),
                 AggregatingNodeBlock(
                     torch.nn.Sequential(
-                        Flex(MLP)(Flex.d(), *node_layers, dropout=dropout, layer_norm=True),
+                        Flex(Dense)(Flex.d(), *node_layers, dropout=dropout, layer_norm=True),
                         # Flex(torch.nn.Linear)(Flex.d(), node_layers[-1])
                     ),
                     Flex(MultiAggregator)(
@@ -72,7 +72,7 @@ Installation
                 ),
                 AggregatingGlobalBlock(
                     torch.nn.Sequential(
-                        Flex(MLP)(
+                        Flex(Dense)(
                             Flex.d(), *global_layers, dropout=dropout, layer_norm=True
                         ),
                         # Flex(torch.nn.Linear)(Flex.d(), global_layers[-1])
@@ -94,12 +94,12 @@ Installation
 
             self.decoder = GraphEncoder(
                 EdgeBlock(
-                    Flex(MLP)(Flex.d(), latent_sizes[0], latent_sizes[0], dropout=dropout)
+                    Flex(Dense)(Flex.d(), latent_sizes[0], latent_sizes[0], dropout=dropout)
                 ),
                 NodeBlock(
-                    Flex(MLP)(Flex.d(), latent_sizes[1], latent_sizes[1], dropout=dropout)
+                    Flex(Dense)(Flex.d(), latent_sizes[1], latent_sizes[1], dropout=dropout)
                 ),
-                GlobalBlock(Flex(MLP)(Flex.d(), latent_sizes[2])),
+                GlobalBlock(Flex(Dense)(Flex.d(), latent_sizes[2])),
             )
 
             self.output_transform = GraphEncoder(

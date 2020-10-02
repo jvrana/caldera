@@ -5,8 +5,10 @@ Networkx graph generators
 import itertools
 import random
 import uuid
+from copy import deepcopy
 from typing import Callable
 from typing import Dict
+from typing import Hashable
 from typing import Optional
 from typing import Set
 from typing import Tuple
@@ -46,16 +48,25 @@ def rand_n_nodes_n_edges(
     return n, e
 
 
+def apply_weights(g, weight, key="weight"):
+    for n1, n2, edata in g.edges(data=True):
+        edata[key] = float(weight)
+
+
 def random_graph(
     n_nodes: Union[int, Tuple[int, int]],
     n_edges: Optional[Union[int, Tuple[int, int]]] = None,
     density: Optional[Union[float, Tuple[float, float]]] = None,
     generator: Callable[[int, int], nx.Graph] = nx.generators.dense_gnm_random_graph,
+    weight: Union[int, float, Tuple[float, float]] = 1.0,
+    weight_key: str = "weight",
     *args,
     **kwargs
 ):
     n, e = rand_n_nodes_n_edges(n_nodes, n_edges, density)
-    return generator(n, e, *args, **kwargs)
+    g = generator(n, e, *args, **kwargs)
+    apply_weights(g, weight, key=weight_key)
+    return g
 
 
 def random_node(g, n=None):
@@ -88,7 +99,9 @@ def connect_node_sets(
     s1,
     s2,
     density: Union[float, Tuple[float, float]],
-    edge_data: Optional[Dict] = None,
+    edge_data_factory: Optional[
+        Union[dict, Callable[[Hashable, Hashable], dict]]
+    ] = None,
 ):
     """Connect two node sets at the specified density."""
     if not isinstance(g, nx.Graph):
@@ -107,7 +120,17 @@ def connect_node_sets(
     if m2:
         raise ValueError("Nodes missing from graph. " + str(m2))
 
-    edge_data = edge_data or dict()
+    if edge_data_factory is None:
+
+        def edge_data_factory(n1, n2):
+            return dict()
+
+    elif isinstance(edge_data_factory, dict):
+        edge_data = deepcopy(edge_data_factory)
+
+        def edge_data_factory(n1, n2):
+            return deepcopy(edge_data)
+
     existing_edges = set()
     n_possible_edges = _possible_edges(
         s1, s2, directed=nx_is_directed(g), self_loops=False
@@ -124,7 +147,9 @@ def connect_node_sets(
         Fn.apply_each(Fn.shuffle_each()),  # shuffle nodes
         lambda arr: itertools.product(*list(arr)),  # all possible edges
         Fn.filter_each(lambda x: x not in existing_edges),  # only new edges
-        Fn.apply_each(lambda x: g.add_edge(x[0], x[1], **edge_data)),  # add edge
+        Fn.apply_each(
+            lambda x: g.add_edge(x[0], x[1], **edge_data_factory(x[0], x[1]))
+        ),  # add edge
         Fn.iter_count(n_new_edges),  # limit number of new edges,
         list,
     )
@@ -138,7 +163,9 @@ def compose_and_connect(
     g: nx.Graph,
     h: nx.Graph,
     density: Union[float, Tuple[float, float]],
-    edge_data: Optional[Dict] = None,
+    edge_data_factory: Optional[
+        Union[dict, Callable[[Hashable, Hashable], dict]]
+    ] = None,
 ) -> nx.Graph:
     """Compose two graphs and connect them at the given density.
 
@@ -147,7 +174,7 @@ def compose_and_connect(
     """
     i = nx.compose(g, h)
     density = _resolve_range(density)
-    connect_node_sets(i, set(g), set(h), density, edge_data)
+    connect_node_sets(i, set(g), set(h), density, edge_data_factory)
     return i
 
 

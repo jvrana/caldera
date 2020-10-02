@@ -33,7 +33,7 @@ class ResolveError(Exception):
 
 
 class FlexDim:
-    def __init__(self, pos: int = 0, dim: int = 1):
+    def __init__(self, pos: Optional[int] = 0, dim: int = 1):
         """Flexible dimension to be used in conjunction with `FlexBlock`
 
         :param pos: position of the input arguments that contains the input data
@@ -44,6 +44,8 @@ class FlexDim:
 
     # TODO: resolve input_kwargs for FlexDim?
     def resolve(self, input_args, input_kwargs):
+        if self.pos is None:
+            raise ValueError("Argument position cannot be None")
         d = input_args[self.pos].shape[self.dim]
         if d == 0:
             raise InvalidFlexZeroDimension("Dimension cannot be zero.")
@@ -52,7 +54,7 @@ class FlexDim:
         return d
 
     def __repr__(self):
-        return "{}({}, {})".format(self.__class__.__name__, self.pos, self.dim)
+        return "{}(pos={}, dim={})".format(self.__class__.__name__, self.pos, self.dim)
 
 
 class FlexBlock(torch.nn.Module, Generic[M]):
@@ -262,6 +264,7 @@ class Flex(Generic[M]):
         :param kwargs: the initialization keyword arguments
         :return: initialized torch.nn.Module
         """
+        args = self._syntatic_sugar(args)
         return FlexBlock(
             self.module_type, *args, _from_frame=self._from_frame, **kwargs
         )
@@ -273,8 +276,23 @@ class Flex(Generic[M]):
                 return True
 
     @staticmethod
+    def _syntatic_sugar(args):
+        sugar_args = []
+        for i, arg in enumerate(args):
+            if arg is ...:
+                arg = FlexDim(pos=i)
+            sugar_args.append(arg)
+        return sugar_args
+
+    @staticmethod
     def has_unresolved_flex_blocks(module: torch.nn.Module):
         for m in _iter_flex_blocks(module):
             if not m.is_resolved:
                 return True
         return False
+
+    def __str__(self):
+        return "<{}({})>".format(self.__class__.__name__, self.module_type)
+
+    def __repr__(self):
+        return self.__str__()

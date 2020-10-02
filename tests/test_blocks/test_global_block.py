@@ -2,13 +2,13 @@ import torch
 
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import Aggregator
+from caldera.blocks import Dense
 from caldera.blocks import GlobalBlock
-from caldera.blocks import MLP
 
 
 def test_init_global_block():
     # test GlobalBlock
-    global_encoder = GlobalBlock(MLP(3, 10))
+    global_encoder = GlobalBlock(Dense(3, 10))
 
     for p in global_encoder.parameters():
         print(p)
@@ -31,7 +31,7 @@ def test_init_agg_global_block_requires_grad():
     edge_idx = torch.randint(0, 3, torch.Size([20]))
 
     global_model = AggregatingGlobalBlock(
-        MLP(8, 16, 10), Aggregator("mean"), Aggregator("mean")
+        Dense(8, 16, 10), Aggregator("mean"), Aggregator("mean")
     )
     out = global_model(
         global_attr=global_attr,

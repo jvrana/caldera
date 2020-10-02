@@ -5,10 +5,10 @@ import torch
 from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock
+from caldera.blocks import Dense
 from caldera.blocks import EdgeBlock
 from caldera.blocks import Flex
 from caldera.blocks import GlobalBlock
-from caldera.blocks import MLP
 from caldera.blocks import MultiAggregator
 from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
@@ -128,9 +128,9 @@ class Network(torch.nn.Module):
             "pass_global_to_node": pass_global_to_node,
         }
         self.encoder = GraphEncoder(
-            EdgeBlock(Flex(MLP)(Flex.d(), latent_sizes[0], dropout=dropout)),
-            NodeBlock(Flex(MLP)(Flex.d(), latent_sizes[1], dropout=dropout)),
-            GlobalBlock(Flex(MLP)(Flex.d(), latent_sizes[2], dropout=dropout)),
+            EdgeBlock(Flex(Dense)(Flex.d(), latent_sizes[0], dropout=dropout)),
+            NodeBlock(Flex(Dense)(Flex.d(), latent_sizes[1], dropout=dropout)),
+            GlobalBlock(Flex(Dense)(Flex.d(), latent_sizes[2], dropout=dropout)),
         )
 
         edge_layers = [self.config["latent_size"]["edge"]] * self.config["latent_size"][
@@ -146,13 +146,17 @@ class Network(torch.nn.Module):
         self.core = GraphCore(
             AggregatingEdgeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), *edge_layers, dropout=dropout, layer_norm=True),
+                    Flex(Dense)(
+                        Flex.d(), *edge_layers, dropout=dropout, layer_norm=True
+                    ),
                     # Flex(torch.nn.Linear)(Flex.d(), edge_layers[-1])
                 )
             ),
             AggregatingNodeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), *node_layers, dropout=dropout, layer_norm=True),
+                    Flex(Dense)(
+                        Flex.d(), *node_layers, dropout=dropout, layer_norm=True
+                    ),
                     # Flex(torch.nn.Linear)(Flex.d(), node_layers[-1])
                 ),
                 Flex(MultiAggregator)(
@@ -163,7 +167,7 @@ class Network(torch.nn.Module):
             ),
             AggregatingGlobalBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(
+                    Flex(Dense)(
                         Flex.d(), *global_layers, dropout=dropout, layer_norm=True
                     ),
                     # Flex(torch.nn.Linear)(Flex.d(), global_layers[-1])
@@ -185,12 +189,12 @@ class Network(torch.nn.Module):
 
         self.decoder = GraphEncoder(
             EdgeBlock(
-                Flex(MLP)(Flex.d(), latent_sizes[0], latent_sizes[0], dropout=dropout)
+                Flex(Dense)(Flex.d(), latent_sizes[0], latent_sizes[0], dropout=dropout)
             ),
             NodeBlock(
-                Flex(MLP)(Flex.d(), latent_sizes[1], latent_sizes[1], dropout=dropout)
+                Flex(Dense)(Flex.d(), latent_sizes[1], latent_sizes[1], dropout=dropout)
             ),
-            GlobalBlock(Flex(MLP)(Flex.d(), latent_sizes[2])),
+            GlobalBlock(Flex(Dense)(Flex.d(), latent_sizes[2])),
         )
 
         self.output_transform = GraphEncoder(

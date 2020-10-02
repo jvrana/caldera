@@ -485,7 +485,7 @@ Final Network
 
     import torch
     from caldera.defaults import CalderaDefaults as defaults
-    from caldera.blocks import Flex, NodeBlock, EdgeBlock, GlobalBlock, MLP, AggregatingEdgeBlock, AggregatingNodeBlock, \
+    from caldera.blocks import Flex, NodeBlock, EdgeBlock, GlobalBlock, Dense, AggregatingEdgeBlock, AggregatingNodeBlock, \
         MultiAggregator, AggregatingGlobalBlock
     from caldera.models import GraphEncoder, GraphCore
     from caldera.data import GraphBatch
@@ -560,9 +560,9 @@ Final Network
     
         def _init_encoder(self):
             return GraphEncoder(
-                EdgeBlock(Flex(MLP)(Flex.d(), self.config['sizes']['latent']['edge'], dropout=self.config['dropout'])),
-                NodeBlock(Flex(MLP)(Flex.d(), self.config['sizes']['latent']['node'], dropout=self.config['dropout'])),
-                GlobalBlock(Flex(MLP)(Flex.d(), self.config['sizes']['latent']['global'], dropout=self.config['dropout'])),
+                EdgeBlock(Flex(Dense)(Flex.d(), self.config['sizes']['latent']['edge'], dropout=self.config['dropout'])),
+                NodeBlock(Flex(Dense)(Flex.d(), self.config['sizes']['latent']['node'], dropout=self.config['dropout'])),
+                GlobalBlock(Flex(Dense)(Flex.d(), self.config['sizes']['latent']['global'], dropout=self.config['dropout'])),
             )
     
         def _init_core(self):
@@ -573,12 +573,12 @@ Final Network
             return GraphCore(
                 AggregatingEdgeBlock(
                     torch.nn.Sequential(
-                        Flex(MLP)(Flex.d(), *edge_layers, dropout=self.config['dropout'], layer_norm=True),
+                        Flex(Dense)(Flex.d(), *edge_layers, dropout=self.config['dropout'], layer_norm=True),
                     )
                 ),
                 AggregatingNodeBlock(
                     torch.nn.Sequential(
-                        Flex(MLP)(Flex.d(), *node_layers, dropout=self.config['dropout'], layer_norm=True),
+                        Flex(Dense)(Flex.d(), *node_layers, dropout=self.config['dropout'], layer_norm=True),
                     ),
                     Flex(MultiAggregator)(
                         Flex.d(),
@@ -588,7 +588,7 @@ Final Network
                 ),
                 AggregatingGlobalBlock(
                     torch.nn.Sequential(
-                        Flex(MLP)(
+                        Flex(Dense)(
                             Flex.d(), *global_layers, dropout=self.config['dropout'], layer_norm=True
                         ),
                     ),

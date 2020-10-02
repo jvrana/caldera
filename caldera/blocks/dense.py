@@ -7,8 +7,13 @@ from caldera.defaults import CalderaDefaults as D
 from caldera.utils import pairwise
 
 
-class MLPBlock(nn.Module):
-    """A multilayer perceptron block."""
+class DenseBlock(nn.Module):
+    """A dense block comprised of linear and activation functions.
+
+    .. versionchanged: 0.1.0a0
+
+        Renamed from MLPBlock to DenseBlock
+    """
 
     def __init__(
         self,
@@ -18,13 +23,15 @@ class MLPBlock(nn.Module):
         dropout: float = None,
         activation: Callable = D.activation,
     ):
-        """Initialize a multi-layer perceptron.
+        """Initialize a single layer of a dense block.
 
-        :param input_size:
-        :param output_size:
-        :param layer_norm:
-        :param dropout:
-        :param activation:
+        Linear -> Activation -> [Optional]LayerNorm -> [Optional]Dropout
+
+        :param input_size: input data size
+        :param output_size: output data size
+        :param layer_norm: whether to apply layer normalization to each layer
+        :param dropout: optional dropout to apply to each layer
+        :param activation: activation function to use after each linear function
         """
         super().__init__()
         if output_size is None:
@@ -40,8 +47,11 @@ class MLPBlock(nn.Module):
         return self.layers(x)
 
 
-class MLP(nn.Module):
-    """A multilayer perceptron."""
+class Dense(nn.Module):
+    """A dense module comprised of multiple linear and activation layers.
+
+    .. versionchanged:: 0.1.0a0
+        Renamed from MLP to Dense"""
 
     def __init__(
         self,
@@ -51,16 +61,19 @@ class MLP(nn.Module):
         activation: Callable = D.activation
     ):
         """
+        Initialize a Dense neural network. For each layer, implements:
 
-        :param latent_sizes:
-        :param layer_norm:
-        :param dropout:
-        :param activation:
+        Linear -> Activation -> [Optional]LayerNorm -> [Optional]Dropout
+
+        :param latent_sizes: list of latent sizes to use for the linear layers
+        :param layer_norm: whether to apply layer normalization to each layer
+        :param dropout: optional dropout to apply to each layer
+        :param activation: activation function to use after each linear function
         """
         super().__init__()
         self.layers = nn.Sequential(
             *[
-                MLPBlock(
+                DenseBlock(
                     n1,
                     n2,
                     layer_norm=layer_norm,

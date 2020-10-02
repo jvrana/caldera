@@ -13,6 +13,7 @@ def annotate_shortest_path(
     path_key: str = "shortest_path",
     source: str = None,
     target: str = None,
+    weight: str = "weight",
 ) -> nx.Graph:
     """
 
@@ -35,7 +36,7 @@ def annotate_shortest_path(
     g.nodes[target][target_key] = True
 
     try:
-        path = nx.shortest_path(g, source=source, target=target)
+        path = nx.shortest_path(g, source=source, target=target, weight=weight)
     except nx.NetworkXNoPath:
         path = []
 

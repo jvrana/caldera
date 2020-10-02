@@ -4,10 +4,10 @@ from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock
 from caldera.blocks import Aggregator
+from caldera.blocks import Dense
 from caldera.blocks import EdgeBlock
 from caldera.blocks import Flex
 from caldera.blocks import GlobalBlock
-from caldera.blocks import MLP
 from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
 from caldera.models.graph_core import GraphCore
@@ -48,7 +48,7 @@ class EncodeCoreDecode(torch.nn.Module):
         }
 
         def mlp(*layer_sizes):
-            return Flex(MLP)(
+            return Flex(Dense)(
                 Flex.d(), *layer_sizes, layer_norm=layer_norm, dropout=dropout
             )
 

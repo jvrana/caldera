@@ -1,9 +1,9 @@
-﻿MLP
+﻿Dense
 ===
 
 .. currentmodule:: caldera.blocks
 
-.. autoclass:: MLP
+.. autoclass:: Dense
 
    
    .. automethod:: __init__
@@ -13,39 +13,39 @@
    .. rubric:: Methods
    .. autosummary::
    
-      ~MLP.__init__
-      ~MLP.add_module
-      ~MLP.apply
-      ~MLP.bfloat16
-      ~MLP.buffers
-      ~MLP.children
-      ~MLP.cpu
-      ~MLP.cuda
-      ~MLP.double
-      ~MLP.eval
-      ~MLP.extra_repr
-      ~MLP.float
-      ~MLP.forward
-      ~MLP.half
-      ~MLP.load_state_dict
-      ~MLP.modules
-      ~MLP.named_buffers
-      ~MLP.named_children
-      ~MLP.named_modules
-      ~MLP.named_parameters
-      ~MLP.parameters
-      ~MLP.register_backward_hook
-      ~MLP.register_buffer
-      ~MLP.register_forward_hook
-      ~MLP.register_forward_pre_hook
-      ~MLP.register_parameter
-      ~MLP.requires_grad_
-      ~MLP.share_memory
-      ~MLP.state_dict
-      ~MLP.to
-      ~MLP.train
-      ~MLP.type
-      ~MLP.zero_grad
+      ~Dense.__init__
+      ~Dense.add_module
+      ~Dense.apply
+      ~Dense.bfloat16
+      ~Dense.buffers
+      ~Dense.children
+      ~Dense.cpu
+      ~Dense.cuda
+      ~Dense.double
+      ~Dense.eval
+      ~Dense.extra_repr
+      ~Dense.float
+      ~Dense.forward
+      ~Dense.half
+      ~Dense.load_state_dict
+      ~Dense.modules
+      ~Dense.named_buffers
+      ~Dense.named_children
+      ~Dense.named_modules
+      ~Dense.named_parameters
+      ~Dense.parameters
+      ~Dense.register_backward_hook
+      ~Dense.register_buffer
+      ~Dense.register_forward_hook
+      ~Dense.register_forward_pre_hook
+      ~Dense.register_parameter
+      ~Dense.requires_grad_
+      ~Dense.share_memory
+      ~Dense.state_dict
+      ~Dense.to
+      ~Dense.train
+      ~Dense.type
+      ~Dense.zero_grad
    
    
 
@@ -55,7 +55,7 @@
    .. rubric:: Attributes
    .. autosummary::
    
-      ~MLP.T_destination
-      ~MLP.dump_patches
+      ~Dense.T_destination
+      ~Dense.dump_patches
    
    

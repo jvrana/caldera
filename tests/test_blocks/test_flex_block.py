@@ -30,6 +30,50 @@ def test_flex_block_chain(x):
 
 
 @pytest.mark.parametrize("x", [16, 32, 44])
+def test_flex_block_chain_syntatic_sugar(x):
+
+    model = torch.nn.Sequential(
+        Flex(torch.nn.Linear)(..., 16),
+        Flex(torch.nn.Linear)(..., 32),
+        Flex(torch.nn.Linear)(..., 64),
+    )
+
+    data = torch.randn((10, x))
+    out = model(data)
+    assert out.shape[1] == 64
+
+
+def test_print_flex_block():
+    m = Flex(torch.nn.Linear)
+    s = str(m)
+    r = repr(m)
+    print(s)
+    print(r)
+    assert "Linear" in s
+    assert "Linear" in r
+
+
+def test_print_flex_block_init():
+    m = Flex(torch.nn.Linear)(Flex.d(), 4)
+    s = str(m)
+    r = repr(m)
+    print(s)
+    print(r)
+    assert "Linear" in s
+    assert "Linear" in r
+
+
+def test_print_flex_block_init_sugar():
+    m = Flex(torch.nn.Linear)(..., 4)
+    s = str(m)
+    r = repr(m)
+    print(s)
+    print(r)
+    assert "Linear" in s
+    assert "Linear" in r
+
+
+@pytest.mark.parametrize("x", [16, 32, 44])
 def test_flex_block_custom_position(x):
     class FooBlock(torch.nn.Module):
         def __init__(self, a, b):

@@ -10,7 +10,7 @@ Generic Blocks
     :toctree: generated/
 
     Flex
-    MLP
+    Dense
 
 Encoder/Decoder Blocks
 ----------------------
@@ -36,12 +36,12 @@ Message Passing Blocks
 """
 from caldera.blocks.aggregator import Aggregator
 from caldera.blocks.aggregator import MultiAggregator
+from caldera.blocks.dense import Dense
 from caldera.blocks.edge_block import AggregatingEdgeBlock
 from caldera.blocks.edge_block import EdgeBlock
 from caldera.blocks.flex import Flex
 from caldera.blocks.global_block import AggregatingGlobalBlock
 from caldera.blocks.global_block import GlobalBlock
-from caldera.blocks.mlp import MLP
 from caldera.blocks.node_block import AggregatingNodeBlock
 from caldera.blocks.node_block import NodeBlock
 
@@ -56,5 +56,5 @@ __all__ = [
     "AggregatingGlobalBlock",
     "NodeBlock",
     "GlobalBlock",
-    "MLP",
+    "Dense",
 ]

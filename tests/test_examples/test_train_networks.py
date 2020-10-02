@@ -24,10 +24,10 @@ from caldera.blocks import AggregatingEdgeBlock
 from caldera.blocks import AggregatingGlobalBlock
 from caldera.blocks import AggregatingNodeBlock
 from caldera.blocks import Aggregator
+from caldera.blocks import Dense
 from caldera.blocks import EdgeBlock
 from caldera.blocks import Flex
 from caldera.blocks import GlobalBlock
-from caldera.blocks import MLP
 from caldera.blocks import MultiAggregator
 from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
@@ -66,14 +66,14 @@ class Networks:
     mlp_block = n(
         "mlp",
         lambda: torch.nn.Sequential(
-            Flex(MLP)(Flex.d(), 16), Flex(torch.nn.Linear)(Flex.d(), 1)
+            Flex(Dense)(Flex.d(), 16), Flex(torch.nn.Linear)(Flex.d(), 1)
         ),
     )
 
     node_block = n(
         "node_block",
         lambda: torch.nn.Sequential(
-            NodeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
+            NodeBlock(Flex(Dense)(Flex.d(), 25, 25, layer_norm=False)),
             Flex(torch.nn.Linear)(Flex.d(), 1),
         ),
     )
@@ -81,7 +81,7 @@ class Networks:
     edge_block = n(
         "edge_block",
         lambda: torch.nn.Sequential(
-            EdgeBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
+            EdgeBlock(Flex(Dense)(Flex.d(), 25, 25, layer_norm=False)),
             Flex(torch.nn.Linear)(Flex.d(), 1),
         ),
     )
@@ -89,7 +89,7 @@ class Networks:
     global_block = n(
         "global_block",
         lambda: torch.nn.Sequential(
-            GlobalBlock(Flex(MLP)(Flex.d(), 25, 25, layer_norm=False)),
+            GlobalBlock(Flex(Dense)(Flex.d(), 25, 25, layer_norm=False)),
             Flex(torch.nn.Linear)(Flex.d(), 1),
         ),
     )
@@ -99,19 +99,19 @@ class Networks:
         lambda: GraphEncoder(
             EdgeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
             NodeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
             GlobalBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
@@ -122,20 +122,20 @@ class Networks:
         return GraphCore(
             AggregatingEdgeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
             AggregatingNodeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 ),
                 edge_aggregator=Aggregator("add"),
             ),
             AggregatingGlobalBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(Flex.d(), 5, 5, layer_norm=False),
+                    Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 ),
                 edge_aggregator=Aggregator("add"),
@@ -155,7 +155,7 @@ class Networks:
         return GraphCore(
             AggregatingEdgeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(
+                    Flex(Dense)(
                         Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU
                     ),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
@@ -163,7 +163,7 @@ class Networks:
             ),
             AggregatingNodeBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(
+                    Flex(Dense)(
                         Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU
                     ),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
@@ -172,7 +172,7 @@ class Networks:
             ),
             AggregatingGlobalBlock(
                 torch.nn.Sequential(
-                    Flex(MLP)(
+                    Flex(Dense)(
                         Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU
                     ),
                     Flex(torch.nn.Linear)(Flex.d(), 1),

@@ -1,8 +1,8 @@
 import torch
 
 from caldera.blocks import AggregatingNodeBlock
+from caldera.blocks import Dense
 from caldera.blocks import Flex
-from caldera.blocks import MLP
 from caldera.blocks import MultiAggregator
 
 
@@ -16,7 +16,7 @@ def test_flexible_multiaggregator():
 
 def test_flexible_agg_node_block_mult_agg():
     net = AggregatingNodeBlock(
-        Flex(MLP)(Flex.d(), 25),
+        Flex(Dense)(Flex.d(), 25),
         edge_aggregator=Flex(MultiAggregator)(Flex.d(), aggregators=["add"]),
     )
     n_edges = 10
@@ -31,7 +31,7 @@ def test_flexible_agg_node_block_mult_agg():
 
 def test_():
     net = AggregatingNodeBlock(
-        Flex(MLP)(Flex.d(), 25),
+        Flex(Dense)(Flex.d(), 25),
         edge_aggregator=Flex(MultiAggregator)(Flex.d(), aggregators=["add"]),
     )
     n_edges = 10

@@ -19,6 +19,11 @@ class NodeBlock(Block):
 
 class AggregatingNodeBlock(NodeBlock):
     def __init__(self, mlp: nn.Module, edge_aggregator: Aggregator):
+        """Aggregating version of the NodeBlock.
+
+        :param mlp:
+        :param edge_aggregator:
+        """
         super().__init__(mlp)
         self.block_dict["edge_aggregator"] = edge_aggregator
         self._independent = False

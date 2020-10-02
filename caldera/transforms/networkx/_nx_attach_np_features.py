@@ -180,9 +180,11 @@ class NetworkxAttachNumpyFeatures(NetworkxTransformBase):
             processing_func = fn.compose(
                 fn.map_each(lambda x: np.array([int(bool(x))]))
             )
+        elif callable(encoding):
+            processing_func = encoding
         else:
             raise ValueError(
-                "Encoding {} is not a valid encoding. Select from 'onehot' or None".format(
+                "Encoding {} is not a valid encoding. Select from 'onehot', 'bool', a callable, or None".format(
                     encoding
                 )
             )

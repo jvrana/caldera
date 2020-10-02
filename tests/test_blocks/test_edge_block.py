@@ -1,12 +1,12 @@
 import torch
 
 from caldera.blocks import AggregatingEdgeBlock
+from caldera.blocks import Dense
 from caldera.blocks import EdgeBlock
-from caldera.blocks import MLP
 
 
 def test_init_edge_block():
-    edge_encoder = EdgeBlock(MLP(3, 10, 16))
+    edge_encoder = EdgeBlock(Dense(3, 10, 16))
 
     x = torch.randn(20, 3)
     out = edge_encoder(x)
@@ -17,7 +17,7 @@ def test_init_edge_block():
 
 
 def test_init_agg_edge_block_requires_grad():
-    edge_model = AggregatingEdgeBlock(MLP(7, 10, 16))
+    edge_model = AggregatingEdgeBlock(Dense(7, 10, 16))
 
     x = torch.randn(20, 3)
     edges = torch.randint(0, 40, torch.Size([2, 20]))

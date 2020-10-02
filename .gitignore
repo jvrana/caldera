@@ -697,3 +697,12 @@ tmp
 
 # sweep
 **/.sweep
+
+# torch checkpoints
+*.ckpt
+
+# pickle files
+*.pkl
+
+# untitled jupyter notebooks
+Untitled*.ipynb
