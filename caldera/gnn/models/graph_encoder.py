@@ -8,8 +8,14 @@ from caldera.gnn.models.base import GraphNetworkBase
 
 class GraphEncoder(GraphNetworkBase):
     def __init__(
-        self, edge_block: EdgeBlock, node_block: NodeBlock, global_block: GlobalBlock
+        self, *, edge_block: EdgeBlock, node_block: NodeBlock, global_block: GlobalBlock
     ):
+        """Graph encoder network.
+
+        :param edge_block: edge block
+        :param node_block: node block
+        :param global_block: global block
+        """
         assert issubclass(type(edge_block), EdgeBlock)
         assert issubclass(type(node_block), NodeBlock)
         assert issubclass(type(global_block), GlobalBlock)
