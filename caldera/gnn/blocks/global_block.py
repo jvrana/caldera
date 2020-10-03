@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 from caldera.data import GraphBatch
-from caldera.gnn import Aggregator
+from caldera.gnn.blocks import Aggregator
 from caldera.gnn.blocks.block import Block
 
 

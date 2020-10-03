@@ -1,11 +1,3 @@
-r"""
-Design (:mod:`dasi.design`)
-=============================
-
-.. currentmodule:: caldera.data._graph_data
-
-This module provide DNA assembly functionality for DASi.
-"""
 from __future__ import annotations
 
 import functools
@@ -38,6 +30,7 @@ def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
         raise ValueError("Must be a {} or {}".format(np.ndarray, torch.Tensor))
 
 
+# TODO: apply freeze method
 # TODO: there should be a super class, TorchComposition, with apply methods etc.
 # TODO: support n dim tensors
 # TODO: implicit support for torch.Tensor

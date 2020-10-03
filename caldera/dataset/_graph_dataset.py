@@ -9,7 +9,10 @@ from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.transforms._base import TransformCallable
 
-
+# TODO: allow graph data set to have multiple datalists (or as batches)
+#       check for same sizes, distribute as tuples
+#       should be pickle-able and savable
+#       should have name attributes for each set
 class GraphDataset(Dataset):
     """Graph dataset."""
 
@@ -68,6 +71,7 @@ class GraphDataset(Dataset):
         return self.get(idx)
 
 
+# TODO: delete this type of dataset...
 class GraphBatchDataset(GraphDataset):
     """Dataset that loads a :class:`caldera.data.GraphData` list into.
 

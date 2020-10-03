@@ -1,10 +1,14 @@
 ##########################################################
 # Relative Imports
 ##########################################################
+import functools
 import sys
 from functools import partial
 from os.path import isfile
 from os.path import join
+from typing import List
+
+import torch
 
 
 def find_pkg(name: str, depth: int):
@@ -52,7 +56,7 @@ from caldera.utils import functional as fn
 from caldera.utils.nx.generators import random_graph
 from torch import nn
 from caldera import gnn
-
+from caldera.data import GraphBatch, GraphTuple
 
 preprocess = Compose(
     [
@@ -88,6 +92,35 @@ preprocess = Compose(
 )
 
 
+def gt_to_data(gt: GraphTuple, b: GraphBatch) -> GraphBatch:
+    return GraphBatch(
+        node_attr=gt.x,
+        edge_attr=gt.e,
+        global_attr=gt.g,
+        edges=b.edges,
+        node_idx=b.node_idx,
+    )
+
+
+def as_data(f):
+    @functools.wraps(f)
+    def wrapped(data, *args, **kwargs):
+        return gt_to_data(f(data, *args, **kwargs), data)
+
+    return wrapped
+
+
+def cat(batch1: GraphBatch, batch2: GraphBatch) -> GraphBatch:
+    return GraphBatch(
+        node_attr=torch.cat([batch1.x, batch2.x], dim=1),
+        edge_attr=torch.cat([batch1.e, batch2.e], dim=1),
+        global_attr=torch.cat([batch1.g, batch2.g], dim=1),
+        edges=batch1.edges,
+        node_idx=batch1.node_idx,
+        edge_idx=batch1.edge_idx,
+    )
+
+
 class Network(nn.Module):
     def __init__(self):
 
@@ -119,5 +152,18 @@ class Network(nn.Module):
             global_block=gnn.GlobalBlock(gnn.Flex(nn.Linear)(..., 1), nn.Softmax(0)),
         )
 
-    def forward(self, data):
-        latent0 = self.encode(data)
+    def forward(
+        self, data: GraphBatch, steps: int, save_all: bool = True
+    ) -> List[GraphBatch]:
+        latent0 = as_data(self.encode)(data)
+        outputs = []
+        for _ in range(steps):
+            data = cat(latent0, data)
+            data = as_data(self.core)(data)
+            data = as_data(self.encode)(data)
+            out = as_data(self.out)(data)
+            if save_all:
+                outputs.append(out)
+            else:
+                outputs = [out]
+        return outputs

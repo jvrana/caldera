@@ -14,6 +14,7 @@ from caldera.utils import torch_scatter_group
 from caldera.utils.nx.types import DirectedGraph
 
 
+# TODO: check for batches that share data with other batches
 class GraphBatch(GraphData):
     __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
 
@@ -21,7 +22,7 @@ class GraphBatch(GraphData):
     def __init__(
         self,
         node_attr: torch.FloatTensor,
-        edge_attr: torch.FloatTensornsor,
+        edge_attr: torch.FloatTensor,
         global_attr: torch.FloatTensor,
         edges: torch.LongTensor,
         node_idx: torch.LongTensor,

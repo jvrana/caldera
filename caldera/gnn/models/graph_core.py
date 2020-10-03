@@ -1,3 +1,5 @@
+from typing import Union
+
 from caldera.data import GraphBatch
 from caldera.data import GraphTuple
 from caldera.gnn.blocks import AggregatingEdgeBlock
@@ -37,7 +39,9 @@ class GraphCore(GraphNetworkBase):
         self.pass_to_global_to_edge = pass_global_to_edge
         self.pass_to_global_to_node = pass_global_to_node
 
-    def forward(self, data: GraphBatch) -> GraphTuple:
+    def forward(
+        self, data: GraphBatch, return_as_batch: bool = False
+    ) -> Union[GraphTuple, GraphBatch]:
         if self.pass_to_global_to_edge:
             edge_attr = self.edge_block(
                 edge_attr=data.e,
@@ -72,4 +76,7 @@ class GraphCore(GraphNetworkBase):
             node_idx=data.node_idx,
             edge_idx=data.edge_idx,
         )
-        return GraphTuple(edge_attr, node_attr, global_attr)
+        out = GraphTuple(edge_attr, node_attr, global_attr)
+        if return_as_batch:
+            out = self.gt_to_batch(out, data)
+        return out
