@@ -33,7 +33,8 @@ class TrainingModule(LightningModule):
         self.config = config
         self.model: Network = Network(config.network)
         self.hparams = dataclass_to_dict(config)
-        # self._loss_fn = torch.nn.BCEWithLogitsLoss(reduction='mean')
+
+        self._loss_fn = torch.nn.BCEWithLogitsLoss(reduction='mean', pos_weight=torch.tensor([1., 100.]))
 
     @requires_logger_experiment
     def logger_experiment_update_hparams(self):
@@ -50,13 +51,13 @@ class TrainingModule(LightningModule):
             save_all=True,
         )
 
-        _loss_f = torch.nn.BCELoss()
+        _loss_f = self._loss_fn
         losses = []
         for out_batch in out_batch_list:
             node_loss = _loss_f(out_batch.x, target_batch.x)
             edge_loss = _loss_f(out_batch.e, target_batch.e)
-            glob_loss = _loss_f(out_batch.g, target_batch.g)
-            _loss = (node_loss + edge_loss + glob_loss) / len(out_batch_list)
+            # glob_loss = _loss_f(out_batch.g, target_batch.g)
+            _loss = (node_loss + edge_loss) / len(out_batch_list)
             losses.append(_loss)
         from functools import reduce
         from operator import add
@@ -77,12 +78,12 @@ class TrainingModule(LightningModule):
         out_batch_list = self.model.forward(
             input_batch, steps=self.config.hyperparameters.train_core_processing_steps
         )
-        _loss_f = torch.nn.BCELoss()
+        _loss_f = self._loss_fn
         for out_batch in out_batch_list:
             node_loss = _loss_f(out_batch.x, target_batch.x)
             edge_loss = _loss_f(out_batch.e, target_batch.e)
-            glob_loss = _loss_f(out_batch.g, target_batch.g)
-        loss = (node_loss + edge_loss + glob_loss) / len(out_batch_list)
+            # glob_loss = _loss_f(out_batch.g, target_batch.g)
+        loss = (node_loss + edge_loss) / len(out_batch_list)
 
         result = pl.EvalResult(checkpoint_on=loss)
         result.log("eval_loss", loss, on_step=False, on_epoch=True, prog_bar=False)
@@ -136,7 +137,8 @@ class TrainingModule(LightningModule):
                 self.model.parameters(), lr=self.config.hyperparameters.lr
             )
         else:
-            return torch.optim.Adam(
+            return torch.optim.AdamW(
                 self.model.parameters(), lr=self.config.hyperparameters.lr
             )
+
         raise ValueError("optimizer not recognized")

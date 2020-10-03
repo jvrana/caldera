@@ -97,19 +97,19 @@ class Networks:
     graph_encoder = n(
         "graph_encoder",
         lambda: GraphEncoder(
-            EdgeBlock(
+            edge_block=EdgeBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
-            NodeBlock(
+            node_block=NodeBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
-            GlobalBlock(
+            global_block=GlobalBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
@@ -120,20 +120,20 @@ class Networks:
 
     def create_graph_core(pass_global_to_edge: bool, pass_global_to_node: bool):
         return GraphCore(
-            AggregatingEdgeBlock(
+            edge_block=AggregatingEdgeBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
-            AggregatingNodeBlock(
+            node_block=AggregatingNodeBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 ),
                 edge_aggregator=Aggregator("add"),
             ),
-            AggregatingGlobalBlock(
+            global_block=AggregatingGlobalBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(Flex.d(), 5, 5, layer_norm=False),
                     Flex(torch.nn.Linear)(Flex.d(), 1),
@@ -153,7 +153,7 @@ class Networks:
         agg = lambda: Flex(MultiAggregator)(Flex.d(), ["add", "mean", "max", "min"])
 
         return GraphCore(
-            AggregatingEdgeBlock(
+            edge_block=AggregatingEdgeBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(
                         Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU
@@ -161,7 +161,7 @@ class Networks:
                     Flex(torch.nn.Linear)(Flex.d(), 1),
                 )
             ),
-            AggregatingNodeBlock(
+            node_block=AggregatingNodeBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(
                         Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU
@@ -170,7 +170,7 @@ class Networks:
                 ),
                 edge_aggregator=agg(),
             ),
-            AggregatingGlobalBlock(
+            global_block=AggregatingGlobalBlock(
                 torch.nn.Sequential(
                     Flex(Dense)(
                         Flex.d(), 5, 5, layer_norm=True, activation=torch.nn.LeakyReLU
@@ -651,7 +651,7 @@ class NetworkTestCase:
         for p in self.network.parameters():
             assert p.requires_grad is True
 
-    def post_train_validate(self, threshold=0.1):
+    def post_train_validate(self, threshold=0.05):
         if self.losses[-1] > self.losses[0] * threshold:
             raise NetworkTestCaseValidationError(
                 "Model did not train properly :(."

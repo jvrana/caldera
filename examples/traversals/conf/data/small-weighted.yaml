@@ -1,0 +1,55 @@
+# @package _group_
+train:  # training data generation
+    name: train
+    num_graphs: 5000
+    density:
+        low: 0.02
+        high: 0.06
+        name: uniform
+    num_nodes:
+        low: 10
+        high: 100
+        name: discrete_uniform
+    path_length:
+        low: 2
+        high: 3
+        name: discrete_uniform
+    composition_density:
+        low: 0.01
+        high: 0.1
+        name: uniform
+    weight:
+        low: 0.01
+        high: 0.1
+        name: uniform
+    composition_weight:
+        low: 0.01
+        high: 0.1
+        name: uniform
+eval:  # evaluation data generation
+    name: eval
+    num_graphs: 500
+    density:
+        low: 0.02
+        high: 0.06
+        name: uniform
+    num_nodes:
+        low: 100
+        high: 200
+        name: discrete_uniform
+    path_length:
+        low: 2
+        high: 3
+        name: discrete_uniform
+    composition_density:
+        low: 0.01
+        high: 0.1
+        name: uniform
+    weight:
+        low: 0.01
+        high: 0.1
+        name: uniform
+    composition_weight:
+        low: 0.01
+        high: 0.1
+        name: uniform

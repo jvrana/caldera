@@ -20,20 +20,20 @@ encode:
         dropout: ${network.dropout}
 core:
     node:
-        size: 32
-        depth: 3
+        size: 64
+        depth: 5
         layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     edge:
-        size: 32
-        depth: 3
+        size: 64
+        depth: 5
         layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
     glob:
-        size: 32
-        depth: 3
+        size: 64
+        depth: 5
         layer_norm: true
         activation: ${network.activation}
         dropout: ${network.dropout}
@@ -42,25 +42,25 @@ out:
         size: 2
         depth: 1
         layer_norm: false
-        activation: Softmax
+        activation: Identity
         dropout: 0.0
     edge:
         size: 2
         depth: 1
         layer_norm: false
-        activation: Softmax
+        activation: Identity
         dropout: 0.0
     glob:
         size: 1
         depth: 1
         layer_norm: false
-        activation: Softmax
+        activation: Identity
         dropout: 0.0
 
 # defaults
 dropout: 0.2
 activation: LeakyReLU
-layer_norm: false
+layer_norm: true
 aggregator_activation: LeakyReLU
 pass_global_to_edge: true
 pass_global_to_node: true

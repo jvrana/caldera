@@ -16,7 +16,7 @@ training:
     eval_batch_size: "${data.eval.num_graphs}"
     train_shuffle: true
     eval_shuffle: false
-    optimizer: sgd
+    optimizer: adam
 logging:
     disabled: false
     log_level: WARNING

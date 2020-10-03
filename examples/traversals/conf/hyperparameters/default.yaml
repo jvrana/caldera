@@ -1,4 +1,4 @@
 # @package _group_
-lr: 0.01
-train_core_processing_steps: 5
-eval_core_processing_steps: 5
+lr: 0.001
+train_core_processing_steps: 10
+eval_core_processing_steps: 20

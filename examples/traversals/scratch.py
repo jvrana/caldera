@@ -64,11 +64,11 @@ preprocess = Compose(
             node_default={"source": False, "target": False, "shortest_path": False},
             edge_default={"shortest_path": False},
         ),
-        NetworkxAttachNumpyOneHot(
-            "node", "source", "_features", classes=[False, True]
+        NetworkxAa(
+            "node", "source", "_features"
         ),  # label nodes as 'start'
         NetworkxAttachNumpyOneHot(
-            "node", "target", "_features", classes=[False, True]
+            "node", "target", "_features"
         ),  # label nodes as 'end'
         # attached weight
         NetworkxAttachNumpyFeatures(
@@ -167,3 +167,7 @@ class Network(nn.Module):
             else:
                 outputs = [out]
         return outputs
+
+
+from tqdm.auto import tqdm
+
