@@ -1,9 +1,9 @@
-from caldera.blocks import EdgeBlock
-from caldera.blocks import GlobalBlock
-from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
 from caldera.data import GraphTuple
-from caldera.models.base import GraphNetworkBase
+from caldera.gnn.blocks import EdgeBlock
+from caldera.gnn.blocks import GlobalBlock
+from caldera.gnn.blocks import NodeBlock
+from caldera.gnn.models.base import GraphNetworkBase
 
 
 class GraphEncoder(GraphNetworkBase):

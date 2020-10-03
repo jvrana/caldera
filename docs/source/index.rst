@@ -19,6 +19,7 @@ Caldera
    :maxdepth: 1
    :glob:
 
+   api/gnn
    api/data
    api/dataset
    api/blocks

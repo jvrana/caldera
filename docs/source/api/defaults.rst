@@ -1,7 +1,5 @@
 Defaults
 ========
 
-.. currentmodule:: caldera.defaults
-
-.. automodule::
+.. automodule:: caldera.defaults
     :members:

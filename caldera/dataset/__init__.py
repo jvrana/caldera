@@ -4,7 +4,7 @@ Graphdata sets
 .. currentmodule:: caldera.dataset
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     GraphDataset
     GraphBatchDataset

@@ -16,7 +16,10 @@
 
 ### Installation
 
-#### via pip
+Due to constraints with installing pytorch and torch-scatter, it is not possible
+to reliably install this package with pip.
+
+The following packages must be installed manually: `pytorch`, `torch-scatter`
 
 #### via Conda
 

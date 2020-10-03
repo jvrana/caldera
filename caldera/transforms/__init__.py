@@ -2,7 +2,7 @@ r"""
 Transformation classes for :class:`caldera.data.GraphData` and :class:`caldera.data.GraphBatch`.
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
    Shuffle
    Reverse

@@ -2,7 +2,7 @@ r"""
 Networkx utilities.
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     nx_copy
     nx_copy_to_directed
@@ -20,7 +20,7 @@ Traversals
 ----------
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
    traversal.floyd_warshall
    traversal.PathAccumulator
@@ -37,7 +37,7 @@ Generators
 ----------
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     generators.chain_graph
     generators.compose_and_connect

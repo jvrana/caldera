@@ -3,7 +3,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
-
+import caldera.gnn
 
 # -- Project information -----------------------------------------------------
 import caldera as pkg
@@ -21,8 +21,11 @@ author = authors[0]
 release = pkg.__version__
 
 # -- General configuration ---------------------------------------------------
+import glob
+
 autosummary_generate = (
-    True  # glob.glob("*.rst")  # Make _autosummary files and include them
+    True
+    # glob.glob("source/api/*.rst")  # Make _autosummary files and include them
 )
 autoclass_content = "both"  # include both class docstring and __init__
 
@@ -122,7 +125,6 @@ html_theme_options = {
 
 ## uncomment to add globaltoc sidebar
 html_sidebars = {
-    "generated/**": ["api_sidebar.html"],
     "api/**": ["api_sidebar.html"],
 }
 

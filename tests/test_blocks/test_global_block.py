@@ -1,9 +1,9 @@
 import torch
 
-from caldera.blocks import AggregatingGlobalBlock
-from caldera.blocks import Aggregator
-from caldera.blocks import Dense
-from caldera.blocks import GlobalBlock
+from caldera.gnn.blocks import AggregatingGlobalBlock
+from caldera.gnn.blocks import Aggregator
+from caldera.gnn.blocks import Dense
+from caldera.gnn.blocks import GlobalBlock
 
 
 def test_init_global_block():

@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 
-from caldera.blocks.block import Block
 from caldera.data import GraphBatch
+from caldera.gnn.blocks.block import Block
 
 
 class GlobalBlock(Block):

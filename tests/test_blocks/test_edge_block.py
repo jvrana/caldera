@@ -1,8 +1,8 @@
 import torch
 
-from caldera.blocks import AggregatingEdgeBlock
-from caldera.blocks import Dense
-from caldera.blocks import EdgeBlock
+from caldera.gnn.blocks import AggregatingEdgeBlock
+from caldera.gnn.blocks import Dense
+from caldera.gnn.blocks import EdgeBlock
 
 
 def test_init_edge_block():

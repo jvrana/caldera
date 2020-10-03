@@ -1,6 +1,4 @@
-Models (:mod:`caldera.models`)
-==============================
+Models (:mod:`caldera.gnn.models`)
+==================================
 
-.. currentmodule:: caldera.models
-
-.. automodule:: caldera.models
+.. automodule:: caldera.gnn.models

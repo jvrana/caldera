@@ -1,5 +1,5 @@
-Transforms
-==========
+Transforms (:mod:`caldera.transforms`)
+======================================
 
 .. currentmodule:: caldera.transforms
 

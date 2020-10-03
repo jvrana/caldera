@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from caldera.blocks import Flex
+from caldera.gnn.blocks import Flex
 
 
 def test_flex_block():

@@ -22,7 +22,7 @@ help:
 clean:
 	@echo "Cleaning"
 	rm -rf $(BUILDDIR)/*
-	rm -rf $(SOURCEDIR)/generated
+	rm -rf $(SOURCEDIR)/_generated
 
 # execute each notebook and generate files for each notebook
 .PHONY: nbexamples

@@ -4,7 +4,7 @@ repos:
     hooks:
     - id: black
 -   repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 3.8.4
     hooks:
     -   id: flake8
         exclude: (^tests/)|(^docsrc/)|(^experiments)|(^examples)
@@ -27,16 +27,18 @@ repos:
     -   id: reorder-python-imports
         args: [--py3-plus]
 -   repo: https://github.com/jvrana/poetry-hooks
-    rev: 0.2.1
+    rev: 0.4.4
     hooks:
     -   id: poetry-version-up
     -   id: poetry-export
+        name: export
+        args: [ '-vvv', '--requirements', 'requirements.txt', '--poetry="--without-hashes"' ]
     -   id: poetry-export
         name: export-docs
-        args: ['--requirements', 'requirements-docs.txt', '--dev', '-E', 'docs']
+        args: [ '-vvv', '--requirements', 'requirements-docs.txt', '--poetry="--without-hashes --dev -E docs"']
     -   id: poetry-export
         name: export-dev
-        args: ['--requirements', 'requirements-dev.txt', '--dev']
+        args: [ '-vvv', '--requirements', 'requirements-dev.txt', '--poetry="--without-hashes --dev"' ]
     -   id: poetry-export
         name: export-examples
-        args: [ '--requirements', 'requirements-examples.txt', '-E', 'nbexamples']
+        args: [ '--requirements', 'requirements-examples.txt', '--poetry="--without-hashes -E nbexamples"']

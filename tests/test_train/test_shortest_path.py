@@ -2,21 +2,21 @@ import networkx as nx
 import numpy as np
 import torch
 
-from caldera.blocks import AggregatingEdgeBlock
-from caldera.blocks import AggregatingGlobalBlock
-from caldera.blocks import AggregatingNodeBlock
-from caldera.blocks import Dense
-from caldera.blocks import EdgeBlock
-from caldera.blocks import Flex
-from caldera.blocks import GlobalBlock
-from caldera.blocks import MultiAggregator
-from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
 from caldera.data import GraphData
 from caldera.data import GraphDataLoader
 from caldera.defaults import CalderaDefaults as defaults
-from caldera.models import GraphCore
-from caldera.models import GraphEncoder
+from caldera.gnn.blocks import AggregatingEdgeBlock
+from caldera.gnn.blocks import AggregatingGlobalBlock
+from caldera.gnn.blocks import AggregatingNodeBlock
+from caldera.gnn.blocks import Dense
+from caldera.gnn.blocks import EdgeBlock
+from caldera.gnn.blocks import Flex
+from caldera.gnn.blocks import GlobalBlock
+from caldera.gnn.blocks import MultiAggregator
+from caldera.gnn.blocks import NodeBlock
+from caldera.gnn.models import GraphCore
+from caldera.gnn.models import GraphEncoder
 from caldera.testing import annotate_shortest_path
 from caldera.transforms import Compose
 from caldera.transforms.networkx import NetworkxAttachNumpyOneHot

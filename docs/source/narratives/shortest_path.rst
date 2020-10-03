@@ -424,7 +424,7 @@ runtime, as in ``Flex(torch.nn.Linear)(Flex.d(), 10)``.
 
 .. code:: ipython3
 
-    from caldera.blocks import Flex
+    from caldera.gnn.blocks import Flex
     import torch
     
     FlexLinear = Flex(torch.nn.Linear)
@@ -474,20 +474,20 @@ Final Network
 
 .. code:: ipython3
 
-    from caldera.blocks import NodeBlock, EdgeBlock, GlobalBlock
-    from caldera.blocks import AggregatingNodeBlock, AggregatingEdgeBlock, AggregatingGlobalBlock
-    from caldera.blocks import MultiAggregator
-    from caldera.blocks import Flex
-    from caldera.models import GraphCore, GraphEncoder
+    from caldera.gnn.blocks import NodeBlock, EdgeBlock, GlobalBlock
+    from caldera.gnn.blocks import AggregatingNodeBlock, AggregatingEdgeBlock, AggregatingGlobalBlock
+    from caldera.gnn.blocks import MultiAggregator
+    from caldera.gnn.blocks import Flex
+    from caldera.gnn.models import GraphCore, GraphEncoder
     from caldera.defaults import CalderaDefaults as defaults
 
 .. code:: ipython3
 
     import torch
     from caldera.defaults import CalderaDefaults as defaults
-    from caldera.blocks import Flex, NodeBlock, EdgeBlock, GlobalBlock, Dense, AggregatingEdgeBlock, AggregatingNodeBlock, \
+    from caldera.gnn.blocks import Flex, NodeBlock, EdgeBlock, GlobalBlock, Dense, AggregatingEdgeBlock, AggregatingNodeBlock, \
         MultiAggregator, AggregatingGlobalBlock
-    from caldera.models import GraphEncoder, GraphCore
+    from caldera.gnn.models import GraphEncoder, GraphCore
     from caldera.data import GraphBatch
     
     

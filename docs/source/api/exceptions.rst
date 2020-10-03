@@ -1,7 +1,5 @@
 Exceptions
 ==========
 
-.. currentmodule:: caldera.exceptions
-
-.. automodule::
+.. automodule:: caldera.exceptions
     :members:

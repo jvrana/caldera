@@ -6,18 +6,18 @@ from typing import Type
 import torch
 
 from .configuration import NetConfig
-from caldera.blocks import AggregatingEdgeBlock
-from caldera.blocks import AggregatingGlobalBlock
-from caldera.blocks import AggregatingNodeBlock
-from caldera.blocks import Dense
-from caldera.blocks import EdgeBlock
-from caldera.blocks import Flex
-from caldera.blocks import GlobalBlock
-from caldera.blocks import MultiAggregator
-from caldera.blocks import NodeBlock
 from caldera.data import GraphBatch
-from caldera.models import GraphCore
-from caldera.models import GraphEncoder
+from caldera.gnn.blocks import AggregatingEdgeBlock
+from caldera.gnn.blocks import AggregatingGlobalBlock
+from caldera.gnn.blocks import AggregatingNodeBlock
+from caldera.gnn.blocks import Dense
+from caldera.gnn.blocks import EdgeBlock
+from caldera.gnn.blocks import Flex
+from caldera.gnn.blocks import GlobalBlock
+from caldera.gnn.blocks import MultiAggregator
+from caldera.gnn.blocks import NodeBlock
+from caldera.gnn.models import GraphCore
+from caldera.gnn.models import GraphEncoder
 
 
 class EdgeBlockEncoder(EdgeBlock):

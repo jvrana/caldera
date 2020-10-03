@@ -404,7 +404,6 @@ fi
 TAG=$arg_t
 info "TAG: $TAG"
 
-
 tmpfile=$(mktemp /tmp/caldera-build-docs.XXXXXX)
 exec 3>"$tmpfile"
 rm "$tmpfile"

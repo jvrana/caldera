@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from caldera.blocks import Dense
+from caldera.gnn.blocks import Dense
 
 
 @pytest.mark.parametrize("layers", [(8, 32), (16, 16, 32), (64, 16, 8)])

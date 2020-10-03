@@ -1,5 +1,4 @@
-Blocks (:mod:`caldera.blocks`)
-==============================
+Blocks (:mod:`caldera.gnn.blocks`)
+==================================
 
-.. automodule:: caldera.blocks
-"""
+.. automodule:: caldera.gnn.blocks

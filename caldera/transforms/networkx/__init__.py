@@ -9,23 +9,24 @@ Methods for transforming :class:`networkx.Graph`s
     :class:`NetworkxDeepcopy` if a copy of the graph is wanted.
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
-    NetworkxApplyToFeature
     NetworkxAttachNumpyFeatures
     NetworkxAttachNumpyOneHot
     NetworkxAttachNumpyBool
     NetworkxSetDefaultFeature
     NetworkxTransformFeatureData
     NetworkxTransformFeatures
-    NetworkxFlattenEdgeFeature
-    NetworkxFlattenGlobalFeature
-    NetworkxFlattenNodeFeature
     NetworkxNodesToStr
     NetworkxToDirected
     NetworkxToUndirected
+    NetworkxApplyToKey
+    NetworkxFlattenNodeFeature
+    NetworkxFlattenEdgeFeature
+    NetworkxFlattenGlobalFeature
     NetworkxFilterDataKeys
-    NetworkxDeepcpy
+    NetworkxApply
+    NetworkxDeepcopy
 """
 from ._nx_apply_to_graph import NetworkxApply
 from ._nx_apply_to_key import NetworkxApplyToKey

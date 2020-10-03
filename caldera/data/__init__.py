@@ -2,7 +2,7 @@ r"""
 This module provide objects for representing graphs as `torch` tensors.
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     GraphBatch
     GraphData

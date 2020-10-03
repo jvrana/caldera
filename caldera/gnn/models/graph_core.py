@@ -1,9 +1,9 @@
-from caldera.blocks import AggregatingEdgeBlock
-from caldera.blocks import AggregatingGlobalBlock
-from caldera.blocks import AggregatingNodeBlock
 from caldera.data import GraphBatch
 from caldera.data import GraphTuple
-from caldera.models.base import GraphNetworkBase
+from caldera.gnn.blocks import AggregatingEdgeBlock
+from caldera.gnn.blocks import AggregatingGlobalBlock
+from caldera.gnn.blocks import AggregatingNodeBlock
+from caldera.gnn.models.base import GraphNetworkBase
 
 
 class GraphCore(GraphNetworkBase):

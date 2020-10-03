@@ -3,7 +3,7 @@ r"""
 Caldera utility functions.
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     dict_join
     # pairwise
@@ -13,7 +13,7 @@ Indexing
 --------
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     reindex_tensor
     unravel_index
@@ -24,7 +24,7 @@ Tensor
 Utilities for :class:`torch.Tensor`
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     scatter_coo
     scatter_indices
@@ -42,8 +42,7 @@ Functional
 Functional programming module.
 
 .. autosummary::
-    :toctree: generated/
-    :recursive:
+    :toctree: _generated/
 
     functional
 
@@ -53,9 +52,9 @@ Networkx Utilities
 Extra :mod:`networkx` utilities
 
 .. autosummary::
-    :toctree: generated/
-    :recursive:
+    :toctree: _generated/
 
+    nx
 """
 from ._dict_join import dict_join
 from ._iteration import _first

@@ -1,7 +1,4 @@
 r"""
-Exceptions (:mod:`caldera.exceptions`)
-======================================
-
 Caldera exceptions.
 """
 

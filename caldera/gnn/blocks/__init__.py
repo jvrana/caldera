@@ -1,13 +1,11 @@
 r"""
-.. currentmodule:: caldera.blocks
-
 Network building blocks for creating graph neural networks.
 
 Generic Blocks
 --------------
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     Flex
     Dense
@@ -16,7 +14,7 @@ Encoder/Decoder Blocks
 ----------------------
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     NodeBlock
     EdgeBlock
@@ -26,7 +24,7 @@ Message Passing Blocks
 ----------------------
 
 .. autosummary::
-    :toctree: generated/
+    :toctree: _generated/
 
     AggregatingNodeBlock
     AggregatingEdgeBlock
@@ -34,16 +32,16 @@ Message Passing Blocks
     Aggregator
     MultiAggregator
 """
-from caldera.blocks.aggregator import Aggregator
-from caldera.blocks.aggregator import MultiAggregator
-from caldera.blocks.dense import Dense
-from caldera.blocks.edge_block import AggregatingEdgeBlock
-from caldera.blocks.edge_block import EdgeBlock
-from caldera.blocks.flex import Flex
-from caldera.blocks.global_block import AggregatingGlobalBlock
-from caldera.blocks.global_block import GlobalBlock
-from caldera.blocks.node_block import AggregatingNodeBlock
-from caldera.blocks.node_block import NodeBlock
+from caldera.gnn.blocks.aggregator import Aggregator
+from caldera.gnn.blocks.aggregator import MultiAggregator
+from caldera.gnn.blocks.dense import Dense
+from caldera.gnn.blocks.edge_block import AggregatingEdgeBlock
+from caldera.gnn.blocks.edge_block import EdgeBlock
+from caldera.gnn.blocks.flex import Flex
+from caldera.gnn.blocks.global_block import AggregatingGlobalBlock
+from caldera.gnn.blocks.global_block import GlobalBlock
+from caldera.gnn.blocks.node_block import AggregatingNodeBlock
+from caldera.gnn.blocks.node_block import NodeBlock
 
 __all__ = [
     "Aggregator",

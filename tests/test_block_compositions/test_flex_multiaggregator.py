@@ -1,9 +1,9 @@
 import torch
 
-from caldera.blocks import AggregatingNodeBlock
-from caldera.blocks import Dense
-from caldera.blocks import Flex
-from caldera.blocks import MultiAggregator
+from caldera.gnn.blocks import AggregatingNodeBlock
+from caldera.gnn.blocks import Dense
+from caldera.gnn.blocks import Flex
+from caldera.gnn.blocks import MultiAggregator
 
 
 def test_flexible_multiaggregator():

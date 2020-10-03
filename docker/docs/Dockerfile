@@ -2,7 +2,6 @@ FROM python:3.8-buster AS base
 ENV CUDA="cpu" TORCH="1.6.0"
 MAINTAINER Justin D Vrana "justin.vrana+caldera@gmail.com"
 RUN pip install pip -U
-RUN pip install poetry
 
 FROM base AS torch
 RUN pip install torch==${TORCH}+${CUDA} -f https://download.pytorch.org/whl/torch_stable.html
@@ -25,4 +24,6 @@ RUN pip install -r requirements-docs.txt
 
 FROM caldera-docs AS project
 COPY . .
+RUN pip install -U setuptools
+RUN pip install poetry==1.0.9
 RUN pip install .

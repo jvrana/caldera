@@ -5,8 +5,8 @@ from typing import Tuple
 import torch
 from torch import nn
 
-from caldera.blocks.block import Block
 from caldera.data import GraphData
+from caldera.gnn.blocks.block import Block
 
 
 class EdgeBlock(Block):

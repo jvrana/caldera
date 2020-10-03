@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 
-from caldera.blocks.aggregator import Aggregator
-from caldera.blocks.block import Block
 from caldera.data import GraphBatch
+from caldera.gnn.blocks.aggregator import Aggregator
+from caldera.gnn.blocks.block import Block
 
 
 class NodeBlock(Block):

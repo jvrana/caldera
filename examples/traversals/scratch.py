@@ -85,6 +85,6 @@ preprocess = Compose(
 )
 
 
-from caldera.models import GraphEncoder, GraphCore
+from caldera.gnn.models import GraphEncoder, GraphCore
 
 GraphCore
