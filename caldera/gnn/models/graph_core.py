@@ -9,6 +9,7 @@ from caldera.gnn.models.base import GraphNetworkBase
 class GraphCore(GraphNetworkBase):
     def __init__(
         self,
+        *,
         edge_block: AggregatingEdgeBlock,
         node_block: AggregatingNodeBlock,
         global_block: AggregatingGlobalBlock,

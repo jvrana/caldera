@@ -76,7 +76,9 @@ class GlobalBlockCore(AggregatingGlobalBlock):
         aggregator_activation,
     ):
         super().__init__(
-            mlp=Flex(Dense)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm),
+            module=Flex(Dense)(
+                Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm
+            ),
             edge_aggregator=Flex(MultiAggregator)(
                 Flex.d(), aggregators=edge_aggregator, activation=aggregator_activation
             ),

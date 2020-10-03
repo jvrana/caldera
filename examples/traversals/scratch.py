@@ -2,6 +2,7 @@
 # Relative Imports
 ##########################################################
 import sys
+from functools import partial
 from os.path import isfile
 from os.path import join
 
@@ -49,6 +50,8 @@ from caldera.transforms.networkx import (
 )
 from caldera.utils import functional as fn
 from caldera.utils.nx.generators import random_graph
+from torch import nn
+from caldera import gnn
 
 
 preprocess = Compose(
@@ -85,6 +88,36 @@ preprocess = Compose(
 )
 
 
-from caldera.gnn.models import GraphEncoder, GraphCore
+class Network(nn.Module):
+    def __init__(self):
 
-GraphCore
+        dense = partial(
+            gnn.Flex(gnn.Dense), layer_norm=True, dropout=0.2, activation=nn.ReLU
+        )
+
+        self.encode = gnn.GraphEncoder(
+            edge_block=gnn.EdgeBlock(dense(..., 16)),
+            node_block=gnn.NodeBlock(dense(..., 16)),
+            global_block=gnn.GlobalBlock(dense(..., 16)),
+        )
+        self.core = gnn.GraphCore(
+            edge_block=gnn.AggregatingEdgeBlock(dense(..., 16)),
+            node_block=gnn.AggregatingNodeBlock(
+                dense(..., 16), edge_aggregator=gnn.Flex(gnn.Aggregator)(..., "add")
+            ),
+            global_block=gnn.AggregatingGlobalBlock(
+                dense(..., 16),
+                edge_aggregator=gnn.Flex(gnn.Aggregator)(..., "add"),
+                node_aggregator=gnn.Flex(gnn.Aggregator)(..., "add"),
+            ),
+        )
+        self.out = gnn.GraphEncoder(
+            edge_block=gnn.EdgeBlock(
+                nn.Sequential(gnn.Flex(nn.Linear)(..., 2), nn.Softmax(0))
+            ),
+            node_block=gnn.NodeBlock(gnn.Flex(nn.Linear)(..., 2), nn.Softmax(0)),
+            global_block=gnn.GlobalBlock(gnn.Flex(nn.Linear)(..., 1), nn.Softmax(0)),
+        )
+
+    def forward(self, data):
+        latent0 = self.encode(data)

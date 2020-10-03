@@ -1,7 +1,10 @@
+from typing import Optional
+
 import torch
 from torch import nn
 
 from caldera.data import GraphBatch
+from caldera.gnn import Aggregator
 from caldera.gnn.blocks.block import Block
 
 
@@ -17,9 +20,21 @@ class GlobalBlock(Block):
 
 
 # TODO: determine which aggregator to use during training (some function of attributes -> one-hot)
+# TODO: better documentation
 class AggregatingGlobalBlock(GlobalBlock):
-    def __init__(self, mlp, edge_aggregator=None, node_aggregator=None):
-        super().__init__(mlp)
+    def __init__(
+        self,
+        module,
+        edge_aggregator: Optional[Aggregator] = None,
+        node_aggregator: Optional[Aggregator] = None,
+    ):
+        """Aggregating global block.
+
+        :param module: any torch.nn.Module
+        :param edge_aggregator: edge aggregation module
+        :param node_aggregator: node aggregation module
+        """
+        super().__init__(module)
         self.block_dict["edge_aggregator"] = edge_aggregator
         self.block_dict["node_aggregator"] = node_aggregator
         self._independent = False

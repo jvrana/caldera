@@ -23,6 +23,10 @@ class EdgeBlock(Block):
 
 class AggregatingEdgeBlock(EdgeBlock):
     def __init__(self, module: nn.Module):
+        """Aggregating version of an EdgeBlock.
+
+        :param module: inner network (any torch.nn.Module)
+        """
         super().__init__(module)
         self._independent = False
 

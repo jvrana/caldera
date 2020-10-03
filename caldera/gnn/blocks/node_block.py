@@ -18,13 +18,13 @@ class NodeBlock(Block):
 
 
 class AggregatingNodeBlock(NodeBlock):
-    def __init__(self, mlp: nn.Module, edge_aggregator: Aggregator):
+    def __init__(self, module: nn.Module, edge_aggregator: Aggregator):
         """Aggregating version of the NodeBlock.
 
-        :param mlp:
-        :param edge_aggregator:
+        :param module: any torch.nn.Module
+        :param edge_aggregator: edge aggregation function
         """
-        super().__init__(mlp)
+        super().__init__(module)
         self.block_dict["edge_aggregator"] = edge_aggregator
         self._independent = False
 

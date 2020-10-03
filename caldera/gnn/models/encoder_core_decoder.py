@@ -17,6 +17,7 @@ from caldera.gnn.models.graph_encoder import GraphEncoder
 class EncodeCoreDecode(torch.nn.Module):
     def __init__(
         self,
+        *,
         latent_sizes=(128, 128, 1),
         output_sizes=(1, 1, 1),
         depths=(1, 1, 1),
