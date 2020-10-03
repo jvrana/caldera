@@ -20,8 +20,6 @@ author = authors[0]
 release = pkg.__version__
 
 # -- General configuration ---------------------------------------------------
-import glob
-
 autosummary_generate = (
     True
     # glob.glob("source/api/*.rst")  # Make _autosummary files and include them
