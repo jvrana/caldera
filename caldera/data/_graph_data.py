@@ -35,6 +35,7 @@ def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
 # TODO: support n dim tensors
 # TODO: implicit support for torch.Tensor
 # TODO: handle empty features and targets
+# TODO: implement __mul__ etc., implement __add__
 class GraphData:
     """Data representing a single graph."""
 
@@ -664,6 +665,27 @@ class GraphData:
             edges,
             requires_grad=requires_grad,
         )
+
+    def randomize_(self, n_feat: Optional[int] = None,
+                   e_feat: Optional[int] = None,
+                   g_feat: Optional[int] = None) -> 'GraphData':
+        """
+        Randomize the features in place without altering the graph topology or ordering.
+        Optionally provide a new new feature shape.
+
+        .. warning::
+
+            If a new copy is desired, use `.copy().randomize_()` rather than just `.randomize_()`
+
+        :return: self
+        """
+        n_feat = n_feat or self.x.shape[1]
+        e_feat = e_feat or self.e.shape[1]
+        g_feat = g_feat or self.g.shape[1]
+        self.x = torch.randn(self.x.shape[0], n_feat)
+        self.e = torch.randn(self.e.shape[0], e_feat)
+        self.g = torch.randn(self.g.shape[0], g_feat)
+        return self
 
     # TODO: view
     def view(
