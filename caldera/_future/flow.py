@@ -1,15 +1,21 @@
-"""
-Modules for create Caldera flow neural networks.
+"""Modules for create Caldera flow neural networks.
 
 Flow neural networks are arbitrarily connected sub neural networks.
 """
-
-from typing import Union, Callable, Optional, List, Dict, Tuple, Any
-from torch import nn
-from caldera import gnn
-import torch
-from caldera.data import GraphBatch
 import uuid
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
+
+import torch
+from torch import nn
+
+from caldera import gnn
+from caldera.data import GraphBatch
 
 
 # TODO: raise error if there are connections that have not been touched in the forward propogation
@@ -19,23 +25,28 @@ import uuid
 # TODO: draw connections using daft
 # TODO: make connection first class object
 
-class Flow(nn.Module):
 
+class Flow(nn.Module):
     def __init__(self):
         super().__init__()
         self._connections: Dict = {}
         self._cached: Dict[str, torch.Tensor] = {}
 
-    def register_connection(self, src: Union[Callable, nn.Module],
-                            dest: Union[Callable, nn.Module],
-                            mapping: Optional[Union[nn.Module, Callable]] = None,
-                            aggregation: Optional[Tuple[Callable, Callable]] = None,
-                            name: Optional[str] = None):
+    def register_connection(
+        self,
+        src: Union[Callable, nn.Module],
+        dest: Union[Callable, nn.Module],
+        mapping: Optional[Union[nn.Module, Callable]] = None,
+        aggregation: Optional[Tuple[Callable, Callable]] = None,
+        name: Optional[str] = None,
+    ):
         if name is None:
             name = str(uuid.uuid4())[-5:]
         self._connections[name] = (src, dest, mapping, aggregation)
 
-    def _predecessor_connections(self, dest: Union[Callable, nn.Module]) -> List[Union[Callable, nn.Module]]:
+    def _predecessor_connections(
+        self, dest: Union[Callable, nn.Module]
+    ) -> List[Union[Callable, nn.Module]]:
         return {n: c for n, c in self._connections.items() if c[1] is dest}
 
     # TODO: Here, we want to only pass data through the layers *a single time*
@@ -60,7 +71,13 @@ class Flow(nn.Module):
             cat = torch.cat(results, 1)
             if aggregation:
                 cat = torch.cat(results, 1)
-                out = self.apply(dest, cat, aggregation[0](data), dim=0, dim_size=aggregation[1](data))
+                out = self.apply(
+                    dest,
+                    cat,
+                    aggregation[0](data),
+                    dim=0,
+                    dim_size=aggregation[1](data),
+                )
             else:
                 out = self.apply(dest, cat)
         return out
@@ -73,15 +90,14 @@ class Flow(nn.Module):
 
 
 class FlowExample(Flow):
-
     def __init__(self):
         super().__init__()
         self.node = gnn.Flex(gnn.Dense)(..., 10, 1, layer_norm=True)
         self.edge = gnn.Flex(gnn.Dense)(..., 10, 1)
         self.glob = gnn.Flex(gnn.Dense)(..., 10, 10, 1)
-        self.edge_to_node_agg = gnn.Flex(gnn.MultiAggregator)(..., ['add'])
-        self.node_to_glob_agg = gnn.Flex(gnn.MultiAggregator)(..., ['add'])
-        self.edge_to_glob_agg = gnn.Flex(gnn.MultiAggregator)(..., ['add'])
+        self.edge_to_node_agg = gnn.Flex(gnn.MultiAggregator)(..., ["add"])
+        self.node_to_glob_agg = gnn.Flex(gnn.MultiAggregator)(..., ["add"])
+        self.edge_to_glob_agg = gnn.Flex(gnn.MultiAggregator)(..., ["add"])
 
         # the following connections determines how modules interact
         # if we did not add *any* connections, this would be a simple graph encoder
@@ -98,20 +114,43 @@ class FlowExample(Flow):
         self.register_connection(lambda data: data.g, self.glob)
 
         # these connections use indices
-        self.register_connection(lambda data: data.g, self.node, lambda data: data.node_idx)
-        self.register_connection(lambda data: data.x, self.edge, lambda data: data.edges[0])
-        self.register_connection(lambda data: data.x, self.edge, lambda data: data.edges[1])
-        self.register_connection(lambda data: data.g, self.edge, lambda data: data.edge_idx)
+        self.register_connection(
+            lambda data: data.g, self.node, lambda data: data.node_idx
+        )
+        self.register_connection(
+            lambda data: data.x, self.edge, lambda data: data.edges[0]
+        )
+        self.register_connection(
+            lambda data: data.x, self.edge, lambda data: data.edges[1]
+        )
+        self.register_connection(
+            lambda data: data.g, self.edge, lambda data: data.edge_idx
+        )
 
         # TODO: better connection API
         # these connections use an index and aggregation function (e.g. scatter_add) to make the connection
-        self.register_connection(self.edge, self.edge_to_node_agg, None, (lambda data: data.edges[1], lambda data: data.x.size(0))),
+        self.register_connection(
+            self.edge,
+            self.edge_to_node_agg,
+            None,
+            (lambda data: data.edges[1], lambda data: data.x.size(0)),
+        ),
         self.register_connection(self.edge_to_node_agg, self.node)
 
-        self.register_connection(self.node, self.node_to_glob_agg, None, (lambda data: data.node_idx, lambda data: data.g.size(0)))
+        self.register_connection(
+            self.node,
+            self.node_to_glob_agg,
+            None,
+            (lambda data: data.node_idx, lambda data: data.g.size(0)),
+        )
         self.register_connection(self.node_to_glob_agg, self.glob)
 
-        self.register_connection(self.edge, self.edge_to_glob_agg, None, (lambda data: data.edge_idx, lambda data: data.g.size(0)))
+        self.register_connection(
+            self.edge,
+            self.edge_to_glob_agg,
+            None,
+            (lambda data: data.edge_idx, lambda data: data.g.size(0)),
+        )
         self.register_connection(self.edge_to_glob_agg, self.glob)
 
     def forward(self, data):
@@ -120,6 +159,7 @@ class FlowExample(Flow):
         e = self._propogate(self.node, data)
         g = self._propogate(self.glob, data)
         return x, e, g
+
 
 foo = FlowExample()
 out = foo(GraphBatch.random_batch(1000, 5, 4, 3))

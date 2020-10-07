@@ -128,9 +128,15 @@ class Network(torch.nn.Module):
             "pass_global_to_node": pass_global_to_node,
         }
         self.encoder = GraphEncoder(
-            edge_block=EdgeBlock(Flex(Dense)(Flex.d(), latent_sizes[0], dropout=dropout)),
-            node_block=NodeBlock(Flex(Dense)(Flex.d(), latent_sizes[1], dropout=dropout)),
-            global_block=GlobalBlock(Flex(Dense)(Flex.d(), latent_sizes[2], dropout=dropout)),
+            edge_block=EdgeBlock(
+                Flex(Dense)(Flex.d(), latent_sizes[0], dropout=dropout)
+            ),
+            node_block=NodeBlock(
+                Flex(Dense)(Flex.d(), latent_sizes[1], dropout=dropout)
+            ),
+            global_block=GlobalBlock(
+                Flex(Dense)(Flex.d(), latent_sizes[2], dropout=dropout)
+            ),
         )
 
         edge_layers = [self.config["latent_size"]["edge"]] * self.config["latent_size"][

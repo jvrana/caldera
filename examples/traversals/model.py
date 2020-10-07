@@ -5,9 +5,9 @@ from typing import Type
 
 import torch
 
-from caldera.gnn import Aggregator
 from .configuration import NetConfig
 from caldera.data import GraphBatch
+from caldera.gnn import Aggregator
 from caldera.gnn.blocks import AggregatingEdgeBlock
 from caldera.gnn.blocks import AggregatingGlobalBlock
 from caldera.gnn.blocks import AggregatingNodeBlock
@@ -53,7 +53,7 @@ class NodeBlockCore(AggregatingNodeBlock):
     ):
         super().__init__(
             Flex(Dense)(Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm),
-            edge_aggregator=Aggregator('add')
+            edge_aggregator=Aggregator("add")
             # Flex(MultiAggregator)(
             #     Flex.d(), aggregators=aggregator, activation=aggregator_activation
             # ),
@@ -81,8 +81,8 @@ class GlobalBlockCore(AggregatingGlobalBlock):
             module=Flex(Dense)(
                 Flex.d(), *layers, dropout=dropout, layer_norm=layer_norm
             ),
-            edge_aggregator=Aggregator('add'),
-            node_aggregator=Aggregator('add')
+            edge_aggregator=Aggregator("add"),
+            node_aggregator=Aggregator("add")
             # edge_aggregator=Flex(MultiAggregator)(
             #     Flex.d(), aggregators=edge_aggregator, activation=aggregator_activation
             # ),

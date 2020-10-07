@@ -666,12 +666,14 @@ class GraphData:
             requires_grad=requires_grad,
         )
 
-    def randomize_(self, n_feat: Optional[int] = None,
-                   e_feat: Optional[int] = None,
-                   g_feat: Optional[int] = None) -> 'GraphData':
-        """
-        Randomize the features in place without altering the graph topology or ordering.
-        Optionally provide a new new feature shape.
+    def randomize_(
+        self,
+        n_feat: Optional[int] = None,
+        e_feat: Optional[int] = None,
+        g_feat: Optional[int] = None,
+    ) -> "GraphData":
+        """Randomize the features in place without altering the graph topology
+        or ordering. Optionally provide a new new feature shape.
 
         .. warning::
 

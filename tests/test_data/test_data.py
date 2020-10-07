@@ -32,7 +32,7 @@ def test_random_data_example(random_data_example):
     print(random_data_example)
 
 
-class TestRandomize():
+class TestRandomize:
     def test_randomize_data(self):
         data = GraphData.random(5, 4, 3)
         x, e, g = data.x.clone(), data.e.clone(), data.g.clone()
@@ -41,7 +41,6 @@ class TestRandomize():
         assert not torch.allclose(x, x2)
         assert not torch.allclose(e, e2)
         assert not torch.allclose(g, g2)
-
 
     def test_randomize_batch(self):
         data = GraphBatch.random_batch(10, 5, 4, 3)
@@ -52,7 +51,6 @@ class TestRandomize():
         assert not torch.allclose(e, e2)
         assert not torch.allclose(g, g2)
 
-
     def test_randomize_new_shapes(self):
         data = GraphBatch.random_batch(10, 5, 4, 3)
         data.randomize_(1, 2, 3)
@@ -60,7 +58,6 @@ class TestRandomize():
         assert x2.shape[1] == 1
         assert e2.shape[1] == 2
         assert g2.shape[1] == 3
-
 
 
 class Comparator:

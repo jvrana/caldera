@@ -36,7 +36,9 @@ class TrainingModule(LightningModule):
         self.model: Network = Network(config.network)
         self.hparams = dataclass_to_dict(config)
 
-        self._loss_fn = torch.nn.CrossEntropyLoss(reduction='mean', weight=torch.tensor([1., 100.]))
+        self._loss_fn = torch.nn.CrossEntropyLoss(
+            reduction="mean", weight=torch.tensor([1.0, 100.0])
+        )
 
     def do_loss(self, input_list: List[GraphBatch], target: GraphBatch):
         losses = []

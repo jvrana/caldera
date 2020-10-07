@@ -1,6 +1,7 @@
-from caldera.data import GraphBatch
-from caldera import gnn
 from torch import nn
+
+from caldera import gnn
+from caldera.data import GraphBatch
 
 
 def check_gradients(model, loss):
@@ -23,9 +24,9 @@ def check_gradients(model, loss):
     diff = {}
     for n in grads:
         p1, p2 = grads[n]
-        no_change = '[red]no change[/red]'
-        gradient = '[green]gradient[/green]'
-        if p2 is None or p2.sum() == 0.:
+        no_change = "[red]no change[/red]"
+        gradient = "[green]gradient[/green]"
+        if p2 is None or p2.sum() == 0.0:
             x = no_change
         else:
             x = gradient
@@ -38,20 +39,15 @@ def test_():
     target = data.detach().copy().randomize_(1, 1, 1)
 
     core = gnn.GraphCore(
-        edge_block=gnn.AggregatingEdgeBlock(
-            gnn.Flex(gnn.Dense)(..., 1)
-        ),
+        edge_block=gnn.AggregatingEdgeBlock(gnn.Flex(gnn.Dense)(..., 1)),
         node_block=gnn.AggregatingNodeBlock(
-            gnn.Flex(gnn.Dense)(..., 1),
-            gnn.Aggregator("add")
+            gnn.Flex(gnn.Dense)(..., 1), gnn.Aggregator("add")
         ),
         global_block=gnn.AggregatingGlobalBlock(
-            gnn.Flex(gnn.Dense)(..., 1),
-            gnn.Aggregator("add"),
-            gnn.Aggregator("add")
+            gnn.Flex(gnn.Dense)(..., 1), gnn.Aggregator("add"), gnn.Aggregator("add")
         ),
         pass_global_to_edge=True,
-        pass_global_to_node=True
+        pass_global_to_node=True,
     )
 
     core(data)
@@ -60,10 +56,11 @@ def test_():
     loss = nn.MSELoss()(out.g, target.g)
 
     from rich.console import Console
+
     console = Console()
     for k, v in check_gradients(core, loss).items():
         console.print(k)
         console.print(v)
         print()
 
-    core.global_block.block_dict['edge_aggregator']
+    core.global_block.block_dict["edge_aggregator"]
