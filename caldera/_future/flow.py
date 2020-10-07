@@ -1,47 +1,36 @@
-# class ConnectionMod(nn.Module):
-#
-#     def __init__(self, src, dest):
-#         super().__init__()
-#         self.src = src
-#         self.dest = dest
-#
-#
-# class Adapter(nn.Module):
-#
-#     def __init__(self, mod: nn.Module, func: Callable):
-#         super().__init__()
-#         self.mod = mod
-#         self.func = func
-#
-#     def forward(self, x):
-#         return self.mod(self.func(x))
-from typing import Union, Callable, Optional, List
+"""
+Modules for create Caldera flow neural networks.
 
+Flow neural networks are arbitrarily connected sub neural networks.
+"""
+
+from typing import Union, Callable, Optional, List, Dict, Tuple, Any
 from torch import nn
 from caldera import gnn
 import torch
 from caldera.data import GraphBatch
 import uuid
-# class Connection(nn.Module):
-#
-#     def __init__(self, src, dest, mapping: Callable):
-#         self.src = src
-#         self.dest
 
-# TODO: draw connections
+
+# TODO: raise error if there are connections that have not been touched in the forward propogation
+# TODO: create a simple `propagate` function that detects leaves and automatically applies data
+# TODO: check gradient propagation
+# TODO: allow module dict and keys to be used...
+# TODO: draw connections using daft
+# TODO: make connection first class object
+
 class Flow(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self._connections = {}
-        self._cached = {}
+        self._connections: Dict = {}
+        self._cached: Dict[str, torch.Tensor] = {}
 
     def register_connection(self, src: Union[Callable, nn.Module],
                             dest: Union[Callable, nn.Module],
                             mapping: Optional[Union[nn.Module, Callable]] = None,
-                            aggregation = None,
-                            name = None):
-        # TODO: check modules are contained in this module
+                            aggregation: Optional[Tuple[Callable, Callable]] = None,
+                            name: Optional[str] = None):
         if name is None:
             name = str(uuid.uuid4())[-5:]
         self._connections[name] = (src, dest, mapping, aggregation)
@@ -55,19 +44,16 @@ class Flow(nn.Module):
     def apply(self, mod, data, *args, **kwargs):
         if mod not in self._cached:
             self._cached[mod] = mod(data, *args, **kwargs)
-        else:
-            print("using cached")
         return self._cached[mod]
 
-    def propogate(self, dest, data):
+    def _propogate(self, dest: nn.Module, data: Any) -> torch.Tensor:
         connections = self._predecessor_connections(dest)
         if not connections:
             out = self.apply(dest, data)
         else:
             results = []
             for name, (src, _, mapping, aggregation) in connections.items():
-                print("connection: {}".format(name))
-                result = self.propogate(src, data)
+                result = self._propogate(src, data)
                 if mapping:
                     result = result[mapping(data)]
                 results.append(result)
@@ -79,43 +65,23 @@ class Flow(nn.Module):
                 out = self.apply(dest, cat)
         return out
 
+    def propogate(self, dest: nn.Module, data: Any) -> torch.Tensor:
+        return self._propogate(dest, data)
+
     def forward(self):
         self._cached = {}
 
 
-class Foo(Flow):
+class FlowExample(Flow):
 
     def __init__(self):
         super().__init__()
-        self.node = gnn.Flex(nn.Linear)(..., 1)
-        self.edge = gnn.Flex(nn.Linear)(..., 1)
-        self.register_connection(lambda data: data.x, self.node)
-        self.register_connection(lambda data: data.e, self.edge)
-        self.register_connection(self.node, self.edge, lambda data: data.edges[0])
-        self.register_connection(lambda data: data.g, self.edge, lambda data: data.edge_idx)
-
-    def forward(self, data):
-        return self.propogate(self.edge, data)
-
-# foo = Foo()
-# out = foo(GraphBatch.random_batch(10, 5, 4, 3))
-# # print(out)
-
-# TODO: raise error if there are connections that have not been touched in the forward propogation
-# TODO: create a simple `propogate` function that detects leaves and automatically applies data
-# TODO: check gradient propogation
-# TODO: allow module dict and keys to be used...
-# TODO: draw connections using daft
-class Foo2(Flow):
-
-    def __init__(self):
-        super().__init__()
-        self.node = gnn.Flex(nn.Linear)(..., 1)
-        self.edge = gnn.Flex(nn.Linear)(..., 1)
-        self.glob = gnn.Flex(nn.Linear)(..., 1)
-        self.edge_to_node_agg = gnn.Aggregator('add')
-        self.node_to_glob_agg = gnn.Aggregator('add')
-        self.edge_to_glob_agg = gnn.Aggregator('add')
+        self.node = gnn.Flex(gnn.Dense)(..., 10, 1, layer_norm=True)
+        self.edge = gnn.Flex(gnn.Dense)(..., 10, 1)
+        self.glob = gnn.Flex(gnn.Dense)(..., 10, 10, 1)
+        self.edge_to_node_agg = gnn.Flex(gnn.MultiAggregator)(..., ['add'])
+        self.node_to_glob_agg = gnn.Flex(gnn.MultiAggregator)(..., ['add'])
+        self.edge_to_glob_agg = gnn.Flex(gnn.MultiAggregator)(..., ['add'])
 
         # the following connections determines how modules interact
         # if we did not add *any* connections, this would be a simple graph encoder
@@ -150,11 +116,12 @@ class Foo2(Flow):
 
     def forward(self, data):
         super().forward()  # TODO: enforce call to super using metaclass...
-        x = self.propogate(self.edge, data)
-        e = self.propogate(self.node, data)
-        g = self.propogate(self.glob, data)
+        x = self._propogate(self.edge, data)
+        e = self._propogate(self.node, data)
+        g = self._propogate(self.glob, data)
         return x, e, g
 
-foo = Foo2()
+foo = FlowExample()
 out = foo(GraphBatch.random_batch(1000, 5, 4, 3))
-# print(out)
+
+print(foo)
