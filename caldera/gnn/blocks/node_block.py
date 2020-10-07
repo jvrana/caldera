@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 from torch import nn
 
@@ -18,7 +20,7 @@ class NodeBlock(Block):
 
 
 class AggregatingNodeBlock(NodeBlock):
-    def __init__(self, module: nn.Module, edge_aggregator: Aggregator):
+    def __init__(self, module: nn.Module, edge_aggregator: Optional[Aggregator] = None):
         """Aggregating version of the NodeBlock.
 
         :param module: any torch.nn.Module

@@ -1,10 +1,12 @@
 from typing import Callable
+from collections import OrderedDict
 from typing import List
 
 from torch import nn
 
 from caldera.defaults import CalderaDefaults as D
 from caldera.utils import pairwise
+from .sequential_module_dict import SequentialModuleDict
 
 
 class DenseBlock(nn.Module):
@@ -36,15 +38,17 @@ class DenseBlock(nn.Module):
         super().__init__()
         if output_size is None:
             output_size = input_size
-        layers = [nn.Linear(input_size, output_size), activation()]
+        dense = SequentialModuleDict({})
+        dense['linear'] = nn.Linear(input_size, output_size)
+        dense['activation'] = activation()
         if layer_norm:
-            layers.append(nn.LayerNorm(output_size))
-        if dropout:
-            layers.append(nn.Dropout(dropout))
-        self.layers = nn.Sequential(*layers)
+            dense['layer_norm'] = nn.LayerNorm(output_size)
+        if dropout is not None:
+            dense['dropout'] = nn.Dropout(dropout)
+        self.dense = dense
 
     def forward(self, x):
-        return self.layers(x)
+        return self.dense(x)
 
 
 class Dense(nn.Module):
@@ -70,7 +74,7 @@ class Dense(nn.Module):
         :param activation: activation function to use after each linear function
         """
         super().__init__()
-        self.layers = nn.Sequential(
+        self.dense_layers = nn.Sequential(
             *[
                 DenseBlock(
                     n1,
@@ -84,4 +88,4 @@ class Dense(nn.Module):
         )
 
     def forward(self, x):
-        return self.layers(x)
+        return self.dense_layers(x)

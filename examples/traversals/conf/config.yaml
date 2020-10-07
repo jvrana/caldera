@@ -11,7 +11,7 @@ training:
     gpus: 1
     validate_plot: true
     max_epochs: 100
-    check_val_every_n_epoch: 5
+    check_val_every_n_epoch: 1
     train_batch_size: 512
     eval_batch_size: "${data.eval.num_graphs}"
     train_shuffle: true

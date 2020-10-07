@@ -1,3 +1,5 @@
+from typing import List
+
 import pytorch_lightning as pl
 import torch
 import wandb
@@ -34,7 +36,18 @@ class TrainingModule(LightningModule):
         self.model: Network = Network(config.network)
         self.hparams = dataclass_to_dict(config)
 
-        self._loss_fn = torch.nn.BCEWithLogitsLoss(reduction='mean', pos_weight=torch.tensor([1., 100.]))
+        self._loss_fn = torch.nn.CrossEntropyLoss(reduction='mean', weight=torch.tensor([1., 100.]))
+
+    def do_loss(self, input_list: List[GraphBatch], target: GraphBatch):
+        losses = []
+        for input in input_list:
+            target_edge_classes = target.e.argmax(1)
+            target_node_classes = target.x.argmax(1)
+            edge_loss = self._loss_fn(input.e, target_edge_classes)
+            node_loss = self._loss_fn(input.x, target_node_classes)
+            input_loss = edge_loss + node_loss
+            losses.append(input_loss.unsqueeze(0))
+        return torch.cat(losses).sum()
 
     @requires_logger_experiment
     def logger_experiment_update_hparams(self):
@@ -50,19 +63,7 @@ class TrainingModule(LightningModule):
             steps=self.config.hyperparameters.train_core_processing_steps,
             save_all=True,
         )
-
-        _loss_f = self._loss_fn
-        losses = []
-        for out_batch in out_batch_list:
-            node_loss = _loss_f(out_batch.x, target_batch.x)
-            edge_loss = _loss_f(out_batch.e, target_batch.e)
-            # glob_loss = _loss_f(out_batch.g, target_batch.g)
-            _loss = (node_loss + edge_loss) / len(out_batch_list)
-            losses.append(_loss)
-        from functools import reduce
-        from operator import add
-
-        loss = reduce(add, losses)
+        loss = self.do_loss(out_batch_list, target_batch)
 
         result = pl.TrainResult(loss)
         result.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
@@ -78,12 +79,7 @@ class TrainingModule(LightningModule):
         out_batch_list = self.model.forward(
             input_batch, steps=self.config.hyperparameters.train_core_processing_steps
         )
-        _loss_f = self._loss_fn
-        for out_batch in out_batch_list:
-            node_loss = _loss_f(out_batch.x, target_batch.x)
-            edge_loss = _loss_f(out_batch.e, target_batch.e)
-            # glob_loss = _loss_f(out_batch.g, target_batch.g)
-        loss = (node_loss + edge_loss) / len(out_batch_list)
+        loss = self.do_loss(out_batch_list[-1:], target_batch)
 
         result = pl.EvalResult(checkpoint_on=loss)
         result.log("eval_loss", loss, on_step=False, on_epoch=True, prog_bar=False)

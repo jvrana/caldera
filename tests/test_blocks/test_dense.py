@@ -11,5 +11,5 @@ def test_mlp(layers, dropout, layer_norm):
     block = Dense(*layers, dropout=dropout, layer_norm=layer_norm)
     out = block(torch.randn(10, layers[0]))
     assert out.shape[1] == layers[-1]
-    print(list(block.modules()))
+    print(block)
     # assert len(list(block.modules())) == 4 * len(layers)
