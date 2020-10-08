@@ -334,7 +334,8 @@ class GraphData:
                 "Edge mask must be tensor.BoolTensor, not " + str(edge_mask.dtype)
             )
 
-    def _mask_dispatch_reindex_edges(self, edges, node_mask):
+    @staticmethod
+    def _mask_dispatch_reindex_edges(edges, node_mask):
         # remap node indices in edges
         if node_mask is not None and not torch.all(node_mask):
             nidx = torch.where(node_mask)[0]
