@@ -160,6 +160,7 @@ def main():
         max_epochs=config.training.max_epochs,
         gpus=config.training.gpus,
         logger=wandb_logger,
+        precision=16,
         check_val_every_n_epoch=config.training.check_val_every_n_epoch,
     )
 
