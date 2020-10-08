@@ -4,6 +4,7 @@ Flow neural networks are arbitrarily connected sub neural networks.
 """
 import uuid
 from typing import Any
+from collections import OrderedDict
 from typing import Callable
 from typing import Dict
 from typing import List
@@ -16,8 +17,8 @@ from torch import nn
 
 from caldera import gnn
 from caldera.data import GraphBatch
-
-
+import inspect
+import ast
 # TODO: raise error if there are connections that have not been touched in the forward propogation
 # TODO: create a simple `propagate` function that detects leaves and automatically applies data
 # TODO: check gradient propagation
@@ -25,11 +26,77 @@ from caldera.data import GraphBatch
 # TODO: draw connections using daft
 # TODO: make connection first class object
 
+# TODO: improve __str__ and __repr__ of modules
+
+
+def get_lambda_source(myfunc):
+    source_text = inspect.getsource(myfunc)
+    source_ast = ast.parse(source_text)
+    lambda_node = next((node for node in ast.walk(source_ast)
+                        if isinstance(node, ast.Lambda)), None)
+    lambda_text = source_text[lambda_node.col_offset:]
+    return lambda_text
+
+
+def func_repr(func, len_limit=30):
+    lines = inspect.getsource(func).splitlines()
+    if len(lines) > 1:
+        return func.__name__
+    else:
+        line = lines[0].strip().split(',')[0].strip()
+        if len(line) > len_limit:
+            return line[:len_limit] + '...'
+        else:
+            return line
+
+
+class Connection():
+
+    def __init__(self, src, dest, mapping=None, aggregation=None, name=None, parent_modules=None):
+        super().__init__()
+        self.src = src
+        self.dest = dest
+        self.mapping = mapping
+        self.aggregation = aggregation
+        self.name = name
+        self._parent_modules = parent_modules
+
+    def __repr__(self):
+        if self.mapping:
+            on = 'map(' + str(self.mapping.__class__.__name__) + ')'
+        elif self.aggregation:
+            on = str(self.dest)
+        else:
+            on = ''
+
+        src, dest = '', ''
+        for k, v in self._parent_modules.items():
+            if v is self.src:
+                src = '(' + k + ')' + ' ' + src
+            if v is self.dest:
+                dest = '(' + k + ')' + ' ' + dest
+
+        if not src and inspect.isfunction(self.src):
+            src = func_repr(self.src)
+
+        if not dest and inspect.isfunction(self.dest):
+            dest = func_repr(self.dest)
+
+        if not src:
+            src = self.src.__class__.__name__
+        if not dest:
+            dest = self.dest.__class__.__name__
+        return "{c} ( {src} -[{on}]-> {dest} )".format(
+            c=self.__class__.__name__,
+            src=src,
+            dest=dest,
+            on=on)
+
 
 class Flow(nn.Module):
     def __init__(self):
         super().__init__()
-        self._connections: Dict = {}
+        self._connections = OrderedDict()
         self._cached: Dict[str, torch.Tensor] = {}
 
     def register_connection(
@@ -42,12 +109,12 @@ class Flow(nn.Module):
     ):
         if name is None:
             name = str(uuid.uuid4())[-5:]
-        self._connections[name] = (src, dest, mapping, aggregation)
+        self._connections[name] = Connection(src, dest, mapping, aggregation, parent_modules=(self._modules))
 
     def _predecessor_connections(
         self, dest: Union[Callable, nn.Module]
     ) -> List[Union[Callable, nn.Module]]:
-        return {n: c for n, c in self._connections.items() if c[1] is dest}
+        return {n: c for n, c in self._connections.items() if c.dest is dest}
 
     # TODO: Here, we want to only pass data through the layers *a single time*
     #       The way it is currently implemented, this may happen multiple times.
@@ -63,7 +130,10 @@ class Flow(nn.Module):
             out = self.apply(dest, data)
         else:
             results = []
-            for name, (src, _, mapping, aggregation) in connections.items():
+            for name, conn in connections.items():
+                src = conn.src
+                mapping = conn.mapping
+                aggregation = conn.aggregation
                 result = self._propogate(src, data)
                 if mapping:
                     result = result[mapping(data)]
@@ -165,3 +235,5 @@ foo = FlowExample()
 out = foo(GraphBatch.random_batch(1000, 5, 4, 3))
 
 print(foo)
+
+print(sum([param.nelement() for param in foo.parameters()]))

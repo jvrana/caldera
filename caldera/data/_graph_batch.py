@@ -414,6 +414,15 @@ class GraphBatch(GraphData):
             self.edge_idx[e_slice],
         )
 
+    def new_like(self, x=None, e=None, g=None):
+        return self.__class__(
+            *self._new_like_tuple(x, e, g),
+            edges=self.edges.detach().clone(),
+            edge_idx=self.edge_idx.detach().clone(),
+            node_idx=self.node_idx.detach().clone()
+        )
+
+
     def disjoint_union(self, other: GraphBatch) -> GraphBatch:
         """Disjoint union between two GraphBatches.
 

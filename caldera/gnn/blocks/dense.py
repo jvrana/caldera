@@ -42,7 +42,7 @@ class DenseBlock(nn.Module):
         dense["linear"] = nn.Linear(input_size, output_size)
         dense["activation"] = activation()
         if layer_norm:
-            dense["layer_norm"] = nn.LayerNorm(output_size)
+            dense["layer_norm"] = nn.LayerNorm(output_size, elementwise_affine=False)
         if dropout is not None:
             dense["dropout"] = nn.Dropout(dropout)
         self.dense = dense

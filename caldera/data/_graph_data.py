@@ -36,6 +36,8 @@ def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
 # TODO: implicit support for torch.Tensor
 # TODO: handle empty features and targets
 # TODO: implement __mul__ etc., implement __add__
+# TODO: requires_grad should always be False
+# TODO: check all instantiations for unnecessary copying (esp new)
 class GraphData:
     """Data representing a single graph."""
 
@@ -555,6 +557,26 @@ class GraphData:
         )
         return data
 
+    # TODO: new_like
+    def _new_like_tuple(self, x=None, e=None, g=None):
+        def clone_or_copy(a, b):
+            if a is None:
+                a = b.clone().detach()
+            else:
+                a = torch.empty_like(a, device=b.device, requires_grad=b.requires_grad).copy_(a)
+            return a
+
+        x = clone_or_copy(x, self.x)
+        e = clone_or_copy(e, self.e)
+        g = clone_or_copy(g, self.g)
+        return x, e, g
+
+    def new_like(self, x=None, e=None, g=None):
+        return self.__class__(
+            *self._new_like_tuple(x, e, g),
+            edges=self.edges.detach().clone()
+        )
+
     def to_networkx(
         self,
         feature_key: str = "features",
@@ -666,6 +688,27 @@ class GraphData:
             requires_grad=requires_grad,
         )
 
+    # TODO: randn_like
+    # def randn_like(self,
+    #                n_feat: Optional[int] = None,
+    #                e_feat: Optional[int] = None,
+    #                g_feat: Optional[int] = None):
+    #     if n_feat:
+    #         x = torch.randn(self.x.shape[0], n_feat)
+    #     else:
+    #         x = torch.randn_like(self.x)
+    #
+    #     if e_feat:
+    #         e = torch.randn(self.e.shape[0], e_feat)
+    #     else:
+    #         e = torch.randn_like(self.e)
+    #
+    #     if g_feat:
+    #         g = torch.randn(self.g.shape[0], g_feat)
+    #     else:
+    #         g = torch.randn_like(self.g)
+    #     return self.new_like(x, e, g)
+
     def randomize_(
         self,
         n_feat: Optional[int] = None,
@@ -684,9 +727,11 @@ class GraphData:
         n_feat = n_feat or self.x.shape[1]
         e_feat = e_feat or self.e.shape[1]
         g_feat = g_feat or self.g.shape[1]
-        self.x = torch.randn(self.x.shape[0], n_feat)
-        self.e = torch.randn(self.e.shape[0], e_feat)
-        self.g = torch.randn(self.g.shape[0], g_feat)
+
+        self.x = torch.randn(self.x.shape[0], n_feat, dtype=self.x.dtype, device=self.x.device)
+        self.e = torch.randn(self.e.shape[0], e_feat, dtype=self.e.dtype, device=self.e.device)
+        self.g = torch.randn(self.g.shape[0], g_feat, dtype=self.g.dtype, device=self.g.device)
+
         return self
 
     # TODO: view

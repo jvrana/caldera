@@ -1,10 +1,23 @@
 from torch import nn
+import torch
 
-from caldera import gnn
-from caldera.data import GraphBatch
+# try:
+#     from rich.console import print as logprint
+# except ImportError:
+#     logprint = print
+#
+# try:
+#     from rich.console import Console
+#     console = Console()
+#     def logprint(*args, **kwargs):
+#         console.print(*args, **kwargs)
+# except ImportError:
+#     logprint = print
 
 
-def check_gradients(model, loss):
+def check_back_prop(model: nn.Module, out: torch.Tensor):
+    """Check the backpropogation for a module"""
+    loss = nn.MSELoss()(out, torch.rand_like(out))
     grads = {}
     for n, p in model.named_parameters():
         if p.grad is not None:
@@ -13,7 +26,7 @@ def check_gradients(model, loss):
             grad = None
         grads[n] = (grad,)
 
-    loss.backward()
+    loss.backward(retain_graph=True)
     for n, p in model.named_parameters():
         if p.grad is not None:
             grad = p.grad.detach().clone()
@@ -24,8 +37,8 @@ def check_gradients(model, loss):
     diff = {}
     for n in grads:
         p1, p2 = grads[n]
-        no_change = "[red]no change[/red]"
-        gradient = "[green]gradient[/green]"
+        no_change = False
+        gradient = True
         if p2 is None or p2.sum() == 0.0:
             x = no_change
         else:
