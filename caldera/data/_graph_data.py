@@ -37,7 +37,7 @@ def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
 # TODO: handle empty features and targets
 # TODO: implement __mul__ etc., implement __add__
 # TODO: requires_grad should always be False
-# TODO: check all instantiations for unnecessary copying (esp new)
+# TODO: check all instantiations for unnecessary copying (esp new
 class GraphData:
     """Data representing a single graph."""
 
@@ -52,7 +52,8 @@ class GraphData:
         edges: torch.LongTensor,
         requires_grad: Optional[bool] = None,
     ):
-        """Blank.
+        """
+        Represents a graph-like data structure.
 
         :param node_attr:
         :param edge_attr:
@@ -69,6 +70,9 @@ class GraphData:
             self.requires_grad = requires_grad
 
     def debug(self):
+        """
+        Validates this data object.
+        """
         if (
             self.edges.shape[0]
             and self.edges.shape[1]
@@ -152,14 +156,31 @@ class GraphData:
         return self
 
     # TODO: finish clone, copy, apply, etc.
-    def apply(self, func, *args, keys: Optional[Tuple[str]] = None, **kwargs):
-        """Applies the function to the data, creating a new instance of
-        GraphData."""
+    def apply(self, func: Callable, *args, keys: Optional[Tuple[str]] = None, **kwargs):
+        """
+        Applies a function to the node, edge, and global tensors, creating a new instance of
+        GraphData.
+
+        :param func: The function to apply to each tensor. This expects the tensor as the first argument.
+        :param args: Additional arguments to apply to the function.
+        :param keys: Restrict the application only to the attribute keys (e.g. 'node', 'edge', or 'global')
+        :param kwargs: Additional kwargs to apply to the function.
+        :return: new :class:`caldera.data.GraphData` object
+        """
         return self._apply(func, new_inst=True, args=args, kwargs=kwargs, keys=keys)
 
-    def apply_(self, func, *args, keys: Optional[Tuple[str]] = None, **kwargs):
-        """Applies the function in place to the data, wihout creating a new
-        instance of GraphData."""
+    def apply_(self, func: Callable, *args, keys: Optional[Tuple[str]] = None, **kwargs):
+        """
+        Applies a function to the node, edge, and global tensors
+        instance of GraphData.
+
+        :param func: The function to apply to each tensor. This expects the tensor as the first argument.
+        :param args: Additional arguments to apply to the function.
+        :param keys: Restrict the application only to the attribute keys (e.g. 'node', 'edge', or 'global')
+        :param kwargs: Additional kwargs to apply to the function.
+        :return: self
+        """
+
         return self._apply(func, new_inst=False, args=args, kwargs=kwargs, keys=keys)
 
     def detach(self):
@@ -205,34 +226,50 @@ class GraphData:
 
     @property
     def num_graphs(self):
+        """The number of graphs in this datum"""
         return self.g.shape[0]
 
     @property
     def num_nodes(self):
+        """The number of nodes in this datum"""
         return self.x.shape[0]
 
     @property
     def num_edges(self):
+        """The number of edges in this datum"""
         return self.edges.shape[1]
 
     @property
     def node_shape(self):
+        """Feature shape of the node data"""
         return self.x.shape[1:]
 
     @property
     def edge_shape(self):
+        """Feature shape of the edge data"""
         return self.e.shape[1:]
 
     @property
     def global_shape(self):
+        """Feature shape of the global data"""
         return self.g.shape[1:]
 
     @property
     def shape(self):
+        """Shape of this datum. This is the combined
+        shape of the node, edge, and global feature shapes"""
         return self.x.shape[1:] + self.e.shape[1:] + self.g.shape[1:]
 
     @property
     def size(self):
+        """
+        Size of this datum (num_nodes, num_edges, num_graphs).
+
+        .. note::
+
+            For :class:`caldera.data.GraphData` instances, the num_graphs
+            is always 1.
+        """
         return self.x.shape[:1] + self.e.shape[:1] + self.g.shape[:1]
 
     # def _mask_fields(self, masks: Dict[str, torch.tensor]):
@@ -416,8 +453,8 @@ class GraphData:
 
     # TODO: copy tests
     def copy(self, non_blocking: bool = False, *emtpy_like_args, **emtpy_like_kwargs):
-
-        """non_blocking (bool) – if True and this copy is between CPU and GPU,
+        """
+        non_blocking (bool) – if True and this copy is between CPU and GPU,
         the copy may occur asynchronously with respect to the host. For other
         cases, this argument has no effect.
 
@@ -836,6 +873,7 @@ class GraphData:
                 x += t.element_size() * t.nelement()
         return x
 
+    # TODO: should density be a property?
     def density(self):
         """Return density of the graph."""
         return self.num_edges / (self.num_nodes * (self.num_nodes - 1))
@@ -849,6 +887,7 @@ class GraphData:
         return edge_dict
 
     def info(self):
+        """Return general info on this data (num_nodes, shape, nelements, bytes, etc."""
         msg = "{}(\n".format(self.__class__.__name__)
         msg += "  n_nodes: {}\n".format(self.num_nodes)
         msg += "  n_edges: {}\n".format(self.num_edges)

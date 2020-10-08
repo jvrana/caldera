@@ -19,25 +19,15 @@ from caldera import gnn
 from caldera.data import GraphBatch
 import inspect
 import ast
+
+
 # TODO: raise error if there are connections that have not been touched in the forward propogation
 # TODO: create a simple `propagate` function that detects leaves and automatically applies data
 # TODO: check gradient propagation
 # TODO: allow module dict and keys to be used...
 # TODO: draw connections using daft
 # TODO: make connection first class object
-
 # TODO: improve __str__ and __repr__ of modules
-
-
-def get_lambda_source(myfunc):
-    source_text = inspect.getsource(myfunc)
-    source_ast = ast.parse(source_text)
-    lambda_node = next((node for node in ast.walk(source_ast)
-                        if isinstance(node, ast.Lambda)), None)
-    lambda_text = source_text[lambda_node.col_offset:]
-    return lambda_text
-
-
 def func_repr(func, len_limit=30):
     lines = inspect.getsource(func).splitlines()
     if len(lines) > 1:
@@ -110,6 +100,21 @@ class Flow(nn.Module):
         if name is None:
             name = str(uuid.uuid4())[-5:]
         self._connections[name] = Connection(src, dest, mapping, aggregation, parent_modules=(self._modules))
+
+    def register_feed(self, src: Union[Callable, nn.Module], dest: Union[Callable, nn.Module]):
+        self.register_connection(src, dest)
+
+    def register_map(self, src: Union[Callable, nn.Module],
+                     dest: Union[Callable, nn.Module],
+                     mapping: Optional[Union[nn.Module, Callable]] = None,):
+        self.register_connection(src, dest, mapping)
+
+    def register_aggregation(self,
+                             src: Union[Callable, nn.Module],
+                             dest: Union[Callable, nn.Module],
+                             index: Union[Callable, nn.Module],
+                             out_size: Union[Callable, nn.Module]):
+        self.register_connection(src, dest, None, (index, out_size))
 
     def _predecessor_connections(
         self, dest: Union[Callable, nn.Module]
