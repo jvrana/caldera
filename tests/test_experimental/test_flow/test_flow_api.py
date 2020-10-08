@@ -7,9 +7,17 @@ from rich import print
 import torch
 from pprint import pprint
 import pytest
+import flaky
+
+MIN_RUNS = 5
+
+def multiple_runs(f):
+    return flaky.flaky(MIN_RUNS, min_passes=MIN_RUNS)(f)
 
 
-def test_check_back_prop_layer_norm():
+@multiple_runs
+@pytest.mark.parametrize('layer_norm', [False, True])
+def test_check_back_prop_layer_norm(layer_norm):
     """
     Backpropogation should work through the layer normalization layer
     (only if elementwise_affine is false however...)
@@ -18,14 +26,16 @@ def test_check_back_prop_layer_norm():
 
         def __init__(self):
             super().__init__()
-            self.lin = nn.Linear(5, 1)
+            self.lin = nn.Linear(5, 10)
             self.act = nn.ReLU()
-            self.layer_norm = nn.LayerNorm(1, elementwise_affine=False)
+            if layer_norm:
+                self.layer_norm = nn.LayerNorm(10, elementwise_affine=False)
 
         def forward(self, x):
             x = self.lin(x)
             x = self.act(x)
-            x = self.layer_norm(x)
+            if layer_norm:
+                x = self.layer_norm(x)
             return x
 
     net = Network()
@@ -35,6 +45,7 @@ def test_check_back_prop_layer_norm():
     assert grads['lin.weight'] is True
 
 
+@multiple_runs
 @pytest.mark.parametrize('layer_norm', [True, False], ids=lambda x: 'layer_norm={}'.format(x))
 @pytest.mark.parametrize('dropout', [None, 0.2], ids=lambda x: 'dropout={}'.format(x))
 def test_check_back_prop_dense(layer_norm, dropout):
@@ -43,7 +54,7 @@ def test_check_back_prop_dense(layer_norm, dropout):
     (only if elementwise_affine is false however...)
     """
 
-    net = gnn.Dense(5, 5, 10, 1, layer_norm=layer_norm, dropout=dropout)
+    net = gnn.Dense(5, 5, 10, 10, layer_norm=layer_norm, dropout=dropout)
     data = torch.randn(10, 5)
     grads = check_back_prop(net, net(data))
     pprint(grads)
@@ -113,6 +124,7 @@ class TestFlow:
         for k, v in net.named_modules():
             print(k)
 
+    @multiple_runs
     def test_back_prop_node(self):
         net = self.MyModule()
         data = GraphBatch.random_batch(10, 5, 4, 3)
@@ -131,6 +143,7 @@ class TestFlow:
         assert grads['edge.resolved_module.weight']
         assert grads['edge.resolved_module.bias']
 
+    @multiple_runs
     def test_back_prop_node(self):
         net = self.MyModule()
         data = GraphBatch.random_batch(10, 5, 4, 3)

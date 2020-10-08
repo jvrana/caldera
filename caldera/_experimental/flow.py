@@ -60,11 +60,12 @@ class Connection():
             on = ''
 
         src, dest = '', ''
-        for k, v in self._parent_modules.items():
-            if v is self.src:
-                src = '(' + k + ')' + ' ' + src
-            if v is self.dest:
-                dest = '(' + k + ')' + ' ' + dest
+        if self._parent_modules:
+            for k, v in self._parent_modules.items():
+                if v is self.src:
+                    src = '(' + k + ')' + ' ' + src
+                if v is self.dest:
+                    dest = '(' + k + ')' + ' ' + dest
 
         if not src and inspect.isfunction(self.src):
             src = func_repr(self.src)
@@ -99,7 +100,7 @@ class Flow(nn.Module):
     ):
         if name is None:
             name = str(uuid.uuid4())[-5:]
-        self._connections[name] = Connection(src, dest, mapping, aggregation, parent_modules=(self._modules))
+        self._connections[name] = Connection(src, dest, mapping, aggregation, parent_modules=dict(self._modules))
 
     def register_feed(self, src: Union[Callable, nn.Module], dest: Union[Callable, nn.Module]):
         self.register_connection(src, dest)
@@ -111,14 +112,22 @@ class Flow(nn.Module):
 
     def register_aggregation(self,
                              src: Union[Callable, nn.Module],
+                             agg: gnn.Aggregator,
                              dest: Union[Callable, nn.Module],
                              index: Union[Callable, nn.Module],
                              out_size: Union[Callable, nn.Module]):
-        self.register_connection(src, dest, None, (index, out_size))
+        if not issubclass(agg.__class__, gnn.Aggregator):
+            raise TypeError(
+                "Aggregator must be an instance or subclass of {}, but found {}".format(
+                    gnn.Aggregator, agg.__class__)
+            )
+        self.register_connection(src, agg, None, (index, out_size))
+        self.register_connection(agg, dest)
 
     def _predecessor_connections(
         self, dest: Union[Callable, nn.Module]
     ) -> List[Union[Callable, nn.Module]]:
+        # print(self._connections)
         return {n: c for n, c in self._connections.items() if c.dest is dest}
 
     # TODO: Here, we want to only pass data through the layers *a single time*
