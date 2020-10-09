@@ -1,4 +1,5 @@
 # @package _group_
+model: Network
 encode:
     node:
         size: 8

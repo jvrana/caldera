@@ -5,9 +5,12 @@ from typing import TypeVar
 from caldera.data import GraphBatch
 import torch
 from functools import wraps
-
+from abc import abstractmethod, ABCMeta
+from contextlib import contextmanager
 
 _T = TypeVar('T')
+_F = TypeVar('F', bound=Callable)
+
 Module = Union[nn.Module, Callable]
 
 
@@ -60,35 +63,96 @@ class FunctionModule(nn.Module):
 # TODO: nested NNGraph (NNHyperGraph)
 # TODO: cached
 
-class NNGraphMeta(type):
+def nngraph_forward(func: _F) -> _F:
+    if hasattr(func, '__nngraph__'):
+        @wraps(func)
+        def forward(self, *args, **kwargs):
+            return func(self, *args, **kwargs)
+    else:
+        @wraps(func)
+        def forward(self, *args, **kwargs):
+            with self.use_cache():
+                result = func(self, *args, **kwargs)
+                self.validate_visited()
+            return result
 
-    def __new__(typ, clsname, superclasses, attributedict):
+    forward.__nngraph__ = True
+    return forward
 
-        newcls =  super().__new__(typ, clsname, superclasses, attributedict)
+class NNGraphMeta(ABCMeta):
 
-        if 'forward' in attributedict:
-            @wraps(attributedict['forward'])
-            def forward(self, *args, **kwargs):
-                self._cache = {}
-                self._use_cache = True
-                result = attributedict['forward'](self, *args, **kwargs)
-                self._use_cache = False
-                self._cache = {}
-                return result
+    def __new__(typ, name, bases, namespace):
+        newcls = super().__new__(typ, name, bases, namespace)
+        # if 'forward' in namespace:
+        #     @wraps(namespace['forward'])
+        #     def forward(self, *args, **kwargs):
+        #         self._cache = {}
+        #         self._use_cache = True
+        #
+        #         result = namespace['forward'](self, *args, **kwargs)
+        #
+        #         self._cache = {}
+        #         self._use_cache = False
+        #
+        #         missing_nodes = []
+        #         for name, mod in self.nodes.items():
+        #             if name not in self._cache:
+        #                 missing_nodes.append(name)
+        #         if missing_nodes:
+        #             raise RuntimeError("The following nodes were not touched during forward propogation {}.".format(
+        #                 missing_nodes
+        #             ))
+        #         return result
 
-            newcls.forward = forward
+            # newcls.forward = forward
         return newcls
 
+
 # TODO: how to handle cache??? properly
-class NNGraph(nn.Module, metaclass=NNGraphMeta):
+class NNGraphABC(nn.Module, metaclass=NNGraphMeta):
 
     def __init__(self, reducer: Optional[Union[Callable, nn.Module]] = None):
         super().__init__()
+        self.add_graph_forward_hook()
         self.nodes = nn.ModuleDict()
         self._cache = {}
         self._use_cache = False
         self.edges = nn.ModuleList()
         self.reducer = reducer or self.__class__.reducer
+
+    def add_graph_forward_hook(self):
+        nngraph_hook = '__nngraph_hook__'
+        func = self.forward
+        if hasattr(func, nngraph_hook):
+            @wraps(func)
+            def forward(_self, *args, **kwargs):
+                return func(_self, *args, **kwargs)
+        else:
+            @wraps(func)
+            def forward(_self, *args, **kwargs):
+                with _self.use_cache():
+                    result = func(_self, *args, **kwargs)
+                    _self.validate_visited()
+                return result
+        setattr(forward, nngraph_hook, True)
+        return forward
+
+    def use_cache(self):
+        self._cache = {}
+        self._use_cache = True
+        yield
+        self._cache = {}
+        self._use_cache = False
+
+    def validate_visited(self):
+        missing = []
+        for n in self.nodes:
+            if n not in self._cache:
+                missing.append(n)
+        if missing:
+            raise RuntimeError("Some nodes were not visited during forward propogation:\n{}".format(
+                missing
+            ))
 
     @classmethod
     def reducer(cls, data_list):
@@ -234,10 +298,13 @@ class NNGraph(nn.Module, metaclass=NNGraphMeta):
             if edge.src == node:
                 yield edge
 
+    @abstractmethod
+    def forward(self):
+        pass
+
     # TODO: somehow enforce resetting of cache
 
 
-#
 # graph = NNGraph()
 # node = nn.Linear(8, 1)
 # edge = nn.Linear(8, 1)

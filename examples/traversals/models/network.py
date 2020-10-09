@@ -5,7 +5,7 @@ from typing import Type
 
 import torch
 
-from .configuration import NetConfig
+from examples.traversals.configuration import NetConfig
 from caldera.data import GraphBatch
 from caldera.gnn import Aggregator
 from caldera.gnn.blocks import AggregatingEdgeBlock

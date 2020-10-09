@@ -36,6 +36,7 @@ class NetComponentConfig(ConfigObj):
 class NetConfig(ConfigObj):
     """Configuration for caldera Graph Network."""
 
+    model: str = "Network"
     encode: NetComponentConfig = field(default_factory=NetComponentConfig)
     core: NetComponentConfig = field(default_factory=NetComponentConfig)
     out: NetComponentConfig = field(default_factory=NetComponentConfig)
