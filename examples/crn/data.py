@@ -109,7 +109,7 @@ class CircuitGenerator:
             idx = node_to_part(node)
             # gather all parents
             # accumulate outputs 'y' using the provided accumulation function
-            parents = list(g.predecessors(node))
+            parents = list(g.predecessor_edges(node))
             if not parents:
                 p = np.expand_dims(self.params[idx : idx + 1].T, 2)
                 x = np.array([[0.0]])

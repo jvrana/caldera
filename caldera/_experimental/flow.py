@@ -2,9 +2,11 @@
 
 Flow neural networks are arbitrarily connected sub neural networks.
 """
+import ast
+import inspect
 import uuid
-from typing import Any
 from collections import OrderedDict
+from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
@@ -17,8 +19,6 @@ from torch import nn
 
 from caldera import gnn
 from caldera.data import GraphBatch
-import inspect
-import ast
 
 
 # TODO: raise error if there are connections that have not been touched in the forward propogation
@@ -33,16 +33,17 @@ def func_repr(func, len_limit=30):
     if len(lines) > 1:
         return func.__name__
     else:
-        line = lines[0].strip().split(',')[0].strip()
+        line = lines[0].strip().split(",")[0].strip()
         if len(line) > len_limit:
-            return line[:len_limit] + '...'
+            return line[:len_limit] + "..."
         else:
             return line
 
 
-class Connection():
-
-    def __init__(self, src, dest, mapping=None, aggregation=None, name=None, parent_modules=None):
+class Connection:
+    def __init__(
+        self, src, dest, mapping=None, aggregation=None, name=None, parent_modules=None
+    ):
         super().__init__()
         self.src = src
         self.dest = dest
@@ -53,19 +54,19 @@ class Connection():
 
     def __repr__(self):
         if self.mapping:
-            on = 'map(' + str(self.mapping.__class__.__name__) + ')'
+            on = "map(" + str(self.mapping.__class__.__name__) + ")"
         elif self.aggregation:
             on = str(self.dest)
         else:
-            on = ''
+            on = ""
 
-        src, dest = '', ''
+        src, dest = "", ""
         if self._parent_modules:
             for k, v in self._parent_modules.items():
                 if v is self.src:
-                    src = '(' + k + ')' + ' ' + src
+                    src = "(" + k + ")" + " " + src
                 if v is self.dest:
-                    dest = '(' + k + ')' + ' ' + dest
+                    dest = "(" + k + ")" + " " + dest
 
         if not src and inspect.isfunction(self.src):
             src = func_repr(self.src)
@@ -78,10 +79,8 @@ class Connection():
         if not dest:
             dest = self.dest.__class__.__name__
         return "{c} ( {src} -[{on}]-> {dest} )".format(
-            c=self.__class__.__name__,
-            src=src,
-            dest=dest,
-            on=on)
+            c=self.__class__.__name__, src=src, dest=dest, on=on
+        )
 
 
 class Flow(nn.Module):
@@ -100,26 +99,36 @@ class Flow(nn.Module):
     ):
         if name is None:
             name = str(uuid.uuid4())[-5:]
-        self._connections[name] = Connection(src, dest, mapping, aggregation, parent_modules=dict(self._modules))
+        self._connections[name] = Connection(
+            src, dest, mapping, aggregation, parent_modules=dict(self._modules)
+        )
 
-    def register_feed(self, src: Union[Callable, nn.Module], dest: Union[Callable, nn.Module]):
+    def register_feed(
+        self, src: Union[Callable, nn.Module], dest: Union[Callable, nn.Module]
+    ):
         self.register_connection(src, dest)
 
-    def register_map(self, src: Union[Callable, nn.Module],
-                     dest: Union[Callable, nn.Module],
-                     mapping: Optional[Union[nn.Module, Callable]] = None,):
+    def register_map(
+        self,
+        src: Union[Callable, nn.Module],
+        dest: Union[Callable, nn.Module],
+        mapping: Optional[Union[nn.Module, Callable]] = None,
+    ):
         self.register_connection(src, dest, mapping)
 
-    def register_aggregation(self,
-                             src: Union[Callable, nn.Module],
-                             agg: gnn.Aggregator,
-                             dest: Union[Callable, nn.Module],
-                             index: Union[Callable, nn.Module],
-                             out_size: Union[Callable, nn.Module]):
+    def register_aggregation(
+        self,
+        src: Union[Callable, nn.Module],
+        agg: gnn.Aggregator,
+        dest: Union[Callable, nn.Module],
+        index: Union[Callable, nn.Module],
+        out_size: Union[Callable, nn.Module],
+    ):
         if not issubclass(agg.__class__, gnn.Aggregator):
             raise TypeError(
                 "Aggregator must be an instance or subclass of {}, but found {}".format(
-                    gnn.Aggregator, agg.__class__)
+                    gnn.Aggregator, agg.__class__
+                )
             )
         self.register_connection(src, agg, None, (index, out_size))
         self.register_connection(agg, dest)

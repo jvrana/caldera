@@ -1,10 +1,10 @@
-from caldera import gnn
 from torch import nn
+
+from caldera import gnn
 from caldera._future.flow import Flow
 
 
 class GraphCore(Flow):
-
     def __init__(self, node, edge, glob):
         super().__init__()
         self.node = node
@@ -19,4 +19,3 @@ class GraphCore(Flow):
         self.register_map(self.node, self.edge, lambda data: data.edges[0])
         self.register_map(self.node, self.edge, lambda data: data.edges[1])
         self.register_map(self.glob, self.node, lambda data: data.node_idx)
-

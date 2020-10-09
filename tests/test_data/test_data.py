@@ -813,3 +813,47 @@ def test_():
     )
 
     batch = GraphBatch.from_data_list([data1, data2])
+
+
+def test_cat_graph_batch():
+    b1 = GraphBatch.random_batch(10, 5, 4, 3)
+    b2 = GraphBatch(
+        torch.rand_like(b1.x),
+        torch.rand_like(b1.e),
+        torch.rand_like(b1.g),
+        edges=b1.edges,
+        node_idx=b1.node_idx,
+        edge_idx=b1.edge_idx,
+    )
+    b3 = b1.cat(b2)
+    assert b3.shape == (10, 8, 6)
+    assert torch.allclose(b3.x, torch.cat([b1.x, b2.x], 1))
+
+    b4 = GraphBatch.cat(b1, b2)
+    assert b4.shape == (10, 8, 6)
+    assert torch.allclose(b4.x, torch.cat([b1.x, b2.x], 1))
+
+
+@pytest.mark.parametrize("zero_out", [None, "edge_idx", "node_idx", "edges"])
+def test_same_topology(zero_out):
+    b1 = GraphBatch.random_batch(10, 5, 4, 3)
+    b2 = GraphBatch(
+        torch.rand_like(b1.x),
+        torch.rand_like(b1.e),
+        torch.rand_like(b1.g),
+        edges=b1.edges,
+        node_idx=b1.node_idx,
+        edge_idx=b1.edge_idx,
+    )
+
+    if zero_out:
+        setattr(b2, zero_out, torch.zeros_like(getattr(b2, zero_out)))
+
+    if zero_out:
+        assert not b1.same_topology(b2)
+        assert not b1.same_topology(b2, b1, b2)
+        assert not GraphBatch.same_topology(b1, b2)
+    else:
+        assert b1.same_topology(b2)
+        assert b1.same_topology(b2, b1, b2)
+        assert GraphBatch.same_topology(b1, b2)

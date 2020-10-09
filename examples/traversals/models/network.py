@@ -5,7 +5,6 @@ from typing import Type
 
 import torch
 
-from examples.traversals.configuration import NetConfig
 from caldera.data import GraphBatch
 from caldera.gnn import Aggregator
 from caldera.gnn.blocks import AggregatingEdgeBlock
@@ -19,6 +18,7 @@ from caldera.gnn.blocks import MultiAggregator
 from caldera.gnn.blocks import NodeBlock
 from caldera.gnn.models import GraphCore
 from caldera.gnn.models import GraphEncoder
+from examples.traversals.configuration import NetConfig
 
 
 class EdgeBlockEncoder(EdgeBlock):

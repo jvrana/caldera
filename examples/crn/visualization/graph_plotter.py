@@ -124,7 +124,7 @@ class GraphPlotter:
 
         # push roots 'up' so they are not stuck on layer one
         for root in rts:
-            successors = list(G.successors(root))
+            successors = list(G.successor_edges(root))
             if len(successors) > 0:
                 min_depth = min([max_depth[s] for s in successors])
                 max_depth[root] = min_depth - 1

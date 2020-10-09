@@ -9,7 +9,8 @@ from .configuration import Config
 from .configuration.tools import dataclass_to_dict
 from .loggers import logger
 from .loggers import warn_once
-from .models import Network, NNGraphNetwork
+from .models import Network
+from .models import NNGraphNetwork
 from .plotting import comparison_plot
 from .plotting import figs_to_pils
 from caldera.data import GraphBatch
@@ -33,9 +34,9 @@ class TrainingModule(LightningModule):
     def __init__(self, config: Config):
         super().__init__()
         self.config = config
-        if self.config.network.model == 'Network':
+        if self.config.network.model == "Network":
             self.model: Network = Network(config.network)
-        elif self.config.network.model == 'NNGraphNetwork':
+        elif self.config.network.model == "NNGraphNetwork":
             self.model: NNGraphNetwork = NNGraphNetwork(config.network)
         self.hparams = dataclass_to_dict(config)
 

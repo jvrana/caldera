@@ -1,8 +1,9 @@
 import networkx as nx
 
+from .check_back_prop import check_back_prop
 from caldera.transforms.networkx import NetworkxSetDefaultFeature
 from caldera.utils.nx.generators import random_node
-from .check_back_prop import check_back_prop
+
 
 def annotate_shortest_path(
     g: nx.Graph,

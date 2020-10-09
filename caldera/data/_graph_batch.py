@@ -17,6 +17,7 @@ from caldera.utils.nx.types import DirectedGraph
 # TODO: check for batches that share data with other batches
 class GraphBatch(GraphData):
     __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
+    _topology = ["edges", "node_idx", "edge_idx"]
 
     # TODO: global_idx
     def __init__(
@@ -414,14 +415,15 @@ class GraphBatch(GraphData):
             self.edge_idx[e_slice],
         )
 
-    def new_like(self, x=None, e=None, g=None):
+    def new_like(self, x, e, g):
         return self.__class__(
-            *self._new_like_tuple(x, e, g),
+            x,
+            e,
+            g,
             edges=self.edges.detach().clone(),
             edge_idx=self.edge_idx.detach().clone(),
-            node_idx=self.node_idx.detach().clone()
+            node_idx=self.node_idx.detach().clone(),
         )
-
 
     def disjoint_union(self, other: GraphBatch) -> GraphBatch:
         """Disjoint union between two GraphBatches.

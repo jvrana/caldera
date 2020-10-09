@@ -1,5 +1,5 @@
-from torch import nn
 import torch
+from torch import nn
 
 # try:
 #     from rich.console import print as logprint
@@ -15,9 +15,12 @@ import torch
 #     logprint = print
 
 
-def check_back_prop(model: nn.Module, out: torch.Tensor):
-    """Check the backpropogation for a module"""
-    loss = nn.MSELoss()(out, torch.rand_like(out))
+def check_back_prop(
+    model: nn.Module, out: torch.Tensor = None, loss: torch.Tensor = None
+):
+    """Check the backpropogation for a module."""
+    if out:
+        loss = nn.MSELoss()(out, torch.rand_like(out))
     grads = {}
     for n, p in model.named_parameters():
         if p.grad is not None:

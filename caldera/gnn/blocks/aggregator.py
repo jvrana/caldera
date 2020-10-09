@@ -86,6 +86,7 @@ class Aggregator(AggregatorBase):
                          See documentation on scatter functions for more information.
         """
         super().__init__()
+        self.aggregator_alias = aggregator
         self.aggregator = self._resolve_aggregator(aggregator)
         self.kwargs = dict(dim=dim, dim_size=dim_size)
 
@@ -106,7 +107,7 @@ class Aggregator(AggregatorBase):
         return torch_scatter.scatter_min(*args, **kwargs)[0]
 
     def __str__(self):
-        return "{}(func='{}')".format(self.__class__.__name__, str(self.aggregator))
+        return "{}(func={})".format(self.__class__.__name__, self.aggregator_alias)
 
     def __repr__(self):
         return str(self)
@@ -335,3 +336,11 @@ class MultiAggregator(AggregatorBase):
         return torch.sum(
             torch.mul(stacked, scatter_weights.expand(1, -1, -1).T), axis=0
         )
+
+    def __str__(self):
+        return "{}(aggregators={})".format(
+            self.__class__.__name__, list(self.aggregators)
+        )
+
+    def __repr__(self):
+        return str(self)

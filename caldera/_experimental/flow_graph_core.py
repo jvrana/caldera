@@ -1,17 +1,14 @@
-from caldera import gnn
+from typing import List
+
 from torch import nn
+
+from caldera import gnn
 from caldera._future.flow import Flow
 from caldera.data import GraphBatch
-from typing import List
 
 
 class GraphEncoder(Flow):
-
-    def __init__(self,
-                 node: nn.Module,
-                 edge: nn.Module,
-                 glob: nn.Module
-                 ):
+    def __init__(self, node: nn.Module, edge: nn.Module, glob: nn.Module):
         super().__init__()
         self.node = node
         self.edge = edge
@@ -29,16 +26,11 @@ class GraphEncoder(Flow):
 
 
 class GraphCore(GraphEncoder):
-
-    def __init__(self,
-                 node: nn.Module,
-                 edge: nn.Module,
-                 glob: nn.Module
-                 ):
+    def __init__(self, node: nn.Module, edge: nn.Module, glob: nn.Module):
         super().__init__(node, edge, glob)
-        self.edge_to_node_agg = gnn.Aggregator('add')
-        self.node_to_glob_agg = gnn.Aggregator('add')
-        self.edge_to_glob_agg = gnn.Aggregator('add')
+        self.edge_to_node_agg = gnn.Aggregator("add")
+        self.node_to_glob_agg = gnn.Aggregator("add")
+        self.edge_to_glob_agg = gnn.Aggregator("add")
 
         self.register_map(self.glob, self.edge, lambda data: data.edge_idx)
         self.register_map(self.node, self.edge, lambda data: data.edges[0])
@@ -50,7 +42,7 @@ class GraphCore(GraphEncoder):
             self.edge_to_node_agg,
             self.node,
             lambda data: data.edges[1],
-            lambda data: data.x.shape[0]
+            lambda data: data.x.shape[0],
         )
 
         self.register_aggregation(
@@ -58,7 +50,7 @@ class GraphCore(GraphEncoder):
             self.edge_to_glob_agg,
             self.glob,
             lambda data: data.edge_idx,
-            lambda data: data.g.shape[0]
+            lambda data: data.g.shape[0],
         )
 
         self.register_aggregation(
@@ -66,7 +58,7 @@ class GraphCore(GraphEncoder):
             self.node_to_glob_agg,
             self.glob,
             lambda data: data.node_idx,
-            lambda data: data.g.shape[0]
+            lambda data: data.g.shape[0],
         )
 
     def forward(self, data):
@@ -77,7 +69,6 @@ class GraphCore(GraphEncoder):
 
 
 class GraphProcess(nn.Module):
-
     def __init__(self, encoder, core, decoder, out):
         super().__init__()
         self.encoder = encoder
@@ -95,6 +86,7 @@ class GraphProcess(nn.Module):
             out_data = self.out(data)
             out_arr.append(out_data)
         return out_arr
+
 
 process = GraphProcess(
     GraphEncoder(
@@ -116,7 +108,7 @@ process = GraphProcess(
         gnn.Flex(gnn.Dense)(..., 1),
         gnn.Flex(gnn.Dense)(..., 1),
         gnn.Flex(gnn.Dense)(..., 1),
-    )
+    ),
 )
 
 process(GraphBatch.random_batch(10, 5, 4, 3))

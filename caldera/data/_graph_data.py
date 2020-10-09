@@ -43,6 +43,7 @@ class GraphData:
 
     __slots__ = ["x", "e", "g", "edges"]
     _differentiable = ["x", "e", "g"]
+    _topology = ["edges"]
 
     def __init__(
         self,
@@ -52,8 +53,7 @@ class GraphData:
         edges: torch.LongTensor,
         requires_grad: Optional[bool] = None,
     ):
-        """
-        Represents a graph-like data structure.
+        """Represents a graph-like data structure.
 
         :param node_attr:
         :param edge_attr:
@@ -70,9 +70,7 @@ class GraphData:
             self.requires_grad = requires_grad
 
     def debug(self):
-        """
-        Validates this data object.
-        """
+        """Validates this data object."""
         if (
             self.edges.shape[0]
             and self.edges.shape[1]
@@ -157,9 +155,8 @@ class GraphData:
 
     # TODO: finish clone, copy, apply, etc.
     def apply(self, func: Callable, *args, keys: Optional[Tuple[str]] = None, **kwargs):
-        """
-        Applies a function to the node, edge, and global tensors, creating a new instance of
-        GraphData.
+        """Applies a function to the node, edge, and global tensors, creating a
+        new instance of GraphData.
 
         :param func: The function to apply to each tensor. This expects the tensor as the first argument.
         :param args: Additional arguments to apply to the function.
@@ -169,10 +166,11 @@ class GraphData:
         """
         return self._apply(func, new_inst=True, args=args, kwargs=kwargs, keys=keys)
 
-    def apply_(self, func: Callable, *args, keys: Optional[Tuple[str]] = None, **kwargs):
-        """
-        Applies a function to the node, edge, and global tensors
-        instance of GraphData.
+    def apply_(
+        self, func: Callable, *args, keys: Optional[Tuple[str]] = None, **kwargs
+    ):
+        """Applies a function to the node, edge, and global tensors instance of
+        GraphData.
 
         :param func: The function to apply to each tensor. This expects the tensor as the first argument.
         :param args: Additional arguments to apply to the function.
@@ -226,44 +224,46 @@ class GraphData:
 
     @property
     def num_graphs(self):
-        """The number of graphs in this datum"""
+        """The number of graphs in this datum."""
         return self.g.shape[0]
 
     @property
     def num_nodes(self):
-        """The number of nodes in this datum"""
+        """The number of nodes in this datum."""
         return self.x.shape[0]
 
     @property
     def num_edges(self):
-        """The number of edges in this datum"""
+        """The number of edges in this datum."""
         return self.edges.shape[1]
 
     @property
     def node_shape(self):
-        """Feature shape of the node data"""
+        """Feature shape of the node data."""
         return self.x.shape[1:]
 
     @property
     def edge_shape(self):
-        """Feature shape of the edge data"""
+        """Feature shape of the edge data."""
         return self.e.shape[1:]
 
     @property
     def global_shape(self):
-        """Feature shape of the global data"""
+        """Feature shape of the global data."""
         return self.g.shape[1:]
 
     @property
     def shape(self):
-        """Shape of this datum. This is the combined
-        shape of the node, edge, and global feature shapes"""
+        """Shape of this datum.
+
+        This is the combined shape of the node, edge, and global feature
+        shapes
+        """
         return self.x.shape[1:] + self.e.shape[1:] + self.g.shape[1:]
 
     @property
     def size(self):
-        """
-        Size of this datum (num_nodes, num_edges, num_graphs).
+        """Size of this datum (num_nodes, num_edges, num_graphs).
 
         .. note::
 
@@ -454,8 +454,7 @@ class GraphData:
 
     # TODO: copy tests
     def copy(self, non_blocking: bool = False, *emtpy_like_args, **emtpy_like_kwargs):
-        """
-        non_blocking (bool) – if True and this copy is between CPU and GPU,
+        """non_blocking (bool) – if True and this copy is between CPU and GPU,
         the copy may occur asynchronously with respect to the host. For other
         cases, this argument has no effect.
 
@@ -595,25 +594,23 @@ class GraphData:
         )
         return data
 
-    # TODO: new_like
-    def _new_like_tuple(self, x=None, e=None, g=None):
-        def clone_or_copy(a, b):
-            if a is None:
-                a = b.clone().detach()
-            else:
-                a = torch.empty_like(a, device=b.device, requires_grad=b.requires_grad).copy_(a)
-            return a
-
-        x = clone_or_copy(x, self.x)
-        e = clone_or_copy(e, self.e)
-        g = clone_or_copy(g, self.g)
-        return x, e, g
-
-    def new_like(self, x=None, e=None, g=None):
+    def new_like(self, x, e, g):
         return self.__class__(
-            *self._new_like_tuple(x, e, g),
-            edges=self.edges.detach().clone()
+            x, e, g, **({k: getattr(self, k).detach().clone() for k in self._topology})
         )
+
+    def same_topology(self, *others):
+        """Checks if."""
+        same = True
+        if others:
+            others = (self,) + others
+            for a, b in zip(others[:-1], others[1:]):
+                for k in self._topology:
+                    va = getattr(a, k)
+                    vb = getattr(b, k)
+                    if va.shape != vb.shape or not torch.allclose(va, vb):
+                        same = False
+        return same
 
     def to_networkx(
         self,
@@ -674,6 +671,13 @@ class GraphData:
         self.edges = torch.cat([self.edges, edges], dim=1)
         self.e = torch.cat([self.e, edge_attr])
         self.debug()
+
+    def cat(self, *others):
+        others = (self,) + others
+        x = torch.cat(tuple(other.x for other in others), dim=1)
+        e = torch.cat(tuple(other.e for other in others), dim=1)
+        g = torch.cat(tuple(other.g for other in others), dim=1)
+        return self.new_like(x, e, g)
 
     def allclose(self, other: "GraphData", **kwargs) -> bool:
         def _allclose(a, b):
@@ -766,9 +770,15 @@ class GraphData:
         e_feat = e_feat or self.e.shape[1]
         g_feat = g_feat or self.g.shape[1]
 
-        self.x = torch.randn(self.x.shape[0], n_feat, dtype=self.x.dtype, device=self.x.device)
-        self.e = torch.randn(self.e.shape[0], e_feat, dtype=self.e.dtype, device=self.e.device)
-        self.g = torch.randn(self.g.shape[0], g_feat, dtype=self.g.dtype, device=self.g.device)
+        self.x = torch.randn(
+            self.x.shape[0], n_feat, dtype=self.x.dtype, device=self.x.device
+        )
+        self.e = torch.randn(
+            self.e.shape[0], e_feat, dtype=self.e.dtype, device=self.e.device
+        )
+        self.g = torch.randn(
+            self.g.shape[0], g_feat, dtype=self.g.dtype, device=self.g.device
+        )
 
         return self
 
@@ -888,7 +898,8 @@ class GraphData:
         return edge_dict
 
     def info(self):
-        """Return general info on this data (num_nodes, shape, nelements, bytes, etc."""
+        """Return general info on this data (num_nodes, shape, nelements,
+        bytes, etc."""
         msg = "{}(\n".format(self.__class__.__name__)
         msg += "  n_nodes: {}\n".format(self.num_nodes)
         msg += "  n_edges: {}\n".format(self.num_edges)
