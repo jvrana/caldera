@@ -16,7 +16,7 @@ from caldera.utils.nx.types import DirectedGraph
 
 # TODO: check for batches that share data with other batches
 class GraphBatch(GraphData):
-    __slots__ = GraphData.__slots__ + ["node_idx", "edge_idx"]
+    __data_slots__ = GraphData.__data_slots__ + ["node_idx", "edge_idx"]
     _topology = ["edges", "node_idx", "edge_idx"]
 
     # TODO: global_idx

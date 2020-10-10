@@ -23,6 +23,17 @@ class LayerConfig(ConfigObj):
     def layers(self):
         return [self.size] * self.depth
 
+@dataclass
+class Connectivity(ConfigObj):
+
+    x0_to_edge: bool = False
+    x1_to_edge: bool = False
+    g_to_edge: bool = False
+    g_to_node: bool = False
+    edge_to_node: bool = False
+    edge_to_glob: bool = False
+    node_to_glob: bool = False
+
 
 @dataclass
 class NetComponentConfig(ConfigObj):
@@ -51,6 +62,7 @@ class NetConfig(ConfigObj):
     # architecture
     pass_global_to_edge: bool = True
     pass_global_to_node: bool = True
+    connectivity: Connectivity = field(default_factory=Connectivity)
 
     # aggregators
     edge_block_to_node_aggregators: Tuple[str, ...] = tuple(["add"])

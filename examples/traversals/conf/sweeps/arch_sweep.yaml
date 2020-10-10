@@ -1,0 +1,51 @@
+program: train.py
+project: caldera-shortest-path
+name: architecture-connectivity-sweep
+method: bayes
+metric:
+  name: eval_loss
+  goal: minimize
+parameters:
+    training.validate_plot:
+        value: true
+    training.check_val_every_n_epoch:
+        value: 5
+    training.max_epochs:
+        value: 40
+    wandb:
+        value: true
+    network.connectivity.x0_to_edge:
+        distribution: categorical
+        values:
+          - false
+          - true
+    network.connectivity.x1_to_edge:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.g_to_edge:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.g_to_node:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.edge_to_node:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.edge_to_glob:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.node_to_glob:
+        distribution: categorical
+        values:
+            - false
+            - true

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+from collections import Sequence
 from functools import reduce
 from typing import Any
 from typing import Callable
@@ -38,10 +39,21 @@ def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
 # TODO: implement __mul__ etc., implement __add__
 # TODO: requires_grad should always be False
 # TODO: check all instantiations for unnecessary copying (esp new
-class GraphData:
+
+class TensorComposition(Sequence):
+
+    __data_slots__ = []
+
+    def __getitem__(self, item):
+        return getattr(self, self.__data_slots__[item])
+
+    def __len__(self):
+        return len(self.__data_slots__)
+
+class GraphData(TensorComposition):
     """Data representing a single graph."""
 
-    __slots__ = ["x", "e", "g", "edges"]
+    __data_slots__ = ["x", "e", "g", "edges"]
     _differentiable = ["x", "e", "g"]
     _topology = ["edges"]
 
@@ -189,7 +201,7 @@ class GraphData:
 
     @property
     def _tensors(self):
-        for k in self.__slots__:
+        for k in self.__data_slots__:
             if not k.startswith("__"):
                 v = getattr(self, k)
                 if torch.is_tensor(v):

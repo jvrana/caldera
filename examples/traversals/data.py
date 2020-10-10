@@ -23,11 +23,7 @@ from caldera.data import GraphDataLoader
 from caldera.dataset import GraphDataset
 from caldera.testing import annotate_shortest_path
 from caldera.transforms import Compose
-from caldera.transforms.networkx import NetworkxAttachNumpyFeatures
-from caldera.transforms.networkx import NetworkxAttachNumpyOneHot
-from caldera.transforms.networkx import NetworkxNodesToStr
-from caldera.transforms.networkx import NetworkxSetDefaultFeature
-from caldera.transforms.networkx import NetworkxToDirected
+from caldera.transforms import networkx as nxt
 from caldera.utils.mp import multiprocess
 from caldera.utils.nx.generators import chain_graph
 from caldera.utils.nx.generators import compose_and_connect
@@ -78,37 +74,30 @@ def generate_shortest_path_example(
 
     preprocess = Compose(
         [
-            NetworkxSetDefaultFeature(
+            nxt.NetworkxSetDefaultFeature(
                 node_default={"source": False, "target": False, "shortest_path": False},
                 edge_default={"shortest_path": False},
             ),
-            NetworkxAttachNumpyOneHot(
-                "node", "source", "_features", classes=[False, True]
-            ),  # label nodes as 'start'
-            NetworkxAttachNumpyOneHot(
-                "node", "target", "_features", classes=[False, True]
-            ),  # label nodes as 'end'
+            nxt.NetworkxAttachNumpyBool("node", "source", "_features"),  # label nodes as 'start'
+            nxt.NetworkxAttachNumpyBool("node", "target", "_features"),  # label nodes as 'end'
+
             # attached weight
-            NetworkxAttachNumpyFeatures(
+            nxt.NetworkxAttachNumpyFeatures(
                 "edge",
                 "weight",
                 "_features",
                 encoding=fn.map_each(lambda x: np.array([x])),
             ),
-            NetworkxAttachNumpyOneHot(
-                "edge", "shortest_path", "_target", classes=[False, True]
-            ),  # label edge as shortest_path
-            NetworkxAttachNumpyOneHot(
-                "node", "shortest_path", "_target", classes=[False, True]
-            ),  # label node as shortest_path
-            NetworkxSetDefaultFeature(
+            nxt.NetworkxAttachNumpyBool("edge", "shortest_path", "_target"),  # label edge as shortest_path
+            nxt.NetworkxAttachNumpyBool("node", "shortest_path", "_target"),  # label node as shortest_path
+            nxt.NetworkxSetDefaultFeature(
                 global_default={
                     "_features": np.array([1.0]),
                     "_target": np.array([1.0]),
                 },
             ),
-            NetworkxNodesToStr(),
-            NetworkxToDirected(),
+            nxt.NetworkxNodesToStr(),
+            nxt.NetworkxToDirected(),
         ]
     )
 

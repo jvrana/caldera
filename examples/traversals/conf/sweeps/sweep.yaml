@@ -39,31 +39,41 @@ parameters:
     distribution: uniform
     min: 0.0
     max: 0.5
-  network.pass_global_to_edge:
-    distribution: categorical
-    values:
-        - true
-        - false
-  network.pass_global_to_node:
-      distribution: categorical
-      values:
-          - true
+  network.connectivity.x0_to_edge:
+        distribution: categorical
+        values:
           - false
-  network.edge_block_to_node_aggregators:
-      distribution: categorical
-      values:
-          - [add, min, max, mean]
-          - [add]
-  network.global_block_to_node_aggregators:
-      distribution: categorical
-      values:
-          - [add, min, max, mean]
-          - [add]
-  network.global_block_to_edge_aggregators:
-      distribution: categorical
-      values:
-          - [add, min, max, mean]
-          - [add]
+          - true
+    network.connectivity.x1_to_edge: false
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.g_to_edge: false
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.g_to_node: false
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.edge_to_node: false
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.edge_to_glob: false
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.connectivity.node_to_glob: false
+        distribution: categorical
+        values:
+            - false
+            - true
   network.encode.node.size:
     distribution: int_uniform
     min: 8

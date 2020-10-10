@@ -8,7 +8,15 @@
 
 **SOFTWARE IS IN ALPHA, README IS PENDING**
 
-**Caldera** is a Pytorch extension for learning on graphical data. It learns underlying causal relationships in data.
+**Caldera** is a Pytorch library for creating recurrent neural networks that operates on sequence and graph data.
+
+
+**Features**
+
+* Graph data processing methods
+* Adaptive computation time
+* Graph aggregation attention
+
 
 ## Gallery
 

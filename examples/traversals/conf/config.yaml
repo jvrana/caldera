@@ -1,6 +1,6 @@
 defaults:
 - network: default
-- data: large-weighted
+- data: default
 - hyperparameters: default
 - settings/out: disable
 - settings/help: default
@@ -11,7 +11,7 @@ training:
     gpus: 1
     validate_plot: true
     max_epochs: 100
-    check_val_every_n_epoch: 10
+    check_val_every_n_epoch: 5
     train_batch_size: 512
     eval_batch_size: "${data.eval.num_graphs}"
     train_shuffle: true

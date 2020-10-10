@@ -40,18 +40,31 @@ class TrainingModule(LightningModule):
             self.model: NNGraphNetwork = NNGraphNetwork(config.network)
         self.hparams = dataclass_to_dict(config)
 
-        self._loss_fn = torch.nn.MSELoss()
+        # self._loss_fn = torch.nn.MSELoss()
+        # self._loss_fn = torch.MSELoss()
         # self._loss_fn = torch.nn.CrossEntropyLoss(
-        #     reduction="mean", weight=torch.tensor([1.0, 100.0])
+        #     reduction="mean", weight=torch.tensor([1., 100.0])
         # )
 
     def do_loss(self, input_list: List[GraphBatch], target: GraphBatch):
         losses = []
         for input in input_list:
-            target_edge_classes = target.e.argmax(1)
-            target_node_classes = target.x.argmax(1)
-            edge_loss = self._loss_fn(input.e, target.e)
-            node_loss = self._loss_fn(input.x, target.x)
+            # target_edge_classes = target.e.argmax(1)
+            # target_node_classes = target.x.argmax(1)
+
+            weights = torch.ones_like(target.e)
+            idx = target.e.argmax(1)
+            weights[target.e.argmax(1)] = target.e.shape[0] / idx.shape[0]
+            edge_loss = torch.nn.BCEWithLogitsLoss(weight=weights)(input.e, target.e)
+
+            weights = torch.ones_like(target.x)
+            idx = target.x.argmax(1)
+            weights[target.x.argmax(1)] = target.x.shape[0] / idx.shape[0]
+            node_loss = torch.nn.BCEWithLogitsLoss(weight=weights)(input.x, target.x)
+
+            # edge_loss = torch.nn.MSELoss()(input.e, target.e)
+            # node_loss = torch.nn.MSELoss()(input.x, target.x)
+
             input_loss = edge_loss + node_loss
             losses.append(input_loss.unsqueeze(0))
         return torch.cat(losses).sum()
@@ -84,7 +97,7 @@ class TrainingModule(LightningModule):
     def validation_step(self, batch, batch_idx):
         input_batch, target_batch = batch
         out_batch_list = self.model.forward(
-            input_batch, steps=self.config.hyperparameters.train_core_processing_steps
+            input_batch, steps=self.config.hyperparameters.eval_core_processing_steps
         )
         loss = self.do_loss(out_batch_list[-1:], target_batch)
 
@@ -106,7 +119,16 @@ class TrainingModule(LightningModule):
         x = GraphBatch.from_data_list(x.to_data_list()[:num_graphs])
         y = GraphBatch.from_data_list(y.to_data_list()[:num_graphs])
 
-        y_hat = self.model.forward(x, 10)[-1]
+        y_hat: GraphBatch = self.model.forward(x, 10)[-1]
+        softmax = torch.nn.Sigmoid()
+        y_hat = y_hat.new_like(softmax(y_hat.x), softmax(y_hat.e), softmax(y_hat.g))
+
+        expected = y.x.detach().cpu()
+        output = y_hat.x.detach().cpu()
+        self.experiment_log({"output": output})
+        print(expected)
+        print(output)
+
         y_graphs = y.to_networkx_list()
         y_hat_graphs = y_hat.to_networkx_list()
 
