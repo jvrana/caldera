@@ -41,9 +41,17 @@ class FlexDim:
         """
         self.pos = pos
         self.dim = dim
+        self.resolved_shape = None
+
+    def is_resolved(self):
+        if self.resolved_shape is None:
+            return False
+        return True
 
     # TODO: resolve input_kwargs for FlexDim?
     def resolve(self, input_args, input_kwargs):
+        if self.resolved_shape is not None:
+            raise ValueError("Dimension is already resolved.")
         if self.pos is None:
             raise ValueError("Argument position cannot be None")
         d = input_args[self.pos].shape[self.dim]
@@ -51,6 +59,7 @@ class FlexDim:
             raise InvalidFlexZeroDimension("Dimension cannot be zero.")
         if d < 0:
             raise InvalidFlexNegativeDimension("Dimension cannot be less than zero.")
+        self.resolved_shape = d
         return d
 
     def __repr__(self):
@@ -111,7 +120,10 @@ class FlexBlock(torch.nn.Module, Generic[M]):
         rargs = []
         for i, a in enumerate(self.args):
             if isinstance(a, FlexDim):
-                rargs.append(a.resolve(input_args, input_kwargs))
+                if a.is_resolved():
+                    rargs.append(a.resolved_shape)
+                else:
+                    rargs.append(a.resolve(input_args, input_kwargs))
             elif a is FlexDim:
                 raise ValueError(
                     "Found {}. Initialize FlexDim to use flexible dimensions, `Flex.d()` or `FlexDim()`".format(

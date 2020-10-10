@@ -43,6 +43,34 @@ def test_flex_block_chain_syntatic_sugar(x):
     assert out.shape[1] == 64
 
 
+@pytest.mark.parametrize("x", [16, 32, 44])
+def test_flex_block_chain_syntatic_sugar_two_ellipsis(x):
+
+    model = torch.nn.Sequential(
+        Flex(torch.nn.Linear)(..., Flex.d(0)),
+    )
+
+    data = torch.randn((10, x))
+    out = model(data)
+    print(out)
+
+@pytest.mark.parametrize("x", [16, 32, 44])
+def test_flex_encoder(x):
+
+    Dim = Flex.d(0)
+    FlexLin = Flex(torch.nn.Linear)
+    model = torch.nn.Sequential(
+        FlexLin(Dim, 10),
+        FlexLin(..., 8),
+        FlexLin(..., 8),
+        FlexLin(..., Dim)
+    )
+
+    data = torch.randn((10, x))
+    out = model(data)
+    assert out.shape[1] == x
+
+
 def test_print_flex_block():
     m = Flex(torch.nn.Linear)
     s = str(m)
