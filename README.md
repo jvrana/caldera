@@ -6,7 +6,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-**PLEASE NOTE PRIMARY PROJECT HAS MOVED TO [Caldera2](https://github.com/jvrana/Caldera2)**
+**PLEASE NOTE PROJECT HAS MOVED TO [Caldera2](https://github.com/jvrana/Caldera2)**
 
 **Caldera** is a Pytorch extension for learning on graphical data. It learns underlying causal relationships in data.
 
