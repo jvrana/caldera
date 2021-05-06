@@ -43,13 +43,13 @@ class GraphBatch(GraphData):
         if not self.node_idx.dtype == torch.long:
             raise RuntimeError(
                 "Wrong tensor type. `node_idx` must be dtype={} not {}".format(
-                    self.node_idx.dtype, torch.long
+                    torch.long, self.node_idx.dtype
                 )
             )
         if not self.edge_idx.dtype == torch.long:
             raise RuntimeError(
                 "Wrong tensor type. `edge_idx` must be dtype={} not {}".format(
-                    self.edge_idx.dtype, torch.long
+                    torch.long, self.edge_idx.dtype
                 )
             )
         if (

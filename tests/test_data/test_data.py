@@ -857,3 +857,67 @@ def test_same_topology(zero_out):
         assert b1.same_topology(b2)
         assert b1.same_topology(b2, b1, b2)
         assert GraphBatch.same_topology(b1, b2)
+
+
+class TestDataOperators():
+
+    def test_sum(self):
+        a = GraphData.random(5, 4, 3)
+        b = a.clone().randomize_()
+        c = GraphData.add(a, b)
+        assert torch.allclose(a.x + b.x, c.x)
+        assert torch.allclose(a.e + b.e, c.e)
+        assert torch.allclose(a.g + b.g, c.g)
+
+    def test_add(self):
+        a = GraphData.random(5, 4, 3)
+        b = a.clone().randomize_()
+        c = a + b
+        assert torch.allclose(a.x + b.x, c.x)
+        assert torch.allclose(a.e + b.e, c.e)
+        assert torch.allclose(a.g + b.g, c.g)
+
+    def test_add_scalar(self):
+        a = GraphData.random(5, 4, 3)
+        c = a + 2
+        assert torch.allclose(a.x + 2, c.x)
+        assert torch.allclose(a.e + 2, c.e)
+        assert torch.allclose(a.g + 2, c.g)
+
+    def test_add_tensor(self):
+        a = GraphData.random(5, 4, 3)
+        c = a + 2
+        assert torch.allclose(a.x + 2, c.x)
+        assert torch.allclose(a.e + 2, c.e)
+        assert torch.allclose(a.g + 2, c.g)
+
+    def test_mul_scalar(self):
+        a = GraphData.random(5, 4, 3)
+        c = a * 2
+        assert torch.allclose(a.x * 2, c.x)
+        assert torch.allclose(a.e * 2, c.e)
+        assert torch.allclose(a.g * 2, c.g)
+
+    def test_mul_tensor(self):
+        a = GraphData.random(5, 4, 3)
+        c = a * torch.tensor(2.)
+        assert torch.allclose(a.x * 2, c.x)
+        assert torch.allclose(a.e * 2, c.e)
+        assert torch.allclose(a.g * 2, c.g)
+
+
+    def test_mul(self):
+        a = GraphData.random(5, 4, 3)
+        b = a.clone().randomize_()
+        c = GraphData.prod(a, b)
+        assert torch.allclose(a.x * b.x, c.x)
+        assert torch.allclose(a.e * b.e, c.e)
+        assert torch.allclose(a.g * b.g, c.g)
+
+    def test_mul_magic(self):
+        a = GraphData.random(5, 4, 3)
+        b = a.clone().randomize_()
+        c = a * b
+        assert torch.allclose(a.x * b.x, c.x)
+        assert torch.allclose(a.e * b.e, c.e)
+        assert torch.allclose(a.g * b.g, c.g)

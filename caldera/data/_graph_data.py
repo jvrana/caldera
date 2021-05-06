@@ -20,7 +20,7 @@ from caldera.utils import reindex_tensor
 from caldera.utils import same_storage
 from caldera.utils.nx import nx_is_directed
 from caldera.utils.nx.types import DirectedGraph
-
+import operator
 
 def np_or_tensor_size(arr: Union[torch.tensor, np.ndarray]) -> int:
     if issubclass(arr.__class__, torch.Tensor):
@@ -690,6 +690,59 @@ class GraphData(TensorComposition):
         e = torch.cat(tuple(other.e for other in others), dim=1)
         g = torch.cat(tuple(other.g for other in others), dim=1)
         return self.new_like(x, e, g)
+
+    def stack_and_apply(self, *others, op=Callable[[torch.Tensor], torch.Tensor]):
+        if not op:
+            raise ValueError("operation must be provided")
+        others = (self,) + others
+        xstack = torch.stack([o.x for o in others])
+        estack = torch.stack([o.e for o in others])
+        gstack = torch.stack([o.g for o in others])
+        x = op(xstack)
+        e = op(estack)
+        g = op(gstack)
+        return self.new_like(x, e, g)
+
+    def reduce(self, *others, op=Callable[[torch.Tensor], torch.Tensor]):
+        if not op:
+            raise ValueError("operation must be provided")
+        others = (self,) + others
+        xarr, earr, garr = [], [], []
+        for o in others:
+            if isinstance(o, int) or isinstance(o, float) or torch.is_tensor(o):
+                xarr.append(o)
+                earr.append(o)
+                garr.append(o)
+            else:
+                xarr.append(o.x)
+                earr.append(o.e)
+                garr.append(o.g)
+        x = reduce(op, xarr)
+        e = reduce(op, earr)
+        g = reduce(op, garr)
+        return self.new_like(x, e, g)
+
+    @classmethod
+    def _all_is_graphdata(cls, others):
+        return all([isinstance(o, cls) for o in others])
+
+    def add(self, *others):
+        if self._all_is_graphdata(others):
+            return self.stack_and_apply(*others, op=lambda x: x.sum(0))
+        else:
+            return self.reduce(*others, op=operator.add)
+
+    def prod(self, *others):
+        if self._all_is_graphdata(others):
+            return self.stack_and_apply(*others, op=lambda x: torch.prod(x, 0))
+        else:
+            return self.reduce(*others, op=operator.mul)
+
+    def __add__(self, other):
+        return self.add(other)
+
+    def __mul__(self, other):
+        return self.prod(other)
 
     def allclose(self, other: "GraphData", **kwargs) -> bool:
         def _allclose(a, b):

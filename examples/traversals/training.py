@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import pytorch_lightning as pl
 import torch
@@ -76,8 +76,10 @@ class TrainingModule(LightningModule):
     def on_fit_start(self):
         self.logger_experiment_update_hparams()
 
-    def training_step(self, batch: GraphBatch, batch_idx: int) -> pl.TrainResult:
+    def training_step(self, batch: Tuple[GraphBatch, GraphBatch], batch_idx: int) -> pl.TrainResult:
         input_batch, target_batch = batch
+        input_batch.contiguous()
+        target_batch.contiguous()
         out_batch_list = self.model.forward(
             input_batch,
             steps=self.config.hyperparameters.train_core_processing_steps,

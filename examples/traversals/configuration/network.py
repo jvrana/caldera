@@ -56,6 +56,8 @@ class NetConfig(ConfigObj):
     dropout: Optional[float] = None
     activation: Optional[str] = LeakyReLU.__name__
     layer_norm: bool = True
+    size: int = 32
+    depth: int = 2
 
     aggregator_activation: str = LeakyReLU.__name__
 

@@ -2,40 +2,40 @@
 model: Network
 encode:
     node:
-        size: 32
-        depth: 3
-        layer_norm: true
+        size: ${network.size}
+        depth: ${network.depth}
+        layer_norm: ${network.layer_norm}
         activation: ${network.activation}
         dropout: ${network.dropout}
     edge:
-        size: 32
-        depth: 3
-        layer_norm: true
+        size: ${network.size}
+        depth: ${network.depth}
+        layer_norm: ${network.layer_norm}
         activation: ${network.activation}
         dropout: ${network.dropout}
     glob:
-        size: 32
-        depth: 3
-        layer_norm: true
+        size: ${network.size}
+        depth: ${network.depth}
+        layer_norm: ${network.layer_norm}
         activation: ${network.activation}
         dropout: ${network.dropout}
 core:
     node:
-        size: 32
-        depth: 3
-        layer_norm: true
+        size: ${network.size}
+        depth: ${network.depth}
+        layer_norm: ${network.layer_norm}
         activation: ${network.activation}
         dropout: ${network.dropout}
     edge:
-        size: 32
-        depth: 3
-        layer_norm: true
+        size: ${network.size}
+        depth: ${network.depth}
+        layer_norm: ${network.layer_norm}
         activation: ${network.activation}
         dropout: ${network.dropout}
     glob:
-        size: 32
-        depth: 1
-        layer_norm: true
+        size: ${network.size}
+        depth: ${network.depth}
+        layer_norm: ${network.layer_norm}
         activation: ${network.activation}
         dropout: ${network.dropout}
 out:
@@ -61,6 +61,8 @@ out:
 # defaults
 dropout: 0.2
 activation: LeakyReLU
+size: 32
+depth: 3
 layer_norm: true
 aggregator_activation: LeakyReLU
 pass_global_to_edge: true

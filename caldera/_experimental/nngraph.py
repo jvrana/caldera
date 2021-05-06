@@ -75,12 +75,13 @@ class NNEdge(nn.Module):
                     "For aggregating edges, 'aggregation', 'size', and 'indexer' args must all be provided."
                 )
             if aggregation:
-                if not issubclass(aggregation.__class__, AggregatorBase):
-                    raise TypeError(
-                        "aggregator must be a subclass of {} but found instance of {}".format(
-                            AggregatorBase.__name__, aggregation.__class__.__name__
-                        )
-                    )
+                pass
+                # if not issubclass(aggregation.__class__, AggregatorBase):
+                #     raise TypeError(
+                #         "aggregator must be a subclass of {} but found instance of {}".format(
+                #             AggregatorBase.__name__, aggregation.__class__.__name__
+                #         )
+                #     )
 
         self.src = src
         self.dest = dest

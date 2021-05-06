@@ -14,6 +14,29 @@ parameters:
         value: 40
     wandb:
         value: true
+    network.layer_norm:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.out.node.layer_norm:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.out.edge.layer_norm:
+        distribution: categorical
+        values:
+            - false
+            - true
+    network.size:
+        distribution: int_uniform
+        min: 8
+        max: 32
+    network.depth:
+        distribution: int_uniform
+        min: 1
+        max: 4
     network.connectivity.x0_to_edge:
         distribution: categorical
         values:

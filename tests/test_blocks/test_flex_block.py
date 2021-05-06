@@ -53,6 +53,7 @@ def test_flex_block_chain_syntatic_sugar_two_ellipsis(x):
     data = torch.randn((10, x))
     out = model(data)
     print(out)
+    print(list(model.parameters()))
 
 @pytest.mark.parametrize("x", [16, 32, 44])
 def test_flex_encoder(x):
